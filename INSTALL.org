@@ -8,7 +8,7 @@ git checkout bridges #in root dir agda/
 stack update
 cp stack.yaml<version> stack.yaml # choose version of haskell compiler
 stack install # builds and copies agda binary to ~/.local/bin/
-# stack install -- fast
+# stack install --fast
 #+end_src
 *** Download the cubical library and register it in ~/.agda/libraries~
 Clone the appropriate repo: https://github.com/agda/cubical.
