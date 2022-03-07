@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
 module Everything where -- todo: generate Everything.agda by makefile
 
 open import BridgePrims

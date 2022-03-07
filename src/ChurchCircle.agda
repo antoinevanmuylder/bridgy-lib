@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce -v tc:5 #-}
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce --allow-unsolved-metas #-}
 module ChurchCircle where
 
 open import Cubical.Foundations.Prelude
@@ -47,7 +47,7 @@ forgPt = record { nobjMap = λ { (X , pt) → X }
 
 
 -- the loop-space native relator Ω
--- bug: normalization does not seem to terminate!
+-- bug: normalization does not seem to terminate! we need more computational rules to finish this proof (wip).
 Ω : ∀ {ℓ} → NRelator (Type⋆ ℓ) (Type ℓ)
 Ω = record { nobjMap = λ { (X , pt) → pt ≡ pt }
            ; nedgeMap = λ { (R , ptd) → λ loop0 loop1 →  PathP (λ i → R (loop0 i) (loop1 i)) ptd ptd  }
