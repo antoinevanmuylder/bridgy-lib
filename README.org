@@ -6,7 +6,7 @@ Check out the ~src/~ directory.
 - ~ExtentExamples.agda~: commutation with Π.
 - ~GelExamples.agda~: commutation with equivalences, and the universe ("relativity").
 - ~NativeReflGraphRelator.agda~: native reflexive graphs and relators, needed to state parametricity.
-- ~ParamNativeRelator.agda~: general parametricity theorem.
-- ~SimpleParam.agda~: proofs of simple Church encodings.
-- ~ChurchCircle.agda~: partial proof of the circle Church encoding. On 07/03/2022 we lack kan operations for Bridge types to conclude.
-- ~SystemF.agda~: shallow embedding of system F where each semantic term is parametric.
+- ~ParamNativeRelator.agda~: general parametricity theorem: ~param~.
+- ~SimpleParam.agda~: proofs of simple Church encodings with ~param~.
+- ~ChurchCircle.agda~: partial proof of the circle Church encoding with ~param~. On 07/03/2022 we lack kan operations for Bridge types to conclude.
+- ~SystemF.agda~: shallow embedding of system F where each semantic term is parametric thanks to ~param~.
