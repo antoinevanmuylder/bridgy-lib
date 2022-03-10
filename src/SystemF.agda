@@ -235,3 +235,64 @@ semPolymidAlone = compEquiv semPolymidAlone' churchUnit
                FTypJudg Θ Γ (F∀ τ) → (opand : FKjudg Θ) → FTypJudg Θ Γ (substType τ opand)
 
 -}
+
+---------------------
+{- Reordering the parts.
+
+   Andreas: All the parts of the proofs are there, but the use of native relators as opposed to an object and a relational interpretation
+   may make the theorem superficially hard to recognize.
+-}
+
+-- object interpretation of the kinding judgment (type of well-kinded System F types).
+⟦_⟧kjudgₒ : ∀ {Θ} → FKjudg Θ → ⟦ Θ ⟧kctx → Type
+⟦ τ ⟧kjudgₒ = nobjMap ⟦ τ ⟧kjudg
+
+-- object interpretation of typing contexts.
+⟦_⟧typctxₒ : ∀ {m} {Θ : FKCtx} → FTypCtx Θ m → ⟦ Θ ⟧kctx → Type
+⟦ Γ ⟧typctxₒ = nobjMap ⟦ Γ ⟧typctx
+
+-- relational interpretation of the kinding judgment (type of well-kinded System F types).
+⟦_⟧kjudgᵣ : ∀ {Θ} → (τ : FKjudg Θ) → {θ0 θ1 : ⟦ Θ ⟧kctx} → (θR : nedge θ0 θ1) → ⟦ τ ⟧kjudgₒ θ0 → ⟦ τ ⟧kjudgₒ θ1 → Type
+⟦ τ ⟧kjudgᵣ {θ0} {θ1} θR t0 t1 = nedgeMap ⟦ τ ⟧kjudg θR t0 t1
+
+-- relational interpretation of typing contexts.
+⟦_⟧typctxᵣ : ∀ {m} {Θ : FKCtx} → (Γ : FTypCtx Θ m) → {θ0 θ1 : ⟦ Θ ⟧kctx} → (θR : nedge θ0 θ1) → ⟦ Γ ⟧typctxₒ θ0 → ⟦ Γ ⟧typctxₒ θ1 → Type
+⟦ Γ ⟧typctxᵣ {θ0} {θ1} θR γ0 γ1 = nedgeMap ⟦ Γ ⟧typctx θR γ0 γ1
+
+-- I suspect the following two functions can come in handy also in the semantics of ∀.
+nativP' : ∀ {ℓ} {A : Type ℓ} {{hnrgA : HasNRGraph A}} (B : NRelator A Type) {a1 a2 : A} (a* : BridgeP (λ _ → A) a1 a2) (b1 : nobjMap B a1) (b2 : nobjMap B a2) → nedgeMap B (invEq (nativ a1 a2) a*) b1 b2 ≃ BridgeP (λ i → nobjMap B (a* i)) b1 b2
+nativP' {ℓ} {A} {{hnrgA}} B {a1} {a2} a* b1 b2 = pathToEquiv (funExt⁻ (funExt⁻ (funExt⁻ (nativ-rel B a1 a2) a*) b1) b2)
+
+nativP : ∀ {ℓ} {A : Type ℓ} {{hnrgA : HasNRGraph A}} (B : NRelator A Type) {a1 a2 : A} (aR : nedge a1 a2) (b1 : nobjMap B a1) (b2 : nobjMap B a2) → nedgeMap B aR b1 b2 ≃ BridgeP (λ i → nobjMap B (equivFun (nativ a1 a2) aR i)) b1 b2
+nativP B aR b1 b2 = pathToEquiv {!via nativP' and inversion of (nativ a1 a2)!}
+
+-- reflexivity (parametricity)
+param-refl : ∀ {m} {Θ : FKCtx} → (Γ : FTypCtx Θ m) (τ : FKjudg Θ)
+  → (t : (θ : ⟦ Θ ⟧kctx) → ⟦ Γ ⟧typctxₒ θ → ⟦ τ ⟧kjudgₒ θ)
+  → {θ0 θ1 : ⟦ Θ ⟧kctx} → (θR : nedge θ0 θ1) → {γ0 : ⟦ Γ ⟧typctxₒ θ0} {γ1 : ⟦ Γ ⟧typctxₒ θ1} (γR : ⟦ Γ ⟧typctxᵣ θR γ0 γ1) → ⟦ τ ⟧kjudgᵣ θR (t θ0 γ0) (t θ1 γ1)
+param-refl {m} {Θ} Γ τ t {θ0} {θ1} θR {γ0} {γ1} γR = tR
+  where θ* : BridgeP (λ _ → ⟦ Θ ⟧kctx) θ0 θ1
+        θ* = equivFun (nativ θ0 θ1) θR
+        γ* : BridgeP (λ i → ⟦ Γ ⟧typctxₒ (θ* i)) γ0 γ1
+        γ* = equivFun (nativP ⟦ Γ ⟧typctx θR γ0 γ1) γR
+        t* : BridgeP (λ i → ⟦ τ ⟧kjudgₒ (θ* i)) (t θ0 γ0) (t θ1 γ1)
+        t* i = (t (θ* i) (γ* i))
+        tR : ⟦ τ ⟧kjudgᵣ θR (t θ0 γ0) (t θ1 γ1)
+        tR = invEq (nativP ⟦ τ ⟧kjudg θR (t θ0 γ0) (t θ1 γ1)) t*
+
+refl-edge : ∀{ℓ} {A : Type ℓ} {{hnrgA : HasNRGraph A}} → (a : A) → nedge a a
+refl-edge a = invEq (nativ a a) λ _ → a
+
+-- Maybe this is easier:
+-- reflexivity (parametricity), but for a reflexive edge in Θ
+-- Never mind.
+param-refl' : ∀ {m} {Θ : FKCtx} → (Γ : FTypCtx Θ m) (τ : FKjudg Θ)
+  → (t : (θ : ⟦ Θ ⟧kctx) → ⟦ Γ ⟧typctxₒ θ → ⟦ τ ⟧kjudgₒ θ)
+  → (θ : ⟦ Θ ⟧kctx) → {γ0 : ⟦ Γ ⟧typctxₒ θ} {γ1 : ⟦ Γ ⟧typctxₒ θ} (γR : ⟦ Γ ⟧typctxᵣ (refl-edge θ) γ0 γ1) → ⟦ τ ⟧kjudgᵣ (refl-edge θ) (t θ γ0) (t θ γ1)
+param-refl' {m} {Θ} Γ τ t θ {γ0} {γ1} γR = tR
+  where γ* : BridgeP (λ _ → ⟦ Γ ⟧typctxₒ θ) γ0 γ1
+        γ* = equivFun {!nativP ⟦ Γ ⟧typctx ? {!γ0!} {!γ1!}!} γR -- Works up to cancellation of inverses
+        t* : BridgeP (λ _ → ⟦ τ ⟧kjudgₒ θ) (t θ γ0) (t θ γ1)
+        t* i = (t θ (γ* i))
+        tR : ⟦ τ ⟧kjudgᵣ (refl-edge θ) (t θ γ0) (t θ γ1)
+        tR = invEq (nativP ⟦ τ ⟧kjudg (refl-edge θ) (t θ γ0) (t θ γ1)) {!t*!} -- Works up to cancellation of inverses
