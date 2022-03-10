@@ -6,21 +6,18 @@ open import BridgeExamples
 open import ExtentExamples
 open import GelExamples
 open import Agda.Builtin.Bool
--- open import Agda.Builtin.Unit
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.Properties
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
--- open import Cubical.Functions.FunExtEquiv
--- open import Cubical.Data.Empty
--- open import Cubical.Data.Prod
 open import Cubical.Data.Sigma using (_×_ ; ≃-× ; ≡-×)
 open import Cubical.Foundations.Function
 
 
-module Lemmas where
+-- cubical lemmas
+module _ where
   
   equivInj : ∀ {ℓA ℓB} {A : Type ℓA} {B : Type ℓB} (I : A ≃ B) →
     (a a' : A) → I .fst a ≡ I .fst a' → a ≡ a'
@@ -36,12 +33,11 @@ module Lemmas where
         equivFun (equivAdjointEquiv Bequiv)
         (λ i → hyp i a) ∙
         cong fright (sym (secEq Aequiv a)))) 
-open Lemmas
   
-
+-- functions F have a canonical action on bridges
 bdg-action : ∀ {ℓ ℓ'} {X : Type ℓ} {Y : Type ℓ'} {x0 x1 : X} →
-             (f : X → Y) → BridgeP (λ _ → X) x0 x1 → BridgeP (λ _ → Y) (f x0) (f x1)
-bdg-action f q = λ x → f (q x)
+             (F : X → Y) → BridgeP (λ _ → X) x0 x1 → BridgeP (λ _ → Y) (F x0) (F x1)
+bdg-action F q = λ x → F (q x)
 
 
 -- when possible we use instance arguments to infer native rgraph "implementation"
@@ -119,12 +115,12 @@ instance
                      ; nativ = λ where tt tt → topBdgDiscrEquiv}
 
 
--- -- Type with -logical- relations is a native reflexive graph
--- -- this is proved using relativity
+-- Type with -logical- relations is a native reflexive graph
+-- this is proved using relativity
 instance
   TypeHasNRG : ∀ {ℓ} → HasNRGraph (Type ℓ)
   TypeHasNRG = record { nedge = λ A B → (A → B → Type _)
-                      ; nativ = λ A B → invEquiv relativity }
+                      ; nativ = λ A B → relativity }
 
 
 -- nRG has binary products

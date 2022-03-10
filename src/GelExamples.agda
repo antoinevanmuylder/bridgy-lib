@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-} -- -v tc.term.lock:70
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
 module GelExamples where
 
 open import BridgePrims
@@ -95,7 +95,6 @@ some-reordering f g h hyp = sym (sym (invEquiv-is-linv f) ∙
                                 hyp) ∙
                                 (sym (compEquiv-assoc g (invEquiv h) f)))
 
--- the following recasts path extentionality for equivalences 
 transpVSpathToEquiv : ∀ {ℓ} {X Y : Type ℓ} (f : X ≡ Y) →
                       transportEquiv f ≡ pathToEquiv f
 transpVSpathToEquiv f = λ i → (
@@ -137,15 +136,15 @@ module PlayGel {ℓ} {A0 A1 : Type ℓ} {R : A0 → A1 → Type ℓ} where
 
 
   -- BETA RULE for Gel
-  ungel-gel : (M1 : A1) (M0 : A0) (P : R M0 M1) →
+  ungel-gel : (M0 : A0) (M1 : A1)  (P : R M0 M1) →
     prim^ungel {R = R} ( λ x → prim^gel {R = R} M0 M1 P x ) ≡ P
-  ungel-gel M1 M0 P i = P
+  ungel-gel M0 M1 P = refl
 
 
   -- ETA for Gel
   eta-Gel : (Q : (@tick x : BI) → primGel A0 A1 R x) (@tick r : BI )  → 
     Q r ≡ prim^gel {R = R} (Q bi0) (Q bi1) (prim^ungel {R = R} Q) r
-  eta-Gel Q r i = Q r
+  eta-Gel Q r = refl
 
 
 
@@ -166,8 +165,9 @@ module PequivBridgeP {ℓ} {A B : (@tick x : BI) → Type ℓ} {I0 : A bi0 ≃ B
      extent ... (extent ... bla) ≠ bla computationally because semifreshness fails
      ⇒ use the "casing by extent" method, ie, the proof term is built with extent itself
 
-  -  once the extent-casing step is done, it is sufficient to prove a symmetry lemma for pointwise equivalences.
-     the retract proofs of the princple are what we need up to rearranging morphisms
+  -  once the extent-casing step is done, it is sufficient to prove a symmetry lemma
+     pointwiseAorB for pointwise equivalences.
+     the retract proofs of the latter are what we need up to rearranging morphisms
 
   2) here is the principle
   pointwiseAorB : ( (a0 : A bi0) (a1 : A bi1) → BridgeP A a0 a1 ≃ BridgeP B (I0 .fst a0) (I1 .fst a1) )
@@ -356,8 +356,7 @@ module Relativity {ℓ} {A0 A1 : Type ℓ} where
                   (pequivBridgeP
                   λ a0 a1 → bdg-over-gel (to-rel Q) a0 a1))) --interestingly we use the other retract proof for this one
 
-  relativity : BridgeP (λ x → Type ℓ) A0 A1 ≃ (A0 → A1 → Type ℓ)
-  relativity = isoToEquiv (iso to-rel to-bridge rel-retract bdg-retract)
-
+  relativity :  (A0 → A1 → Type ℓ) ≃ BridgeP (λ x → Type ℓ) A0 A1
+  relativity = isoToEquiv (iso to-bridge to-rel bdg-retract rel-retract)
 
 open Relativity public

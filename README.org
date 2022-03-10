@@ -3,11 +3,10 @@ This repo contains internal parametricity experiments, coded in ~agda --bridges~
 Check out the ~src/~ directory.
 - ~BridgePrims.agda~: contains CH primitives.
 - ~BridgeExamples.agda~: basic bridge behaviour + commutation principles for ~Bridge, Path, Σ, ×~.
-- ~ExtentExamples.agda~: commutation with Π
-- ~GelExamples.agda~: commutation with the universe ("relativity").
-- ~NativeReflGraphRelator.agda~: native reflexive graphs and relators, needed to state parametricity
-- ~ParamNativeRelator.agda~: general parametricity theorem
+- ~ExtentExamples.agda~: commutation with Π.
+- ~GelExamples.agda~: commutation with equivalences, and the universe ("relativity").
+- ~NativeReflGraphRelator.agda~: native reflexive graphs and relators, needed to state parametricity.
+- ~ParamNativeRelator.agda~: general parametricity theorem.
 - ~SimpleParam.agda~: proofs of simple Church encodings.
-- ~ChurchCircle.agda~: partial proof of the circle Church encoding. On 07/03/2022 we lack
-  kan operations for Bridge types to conclude.
+- ~ChurchCircle.agda~: partial proof of the circle Church encoding. On 07/03/2022 we lack kan operations for Bridge types to conclude.
 - ~SystemF.agda~: shallow embedding of system F where each semantic term is parametric.

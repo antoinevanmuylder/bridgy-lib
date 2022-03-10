@@ -20,23 +20,27 @@ open import ParamNativeRelator
 
 -- in this file we prove a Church encoding for the circle
 -- Namely:    ∀ (X⋆ : Type⋆) . Ω X⋆ → X     ≃     S1
--- the proof goes by parametricity.
+-- say ≤ means "retract"
+-- S1 ≤ ∀ (X⋆ : Type⋆) . Ω X⋆ → X essentially by computation.
+-- ∀ (X⋆ : Type⋆) . Ω X⋆ → X  ≤   S1 by parametricity.
+-- the proof is hence similar to eg ∀ X . X → X → X     ≃     Bool
+-- (both are instances of yoneda)
 
 
--- the native reflexive graph of pointed types
--- TypeHasNRG : ∀ {ℓ} → HasNRGraph (Type ℓ)
+-- pointed types
 Type⋆ : ∀ (ℓ : Level) → Type (ℓ-suc ℓ)
 Type⋆ ℓ = Σ[ X ∈ Type ℓ ] X
 
 Type⋆₀ : Type₁
 Type⋆₀ = Type⋆ ℓ-zero
 
+-- Type⋆ with pointed relations is a native reflexive graph.
 instance
   Type⋆HasNRG : ∀ {ℓ} → HasNRGraph (Type⋆ ℓ)
   Type⋆HasNRG {ℓ} = record { nedge = λ { (X0 , x0) (X1 , x1) →  Σ[ R ∈ (X0 → X1 → Type ℓ) ] (R x0 x1) }
                            ; nativ = λ where (X0 , x0) (X1 , x1) → flip compEquiv ΣvsBridgeP
                                                                     (Σ-cong-equiv
-                                                                      (invEquiv relativity)
+                                                                      (relativity)
                                                                       λ R →  invEquiv (pathToEquiv (funExt⁻ (funExt⁻ (rel-retract R) x0) x1))) }
 
 -- the forgetful native relator Type⋆ → Type
@@ -47,7 +51,8 @@ forgPt = record { nobjMap = λ { (X , pt) → X }
 
 
 -- the loop-space native relator Ω
--- bug: normalization does not seem to terminate! we need more computational rules to finish this proof (wip).
+-- bug: normalization does not seem to terminate!
+-- + we need more computational rules to conclude (wip)
 Ω : ∀ {ℓ} → NRelator (Type⋆ ℓ) (Type ℓ)
 Ω = record { nobjMap = λ { (X , pt) → pt ≡ pt }
            ; nedgeMap = λ { (R , ptd) → λ loop0 loop1 →  PathP (λ i → R (loop0 i) (loop1 i)) ptd ptd  }

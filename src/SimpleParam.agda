@@ -13,7 +13,6 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
--- open import Cubical.Foundations.Transport
 
 
 churchUnit : ∀ {ℓ} → ( (X : Type ℓ) → X → X )  ≃  ⊤
@@ -21,7 +20,7 @@ churchUnit = isoToEquiv (iso
                         (λ _ → tt)
                         (λ where _ → λ X x → x)
                         (λ where _ → refl)
-                        -- church encdoding  is a retract of ⊤, by param
+                        -- church encoding  is a retract of ⊤, by param
                         λ f → funExt λ A → funExt λ a → -- goal is ∀ (f : (X : Type ℓ) → X → X) A a, a ≡ f A a 
                           param churchUnitNRelator f (Lift ⊤) A (λ _ x → a ≡ x) _ a refl)
 
