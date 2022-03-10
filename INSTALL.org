@@ -12,7 +12,7 @@ cp stack-<version>.yaml stack.yaml # choose version of haskell compiler
 stack install # builds and copies agda binary to ~/.local/bin/
 # stack install --fast
 #+end_src
-*** Download the cubical library and register it in ~\~/.agda/libraries~
+*** Download the cubical library and register it in ~~/.agda/libraries~
 Clone the appropriate repo: https://github.com/agda/cubical.
 Once this is done, add the following line to your ~/.agda/libraries~ config file:
 #+begin_src shell
