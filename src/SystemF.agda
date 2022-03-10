@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce --type-in-type  #-} -- --no-termination-check
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce --type-in-type  --allow-unsolved-metas #-} -- --no-termination-check
 module SystemF where
 
 open import Cubical.Foundations.Prelude
