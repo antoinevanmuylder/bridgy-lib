@@ -1,36 +1,33 @@
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-} -- -v tc.conv.gel:40 -v tc.conv.atom:50
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
 module BridgePrims where
 
 -- this is a reproduction of test/Succeed/LaterPrims.agda and-or Agda.Primitive.Cubical
 
 open import Cubical.Core.Everything public
+
 module Prims where
   primitive
     primLockUniv : Type₁
-
 open Prims renaming (primLockUniv to LockU)
 
 
 ------------------------------------------------------------------------
--- CH internal param primitives
+-- CH primitives for internal parametricity
 ------------------------------------------------------------------------
 
 {-# BUILTIN BRIDGEINTERVAL BI  #-}  -- BI : LockU
 
-{-# BUILTIN BIZERO    bi0 #-}
+{-# BUILTIN BIZERO    bi0 #-}       -- bi0, bi1 : BI
 {-# BUILTIN BIONE     bi1 #-}
 
--- I is treated as the type of booleans.
--- {-# COMPILE JS i0 = false #-}
--- {-# COMPILE JS i1 = true  #-}
 
-
+-- heterogenous bridges over line A.
 postulate
   BridgeP : ∀ {ℓ} (A : (@tick x : BI) → Type ℓ) → A bi0 → A bi1 → Type ℓ
 
 {-# BUILTIN BRIDGEP        BridgeP     #-}
 
-
+-- NN = pointwise relatedness of N0 N1
 primitive
   primExtent : ∀ {ℓA ℓB : Level} {A : (@tick x : BI) → Type ℓA} {B : (@tick x : BI) (a : A x) → Type ℓB}
                (N0 : (a0 : A bi0) → B bi0 a0)
@@ -38,6 +35,7 @@ primitive
                (NN : (a0 : A bi0) (a1 : A bi1) (aa : BridgeP A a0 a1) → BridgeP (λ x → B x (aa x)) (N0 a0) (N1 a1))
                (@tick r : BI) (M : A r) →
                B r M
+
 
 primitive
   primGel : ∀ {ℓ} (A0 A1 : Type ℓ) (R : A0 → A1 → Type ℓ) (@tick r : BI) → Type ℓ

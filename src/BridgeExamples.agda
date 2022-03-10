@@ -21,11 +21,6 @@ switchEquivEq I a b prf = sym (sym (retEq I a) ∙ cong (invEq I) prf)
 -- about bridges
 ------------------------------------------------------------------------
 
--- module testCubicalInterval {ℓ} {A : (i : I) → Type ℓ} {a0 : A i0} {a1 : A i1}
---                            {B : Type ℓ} {b0 b1 : B} where
-
---   mk-path : (f : (i : I) → A i)  → PathP A (f i0) (f i1)
---   mk-path f i = {!!}
 
 module PlayBridgeP {ℓ} {A : (@tick x : BI) → Type ℓ} {a0 : A bi0} {a1 : A bi1}
                    {B : Type ℓ} {b0 b1 : B} where
@@ -35,9 +30,8 @@ module PlayBridgeP {ℓ} {A : (@tick x : BI) → Type ℓ} {a0 : A bi0} {a1 : A 
   mk-bridge : (f : (@tick i : BI) → A i) → BridgeP A (f bi0) (f bi1)
   mk-bridge f = λ i → f i
 
-
-  mmk : (f : (@tick i : BI) → A i) → BridgeP A (f bi0) (f bi1)
-  mmk f x = f x
+  mk-bridge' : (f : (@tick i : BI) → A i) → BridgeP A (f bi0) (f bi1)
+  mk-bridge' f x = f x
 
   -- -- endpoints failure:
   -- fail-cstbridge : BridgeP (λ i → Bool) false true
@@ -45,10 +39,13 @@ module PlayBridgeP {ℓ} {A : (@tick x : BI) → Type ℓ} {a0 : A bi0} {a1 : A 
 
 
   -- ELIM RULE
+  -- bridge vars always appear with the `@tick` annotation
+  -- In this case, this ensures that `r` is fresh in `P`.
   destr-bdg : (P : BridgeP A a0 a1) (@tick r : BI) → A r
   destr-bdg P r = P r
 
   -- -- affineness cstr:
+  -- -- P could use `r`. this is unsound hence rejected by typechecking.
   -- no-destr-bdg : (@tick r : BI) (P : BridgeP A a0 a1) → A r
   -- no-destr-bdg r P = P r
 
@@ -60,12 +57,12 @@ module PlayBridgeP {ℓ} {A : (@tick x : BI) → Type ℓ} {a0 : A bi0} {a1 : A 
   eta-bdg : (p : BridgeP (λ r → A r) a0 a1) → p ≡ (λ r → p r)
   eta-bdg p i = p
 
-  -- ~BETA COMPUTATION RULE. cannot easily state it internally
+  -- BETA COMPUTATION RULE.
   beta-bdg : (f : (@tick i : BI) → A i) (@tick r : BI) → mk-bridge f r ≡ f r
   beta-bdg f r j = f r
 
--- below, even if B is a cartesian Pi type (which is unsound to assume),
--- λ k → p k k does not typecheck.
+-- below, even if B is a cartesian Pi type (ie `B : (i j : BI) → Type ℓ`, without `@tick` which is unsound to assume),
+-- λ k → p k k does not typecheck. The reason is that k is not fresh in p k.
 -- module BridgeDiag  {ℓ} {B : (@tick i j : BI) → Type ℓ}
 --                    {b00 : B bi0 bi0} {b10 : B bi1 bi0} {b01 : B bi0 bi1} {b11 : B bi1 bi1}
 --                    {left : BridgeP (λ j → B bi0 j) b00 b01} {right : BridgeP (λ j → B bi1 j) b10 b11}
@@ -78,7 +75,7 @@ module PlayBridgeP {ℓ} {A : (@tick x : BI) → Type ℓ} {a0 : A bi0} {a1 : A 
 
   -- p ⊢ p
   -- p , k ⊢ p                                   constraints k ∉ p                OK
-  -- p : bdg-bdg-t, k : BI ⊢ p k : bdg-t         constraints k ∉ p k              hopefully affine constr gets gen
+  -- p : bdg-bdg-t, k : BI ⊢ p k : bdg-t         constraints k ∉ p k              not OK
   -- p : bdg-bdg-t, k : BI ⊢ (p k) k : bdg-t     endpoint cstr
   -- p : bdg-bdg-t ⊢ λ k → p k k : bdg-t
   -- ⊢ λ p k → p k k : bdg-bdg-t → bdg-t
@@ -86,9 +83,9 @@ module PlayBridgeP {ℓ} {A : (@tick x : BI) → Type ℓ} {a0 : A bi0} {a1 : A 
 
 
   
--- -- BRIDGES VS BRIDGES (relational extensionality for bridges)
--- -- the exchange rule should hold for bridge vars
-module BridgeVBridge {ℓ} (BB : (@tick i j : BI) → Type ℓ) (a : (@tick i j : BI) → BB i j) where
+-- BRIDGES VS BRIDGES commutation principle
+-- Alternatively, exchange rule for bridge vars
+module _ {ℓ} (BB : (@tick i j : BI) → Type ℓ) (a : (@tick i j : BI) → BB i j) where
 
 
 --   -- we compare the types of λ i j → a i j and λ j i → a i j and
@@ -102,44 +99,34 @@ module BridgeVBridge {ℓ} (BB : (@tick i j : BI) → Type ℓ) (a : (@tick i j 
 --   -- ----------
 
 
---   -- λ i j → a i j is a bridge between the left side and the right side of the above square.
+--   -- λ i j → a i j is a bridge between the left and right side of the above square.
   laij : BridgeP
          (λ i →  BridgeP (λ j → BB i j) (a i bi0)  (a i bi1))
          (λ j → a bi0 j)
          (λ j → a bi1 j)
   laij = λ i j → a i j
 
-  -- λ j i → a i j is a bridge between the bottom side and the top side of the above square.
+  -- λ j i → a i j is a bridge between the bottom and top side of the above square.
   laji : BridgeP
          (λ j →  BridgeP (λ i → BB i j) (a bi0 j)  (a bi1 j))
          (λ i → a i bi0)
          (λ i → a i bi1)
   laji = λ j i → a i j
 
---   -- this should work!
-  exch-bdg :
-   BridgeP (λ x →  BridgeP (λ y → BB x y) (a x bi0)  (a x bi1)) (λ y → a bi0 y) (λ y → a bi1 y) →
-   BridgeP (λ y →  BridgeP (λ x → BB x y) (a bi0 y)  (a bi1 y)) (λ x → a x bi0) (λ x → a x bi1)
-  exch-bdg p = λ y x → p x y
-
-  exch-bdg' :
-    BridgeP (λ y →  BridgeP (λ x → BB x y) (a bi0 y)  (a bi1 y)) (λ x → a x bi0) (λ x → a x bi1) → 
+  BridgePvsBridgeP : 
     BridgeP (λ x →  BridgeP (λ y → BB x y) (a x bi0)  (a x bi1)) (λ y → a bi0 y) (λ y → a bi1 y)
-  exch-bdg' p = λ x y → p y x
-
---   -- one inverse condition of the bdg versus bdg principle
-  bdgVbdg : ∀ p →  p ≡ (exch-bdg' (exch-bdg p) )
-  bdgVbdg p = λ i → p
-
---   -- the other one:
-  bdgVbdg' : ∀ p → p ≡ (exch-bdg (exch-bdg' p))
-  bdgVbdg' p = λ i → p
+    ≃ 
+    BridgeP (λ y →  BridgeP (λ x → BB x y) (a bi0 y)  (a bi1 y)) (λ x → a x bi0) (λ x → a x bi1)
+  BridgePvsBridgeP = isoToEquiv (iso (λ q → λ y x → q x y)
+                                     (λ q → λ x y → q y x)
+                                     (λ q → refl)
+                                     (λ q → refl))
 
 
 
 
 -- BRIDGES vs PATHS
-module BridgePPathP {ℓ} (A : (@tick x : BI) → I → Type ℓ)
+module _ {ℓ} (A : (@tick x : BI) → I → Type ℓ)
                    {a00 : A bi0 i0} {a10 : A bi1 i0} {a01 : A bi0 i1} {a11 : A bi1 i1}
                    (left : PathP (λ i → A bi0 i) a00 a01) (right : PathP (λ i → A bi1 i) a10 a11)
                    {down : BridgeP (λ x → A x i0) a00 a10} {up : BridgeP (λ x → A x i1) a01 a11} where
@@ -171,7 +158,7 @@ module _ {ℓ} {A : (@tick x : BI) → Type ℓ} {a0 : A bi0} {a1 : A bi1}
   bridgePPath q = λ i x → q x i
 
 
-module PathPBridgeP {ℓ} (A : (@tick x : BI) → I → Type ℓ)
+module _ {ℓ} (A : (@tick x : BI) → I → Type ℓ)
                    {a00 : A bi0 i0} {a10 : A bi1 i0} {a01 : A bi0 i1} {a11 : A bi1 i1}
                    {left : PathP (λ i → A bi0 i) a00 a01} {right : PathP (λ i → A bi1 i) a10 a11}
                    (down : BridgeP (λ x → A x i0) a00 a10) (up : BridgeP (λ x → A x i1) a01 a11) where
@@ -193,46 +180,6 @@ module PathPBridgeP {ℓ} (A : (@tick x : BI) → I → Type ℓ)
                  
   pathPBridgeP p = λ x i → p i x
 
-
-
-  
-  -- -- λ r i → a r i is a bridge between paths
-  -- lari : BridgeP
-  --        (λ r →  PathP (λ i → A r i) (a r i0)  (a r i1))
-  --        (λ i → a bi0 i)
-  --        (λ i → a bi1 i)
-  -- lari = λ r i → a r i
-
-  
-  -- -- λ i r → a r i is a path between bridges
-  -- lair : PathP
-  --        (λ i →  BridgeP (λ r → A r i) (a bi0 i)  (a bi1 i))
-  --        (λ r → a r i0)
-  --        (λ r → a r i1)
-  -- lair = λ i r → a r i
-
-  -- bdgPath-to-pathBdg :
-  --   BridgeP (λ r →  PathP (λ i → A r i) (a r i0)  (a r i1)) (λ i → a bi0 i) (λ i → a bi1 i) →
-  --   PathP (λ i →  BridgeP (λ r → A r i) (a bi0 i)  (a bi1 i)) (λ r → a r i0) (λ r → a r i1)
-  -- bdgPath-to-pathBdg bp = λ i r → bp r i
-
-  -- pathBdg-to-bdgPth :
-  --   PathP (λ i →  BridgeP (λ r → A r i) (a bi0 i)  (a bi1 i)) (λ r → a r i0) (λ r → a r i1) →
-  --   BridgeP (λ r →  PathP (λ i → A r i) (a r i0)  (a r i1)) (λ i → a bi0 i) (λ i → a bi1 i)
-  -- pathBdg-to-bdgPth = λ pb → λ r i → pb i r
-
-  -- -- one inverse condition of bdg versus path principle
-  -- bridgevPath : ∀ bp → PathP
-  --                       (λ _ → BridgeP (λ r →  PathP (λ i → A r i) (a r i0)  (a r i1)) (λ i → a bi0 i) (λ i → a bi1 i) )
-  --                       bp (pathBdg-to-bdgPth (bdgPath-to-pathBdg bp))
-  -- bridgevPath bp = λ x → bp
-
-  -- -- the other one
-  -- pathvBridge  : ∀ pb → pb ≡ bdgPath-to-pathBdg ( pathBdg-to-bdgPth pb )
-  -- pathvBridge pb = λ i → pb
-
-
-                  
 
 module _ {ℓ} {A : (@tick x : BI) → Type ℓ} {new0 old0 : A bi0} {new1 old1 : A bi1} where
 
@@ -266,16 +213,10 @@ module _ {ℓA ℓB} (A : (@tick x : BI) → Type ℓA) (B : (@tick x : BI) → 
   change-line' : BridgeP A a0 a1 → BridgeP B b0 b1
   change-line' q = change-endpoints nat0 nat1 (change-line A B a0 a1 nat q)
 
--- module _ {ℓA ℓB} (A : (@tick x : BI) → Type ℓA) (B : (@tick x : BI) → Type ℓB)
---                       (a0 : A bi0) (a1 : A bi1) (b0 : B bi0) (b1 : B bi1)
---                       ( nat : (@tick x : BI) → A x → B x )
---                       (nat0 : nat bi0 a0 ≡ b0) (nat1 : nat bi1 a1 ≡ b1)  where
 
---   change-line-equiv : BridgeP A a0 a1 ≃ BridgeP B a0 a1
-
-
+-- commutation BridgeP vs Σ-types
 module _ {ℓA ℓB} {A : (@tick x : BI) → Type ℓA} {B : (@tick x : BI) → A x → Type ℓB}
-                {o : Σ (A bi0) (B bi0)} {s : Σ (A bi1) (B bi1)} where
+                {o : Σ[ oa ∈ A bi0 ] B bi0 oa} {s : Σ[ sa ∈ A bi1 ] B bi1 sa} where
 
   ΣBridgeP : Σ[ q ∈ BridgeP A (fst o) (fst s) ] BridgeP (λ x → B x (q x)) (snd o) (snd s)
          → BridgeP (λ x → Σ (A x) (B x)) o s
@@ -297,16 +238,7 @@ module _ {ℓ} {P : (@tick x : BI) → Type ℓ} (isp : (@tick x : BI) → isPro
   affineToBridgeP f = subst2 (BridgeP P) (isp bi0 (f bi0) p0) (isp bi1 (f bi1) p1) λ x → f x
 
 
--- module _ {ℓA ℓB} {A : Type ℓA} {B : Type ℓB} {a0 a1 : A} {b0 b1 : B} where
-
---   -- we dont use the Σ pcpl as it contains useless transport in our case
---   ×vsBridgeP : BridgeP (λ _ → A) a0 a1 × BridgeP (λ _ → B) b0 b1 ≃ BridgeP (λ _ → A × B) (a0 , b0) (a1 , b1)
---   ×vsBridgeP = isoToEquiv (iso
---                  (λ (aa , bb) → λ x → (aa x , bb x))
---                  (λ q → ( (λ x → fst (q x)) , λ x → snd (q x)))
---                  (λ q → refl)
---                  λ (aa , bb) → refl)
-
+-- commutation × vs BridgeP. 
 module _ {ℓA ℓB} {A : (@tick x : BI) → Type ℓA} {B : (@tick x : BI) → Type ℓB}
          {a0 : A bi0} {a1 : A bi1} {b0 : B bi0} {b1 : B bi1} where
 
