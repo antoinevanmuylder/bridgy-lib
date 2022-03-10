@@ -3,13 +3,16 @@ In order to typecheck files of this library...
 ~agda --bridges~ is an extension of cubical agda which add parametricity primitives to cubical type theory, as discussed in Cavallo-Harper (CH): https://arxiv.org/pdf/2005.11290.pdf. The implementation can be found here (bridges branch): https://github.com/antoinevanmuylder/agda/tree/bridges.
 To install with stack:
 #+begin_src shell
-git checkout bridges #in root dir agda/
+git clone https://github.com/antoinevanmuylder/agda/
+cd agda/
+git checkout bridges
+sudo curl -sSL https://get.haskellstack.org/ | sh #if you don't have stack
 stack update
-cp stack.yaml<version> stack.yaml # choose version of haskell compiler
+cp stack-<version>.yaml stack.yaml # choose version of haskell compiler
 stack install # builds and copies agda binary to ~/.local/bin/
 # stack install --fast
 #+end_src
-*** Download the cubical library and register it in ~/.agda/libraries~
+*** Download the cubical library and register it in ~\~/.agda/libraries~
 Clone the appropriate repo: https://github.com/agda/cubical.
 Once this is done, add the following line to your ~/.agda/libraries~ config file:
 #+begin_src shell
