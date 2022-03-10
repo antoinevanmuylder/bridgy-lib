@@ -149,15 +149,6 @@ module _ {ℓ} (A : (@tick x : BI) → I → Type ℓ)
                  PathP (λ i → BridgeP (λ x → A x i) (left i) (right i)) down up
   bridgePPathP q = λ i x → q x i
 
-
-module _ {ℓ} {A : (@tick x : BI) → Type ℓ} {a0 : A bi0} {a1 : A bi1}
-                   {down up : BridgeP A a0 a1} where
-
-  bridgePPath : BridgeP (λ x → down x ≡ up x) refl refl →
-                 down ≡ up
-  bridgePPath q = λ i x → q x i
-
-
 module _ {ℓ} (A : (@tick x : BI) → I → Type ℓ)
                    {a00 : A bi0 i0} {a10 : A bi1 i0} {a01 : A bi0 i1} {a11 : A bi1 i1}
                    {left : PathP (λ i → A bi0 i) a00 a01} {right : PathP (λ i → A bi1 i) a10 a11}
@@ -179,6 +170,31 @@ module _ {ℓ} (A : (@tick x : BI) → I → Type ℓ)
                  BridgeP (λ x → PathP (λ i → A x i) (down x) (up x)) left right
                  
   pathPBridgeP p = λ x i → p i x
+
+-- as an equivalence
+module _ {ℓ} (A : (@tick x : BI) → I → Type ℓ)
+                   {a00 : A bi0 i0} {a10 : A bi1 i0} {a01 : A bi0 i1} {a11 : A bi1 i1}
+                   {left : PathP (λ i → A bi0 i) a00 a01} {right : PathP (λ i → A bi1 i) a10 a11}
+                   {down : BridgeP (λ x → A x i0) a00 a10} {up : BridgeP (λ x → A x i1) a01 a11} where
+
+  PathPvsBridgeP : PathP (λ i → BridgeP (λ x → A x i) (left i) (right i)) down up
+                   ≃
+                   BridgeP (λ x → PathP (λ i → A x i) (down x) (up x)) left right
+  PathPvsBridgeP = isoToEquiv (iso (λ p → λ x i → p i x)
+                                   (λ q → λ i x → q x i)
+                                   (λ q → refl)
+                                   (λ p → refl))
+  
+
+module _ {ℓ} {A : (@tick x : BI) → Type ℓ} {a0 : A bi0} {a1 : A bi1}
+                   {down up : BridgeP A a0 a1} where
+
+  bridgePPath : BridgeP (λ x → down x ≡ up x) refl refl →
+                 down ≡ up
+  bridgePPath q = λ i x → q x i
+
+
+
 
 
 module _ {ℓ} {A : (@tick x : BI) → Type ℓ} {new0 old0 : A bi0} {new1 old1 : A bi1} where
