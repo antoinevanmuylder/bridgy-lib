@@ -149,7 +149,7 @@ semOpenChurchUnit = SemTypJudg 1 (Ftyvar zero  ∷ []) (Ftyvar zero)
 -- by parametricity of the native relator (ParamTransf [α] [a] a)
 -- every semantic term in the above open type is the (open) polymorphic identity
 -- α:* | a:α ⊧ a : α.
--- our inductive definition yields `FKjudg [α] = Type × ⊤` and it clutters the proof a bit.
+-- our inductive definition yields ⟦ [α : *] ⟧kctx = Type × ⊤` and it clutters the proof a bit.
 -- see `SimplParam.agda` for a proof that  ( (X : Type ℓ) → X → X )  ≃  ⊤
 semOpenPolymIdAlone : semOpenChurchUnit ≃ ⊤
 semOpenPolymIdAlone = isoToEquiv (iso (λ _ → tt)
