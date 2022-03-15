@@ -10,7 +10,9 @@ sudo curl -sSL https://get.haskellstack.org/ | sh #if you don't have stack
 stack update
 cp stack-<version>.yaml stack.yaml # choose version of haskell compiler
 stack install # builds and copies agda binary to ~/.local/bin/
-# stack install --fast
+              # alternatively: `stack install --fast`     (slower agda binary though)
+              # `stack install` may take a while to get started
+agda-mode compile && agda-mode setup #add hook to emacs file
 #+end_src
 *** Download the cubical library and register it in =~/.agda/libraries=
 Clone the appropriate repo: https://github.com/agda/cubical.
@@ -18,6 +20,7 @@ Once this is done, add the following line to your =~/.agda/libraries= config fil
 #+begin_src shell
 <...>/cubical/cubical.agda-lib # where cubical/ is stored in <...>
 #+end_src
+If you don't have a ~libraries~ file yet, create one.
 *** /!\ Revert cubical
 The latest version of the cubical library ("cubical") is currently not compatible with agda master.
 A fix is to revert cubical to commit d29db7f5e6cfe5d. The command is:
