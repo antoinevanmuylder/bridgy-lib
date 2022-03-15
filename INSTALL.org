@@ -12,7 +12,7 @@ cp stack-<version>.yaml stack.yaml # choose version of haskell compiler
 stack install # builds and copies agda binary to ~/.local/bin/
               # alternatively: `stack install --fast`     (slower agda binary though)
               # `stack install` may take a while to get started
-agda-mode compile && agda-mode setup #add hook to emacs file
+agda-mode compile && agda-mode setup #add hook to emacs init file
 #+end_src
 *** Download the cubical library and register it in =~/.agda/libraries=
 Clone the appropriate repo: https://github.com/agda/cubical.
