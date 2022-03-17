@@ -67,3 +67,4 @@ primitive
   primByes : BCstr
   primBisone : BI → BCstr
   primBiszero : BI → BCstr
+  primBconj : BCstr → BCstr → BCstr
