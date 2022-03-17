@@ -52,3 +52,16 @@ primitive
   prim^ungel : ∀ {ℓ} {A0 A1 : Type ℓ} {R : A0 → A1 → Type ℓ}
                (absQ : (@tick x : BI) → primGel A0 A1 R x) →
                R (absQ bi0) (absQ bi1)
+
+
+{-# BUILTIN CSTRUNIV CstrUniv #-}
+
+postulate
+  BCstr : CstrUniv
+
+{-# BUILTIN BCSTR BCstr #-}
+
+
+primitive
+  primBno : BCstr
+  primByes : BCstr
