@@ -65,3 +65,5 @@ postulate
 primitive
   primBno : BCstr
   primByes : BCstr
+  primBisone : BI → BCstr
+  primBiszero : BI → BCstr
