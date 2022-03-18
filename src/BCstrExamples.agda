@@ -2,7 +2,7 @@
 module BCstrExamples where
 
 open import BridgePrims
--- open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Prelude
 
 
 
