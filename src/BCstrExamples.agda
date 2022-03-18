@@ -14,3 +14,8 @@ open import Cubical.Foundations.Prelude
 
 indeed : BHolds ψ
 indeed = BitHolds
+
+module BPartialBehaviour {ℓ} (ψ : BCstr) (A : Type ℓ) where
+
+  test : BCstr
+  test = {!BPartial ψ A!} --C-c C-n this
