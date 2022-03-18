@@ -54,17 +54,32 @@ primitive
                R (absQ bi0) (absQ bi1)
 
 
-{-# BUILTIN CSTRUNIV CstrUniv #-}
+
+{-# BUILTIN CSTRUNIV CstrUniv #-} -- CstrUniv : UnivSort _
 
 postulate
   BCstr : CstrUniv
 
 {-# BUILTIN BCSTR BCstr #-}
 
+module BCstrPrims where
+  primitive
+    primBno : BCstr
+    primByes : BCstr
+    primBisone : BI → BCstr
+    primBiszero : BI → BCstr
+    primBconj : BCstr → BCstr → BCstr
+open BCstrPrims public
+  renaming ( primBno         to bno
+           ; primByes        to byes
+           ; primBisone      to _=bi1
+           ; primBiszero     to _=bi0
+           ; primBconj       to _b∨_ )
 
-primitive
-  primBno : BCstr
-  primByes : BCstr
-  primBisone : BI → BCstr
-  primBiszero : BI → BCstr
-  primBconj : BCstr → BCstr → BCstr
+{-# BUILTIN BHOLDS BHolds #-} -- BHolds : BCstr → Setω. similar to IsOne
+
+postulate
+  BitHolds : BHolds byes
+
+{-# BUILTIN BITHOLDS BitHolds #-} -- similar to itIsOne.
+
