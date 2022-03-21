@@ -1,9 +1,10 @@
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  -v tc.def.fun:10 -v tc.lhs.top:30 -v tc.lhs.split:30  #-}
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  -v tc.def.fun:10 -v tc.lhs.top:30 -v tc.lhs.split:40  -v tc.constr:30 #-}
 module BCstrExamples where
 
 open import BridgePrims
 open import Cubical.Foundations.Prelude
-
+open import Cubical.Data.Nat
+open import Cubical.Data.Unit renaming (Unit to ⊤)
 
 
 -- ψ : BCstr
@@ -23,14 +24,22 @@ open import Cubical.Foundations.Prelude
 
 
 
--- module TestMatch {ℓ} (x : BI) (y : BI) (A : Type ℓ) (a0 a1 : A) where
+module TestMatch {ℓ} (x : BI) (y : BI) (A : Type ℓ) (a0 a1 : A) where
 
---   foo : BPartial ((x =bi0) b∨ (y =bi0)) A
---   foo (x = bi0) = a0
+  foo : BPartial ((x =bi0) b∨ (y =bi1)) A
+  foo (x = bi0) = a0
 
 
-module TestMatchCub {ℓ} (x : I) (y : I) (A : Type ℓ) (a0 a1 : A) where
+-- module TestMatchCub {ℓ} (x : I) (y : I) (A : Type ℓ) (a0 a1 : A) where
 
-  foo : Partial (x ∨ y) A
-  foo (x = i1) = a0
-  foo (y = i1) = a1
+--   postulate
+--     p : PathP (λ _ → Type) ℕ ℕ
+
+--   foo : Partial (x ∨ ~ x) ((p x) → ⊤)
+--   foo (x = i1) n = tt
+--   foo (x = i0) n = tt
+
+
+--   bar : Partial (i0) A
+--   bar (i0 = i1) = a1
+
