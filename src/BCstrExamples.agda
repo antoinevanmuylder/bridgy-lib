@@ -1,10 +1,12 @@
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  -v tc.def.fun:10 -v tc.lhs.top:30 -v tc.lhs.split:40  -v tc.constr:30 #-}
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  -v tc.def.fun:40 -v tc.fun.def:40 -v tc.lhs.top:30 -v tc.lhs.split:40  -v tc.constr:30 -v tc.sys.cover:30 #-}
 module BCstrExamples where
 
-open import BridgePrims
+open import Agda.Builtin.Nat
+open import Agda.Builtin.Unit -- renaming (Unit to ⊤)
 open import Cubical.Foundations.Prelude
-open import Cubical.Data.Nat
-open import Cubical.Data.Unit renaming (Unit to ⊤)
+open import BridgePrims
+
+
 
 
 -- ψ : BCstr
@@ -24,13 +26,26 @@ open import Cubical.Data.Unit renaming (Unit to ⊤)
 
 
 
+
 module TestMatch {ℓ} (x : BI) (y : BI) (A : Type ℓ) (a0 a1 : A) where
 
-  foo : BPartial ((x =bi0) b∨ (y =bi1)) A
+  foo : BPartial ((x =bi0) b∨ ((y =bi1) b∨ (y =bi0))) A
+  foo (y = bi1) = a1
+  foo (y = i0) = a0
   foo (x = bi0) = a0
+
+  fee : BPartial bno A
+  fee _ = a0
+
+
+
 
 
 -- module TestMatchCub {ℓ} (x : I) (y : I) (A : Type ℓ) (a0 a1 : A) where
+
+--   foo : Partial (~ x ∨ y) A
+--   foo (x = i0)          = a0
+--   foo (y = i1)          = a0
 
 --   postulate
 --     p : PathP (λ _ → Type) ℕ ℕ
