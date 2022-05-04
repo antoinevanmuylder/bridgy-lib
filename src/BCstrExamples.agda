@@ -6,36 +6,45 @@ open import Agda.Builtin.Unit -- renaming (Unit to ⊤)
 open import Cubical.Foundations.Prelude
 open import BridgePrims
 
+module _ (@tick x : BI) (@tick y : BI) where
 
+  something : CstrUniv --note: CstrUniv : univSort CstrUniv
+  something = BCstr
 
+  ψ1 : BCstr
+  ψ1 = bno b∨ (bi0 =bi1) b∨ (byes b∨ bno)
 
--- ψ : BCstr
--- ψ = bno b∨ ( (bi0 =bi1) b∨ (byes b∨ bno) )
+  ψ2 : BCstr
+  ψ2 = bno b∨ (x =bi1) b∨ ( (y =bi0) b∨ bno ) b∨ ((bi0 =bi1) b∨ (bi1 =bi0))
 
--- ψ2 : BCstr
--- ψ2 = (bno b∨ bno) b∨ byes
+  indeed : BHolds ψ1
+  indeed = BitHolds
 
--- indeed : BHolds ψ
--- indeed = BitHolds
+  ψx : BCstr
+  ψx = (x =bi0)
 
--- module BPartialBehaviour {ℓ} (ψ : BCstr) (A : Type ℓ) where
+  -- a bridge depending on a cstr mentioning x
+  smBdg : BPartial ψx (BridgeP (λ _ → ⊤) tt tt)
+  smBdg = λ prf z → tt
 
---   test : BCstr
---   test = {!BPartial ψ A!} --C-c C-n this
+  -- we can not apply x to this bridge
+  -- applyX : (BHolds ψx) → ⊤
+  -- applyX prf = {!smth prf x!}
 
+module _ {ℓ} (@tick x : BI) (@tick y : BI) (t : I) (A : Type ℓ) (a0 a1 : A) where
 
-
-
-
-module TestMatch {ℓ} (x : BI) (y : BI) (A : Type ℓ) (a0 a1 : A) where
-
-  foo : BPartial ((x =bi0) b∨ ((y =bi1) b∨ (y =bi0))) A
+  -- try ommiting a clause: coverage check raises a legit error.
+  -- coherence check should not pass at x=bi0, y=bi1 though
+  -- because a0 != a1 computationally.
+  foo : BPartial ((x =bi0) b∨ (y =bi1) b∨ (y =bi0)) A
   foo (y = bi1) = a1
-  foo (y = i0) = a0
   foo (x = bi0) = a0
+  foo (y = bi0) = a0
 
-  fee : BPartial bno A
-  fee _ = a0
+
+  -- fee : BPartial bno A
+  -- fee _ = a0
+
 
 
 
