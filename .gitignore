@@ -50,3 +50,5 @@ _minted*
 *.agdai
 
 /src/Test.agda
+
+!abstract.pdf
