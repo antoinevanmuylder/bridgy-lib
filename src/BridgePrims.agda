@@ -76,7 +76,7 @@ open BCstrPrims public
            ; primByes        to byes
            ; primBisone      to _=bi1
            ; primBiszero     to _=bi0
-           ; primBconj       to infixl 20 _b∨_ )
+           ; primBconj       to infixl 19 _b∨_ )
 
 
 {-# BUILTIN BHOLDS BHolds #-} -- BHolds : BCstr → Setω. similar to IsOne

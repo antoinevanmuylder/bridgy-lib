@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  -v tc.def.fun:40 -v tc.fun.def:40 -v tc.lhs.top:30 -v tc.lhs.split:40  -v tc.constr:30 -v tc.sys.cover:30 #-}
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce -v tc.def.fun:40 -v tc.fun.def:40 -v tc.lhs.top:30 -v tc.lhs.split:40  -v tc.constr:30 -v tc.sys.cover:30 #-}
 module BCstrExamples where
 
 open import Agda.Builtin.Nat
@@ -12,10 +12,10 @@ module _ (@tick x : BI) (@tick y : BI) where
   something = BCstr
 
   ψ1 : BCstr
-  ψ1 = bno b∨ (bi0 =bi1) b∨ (byes b∨ bno)
+  ψ1 = bno b∨ bi0 =bi1 b∨ byes b∨ bno
 
   ψ2 : BCstr
-  ψ2 = bno b∨ (x =bi1) b∨ ( (y =bi0) b∨ bno ) b∨ ((bi0 =bi1) b∨ (bi1 =bi0))
+  ψ2 = bno b∨ x =bi1 b∨ ( y =bi0 b∨ bno ) b∨ (bi0 =bi1 b∨ bi1 =bi0)
 
   indeed : BHolds ψ1
   indeed = BitHolds
@@ -41,6 +41,22 @@ module _ {ℓ} (@tick x : BI) (@tick y : BI) (t : I) (A : Type ℓ) (a0 a1 : A) 
   foo (x = bi0) = a0
   foo (y = bi0) = a0
 
+module _ {ℓ} {B : Type ℓ}
+         (b0 b1 : B) (q : BridgeP (λ _ → B) b0 b1)
+         (@tick x : BI) (@tick y : BI) where 
+
+  foo2 : BPartial ((x =bi0) b∨ (y =bi0) b∨ (y =bi1)) B
+  foo2 (x = bi0) = q y
+  foo2 (y = bi1) = b0
+  foo2 (y = bi0) = b0
+  foo2 (y = bi0) = b1
+
+
+  -- foo2 : BPartial ((x =bi0) b∨ (y =bi1) b∨ (y =bi0) b∨ bi1 =bi1) A
+  -- foo2 (y = bi1) = a1
+  -- foo2 (x = bi0) = a0
+  -- foo2 (y = bi0) = a0
+  -- -- foo2 (bi1 = bi1) = a0
 
   -- fee : BPartial bno A
   -- fee _ = a0
