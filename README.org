@@ -10,5 +10,12 @@ Check out the ~src/~ directory.
 - ~SimpleParam.agda~: proofs of simple Church encodings with ~param~.
 - ~ChurchCircle.agda~: partial proof of the circle Church encoding with ~param~. We lack computational rules for transporting at Bridge types to conclude.
 - ~SystemF.agda~: shallow embedding of system F where each semantic term is parametric thanks to ~param~.
-
-
+*** Comparison with other internally parametric systems
+A previous experimental implementation by Cavallo ("ptt") exists [[https://github.com/ecavallo/ptt][here]].
+| criterion            | this impl        | ptt impl         |
+|----------------------+------------------+------------------|
+| implements           | CH thy           | ≈BCM             |
+| on top of            | cubical          | intensional MLTT |
+| arity                | binary           | nary             |
+| Gel polarity         | ⊖ (proj, η rule) | ⊕                |
+| can form. relativity | yes              | no?              |
