@@ -87,7 +87,7 @@ postulate
 {-# BUILTIN BITHOLDS BitHolds #-} -- similar to itIsOne.
 
 
--- BPartial : ∀{ℓ} (ψ : BCstr) (A : Set ℓ) → Set ℓ
+-- BPartial : ∀{ℓ} (ψ : BCstr) (A : Set ℓ) → SSet ℓ
 -- BPartial ψ A = BHolds ψ → A
 -- and reduces to .(BHolds ψ) → A
 {-# BUILTIN BPARTIAL  BPartial  #-} -- wonder if SSet ℓ as tgt (instead of SSet 0) is useful.

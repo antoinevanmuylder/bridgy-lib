@@ -2,6 +2,7 @@
 module BCstrExamples where
 
 
+
 open import Agda.Builtin.Nat
 open import Agda.Builtin.Unit -- renaming (Unit to ⊤)
 open import Cubical.Foundations.Prelude
@@ -35,60 +36,44 @@ module _ (@tick x : BI) (@tick y : BI) where
 module _ {ℓ} (@tick x : BI) (@tick y : BI) (t : I) (A : Type ℓ) (a0 a1 : A) where
 
   -- try ommiting a clause: coverage check raises a legit error.
-  -- coherence check should not pass at x=bi0, y=bi1 though
+  -- coherence check should not pass at x=bi0, y=bi1
   -- because a0 != a1 computationally.
-  foo : BPartial ((x =bi0) b∨ (y =bi1) b∨ (y =bi0)) A
-  foo (y = bi1) = a1
-  foo (x = bi0) = a0
-  foo (y = bi0) = a0
+  -- foo : BPartial ((x =bi0) b∨ (y =bi1) b∨ (y =bi0)) A
+  -- foo (y = bi1) = a1
+  -- foo (x = bi0) = a0
+  -- foo (y = bi0) = a0
 
   fun : BPartial ((x =bi0) b∨ (y =bi1) b∨ (y =bi0)) A
   fun (y = bi1) = a0
   fun (x = bi0) = a0
   fun (y = bi0) = a0  
 
-  -- shouldnt : foo ≡ fun
-  -- shouldnt = ?
 
 module _ {ℓ} {B : Type ℓ}
          (b0 b1 : B) (q : BridgeP (λ _ → B) b0 b1)
          (@tick x : BI) (@tick y : BI) where 
 
-  foo2 : BPartial ((x =bi0) b∨ (y =bi0) b∨ (y =bi1)) B
-  foo2 (x = bi0) = q y
-  foo2 (y = bi1) = q x
-  foo2 (y = bi0) = b0
-  foo2 (y = bi0) = b1
+  -- coherence check rightly fails here (besides the duplicated clause)
+  -- foo2 : BPartial ((x =bi0) b∨ (y =bi0) b∨ (y =bi1)) B
+  -- foo2 (x = bi0) = q y
+  -- foo2 (y = bi1) = q x
+  -- foo2 (y = bi0) = b0
+  -- foo2 (y = bi0) = b1
 
 
-  -- foo2 : BPartial ((x =bi0) b∨ (y =bi1) b∨ (y =bi0) b∨ bi1 =bi1) A
-  -- foo2 (y = bi1) = a1
-  -- foo2 (x = bi0) = a0
-  -- foo2 (y = bi0) = a0
-  -- -- foo2 (bi1 = bi1) = a0
+-- checking eta at BPartial
+module _ {ℓ} {B : Type ℓ} (b0 b1 : B) (@tick x : BI) (@tick y : BI) (i : I) where
 
-  -- fee : BPartial bno A
-  -- fee _ = a0
+  comp1 : BPartial byes B
+  comp1 _ = b0
 
+  comp2 : BPartial byes B
+  comp2 _ = b1
 
+  -- skeptic : BridgeP (λ _ → _) comp1 comp2
+  -- skeptic = ?
 
-
-
-
--- module TestMatchCub {ℓ} (x : I) (y : I) (A : Type ℓ) (a0 a1 : A) where
-
---   foo : Partial (~ x ∨ y) A
---   foo (x = i0)          = a0
---   foo (y = i1)          = a0
-
---   postulate
---     p : PathP (λ _ → Type) ℕ ℕ
-
---   foo : Partial (x ∨ ~ x) ((p x) → ⊤)
---   foo (x = i1) n = tt
---   foo (x = i0) n = tt
-
-
---   bar : Partial (i0) A
---   bar (i0 = i1) = a1
+  -- etachecking : Partial (i ∨ ~ i) (BPartial byes B)
+  -- etachecking (i = i0) = comp1
+  -- etachecking (i = i1) = comp2
 
