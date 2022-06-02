@@ -92,3 +92,12 @@ postulate
 -- and reduces to .(BHolds ψ) → A
 {-# BUILTIN BPARTIAL  BPartial  #-} -- wonder if SSet ℓ as tgt (instead of SSet 0) is useful.
 
+
+{-# BUILTIN MCSTR MCstr #-} -- data MCstr : CstrUniv
+{-# BUILTIN MKMC mkmc #-}   -- mkmc : I → BCstr → MCstr
+{-# BUILTIN MHOLDS MHolds #-} -- MHolds : MCstr → Setω
+postulate
+  MitHolds : MHolds (mkmc i1 byes)
+{-# BUILTIN MITHOLDS MitHolds #-}
+{-# BUILTIN MPARTIAL MPartial #-} -- MPartial : ∀{ℓ} (mψ : MCstr) (A : Set ℓ) → SSet ℓ ; MPartial mψ A = MHolds mψ → A ; and reduces to .(MHolds mψ) → A
+  
