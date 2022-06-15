@@ -1,6 +1,6 @@
 This repo contains internal parametricity experiments, coded in ~agda --bridges~. The ~--bridges~ branch can be found here https://github.com/antoinevanmuylder/agda/tree/bridges. It implements the parametricity primitives of Cavallo-Harper (CH) from https://arxiv.org/pdf/2005.11290.pdf. See ~INSTALL.org~ for instructions.
 *** Quick tour of the files
-Check out the ~src/~ directory.
+Check out the ~Bridgy/~ directory.
 - ~BridgePrims.agda~: contains CH primitives.
 - ~BridgeExamples.agda~: basic bridge behaviour + commutation principles for ~Bridge, Path, Σ, ×~.
 - ~ExtentExamples.agda~: commutation with Π.

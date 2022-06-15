@@ -1,12 +1,12 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
-module SimpleParam where
+module Bridgy.SimpleParam where
 
-open import BridgePrims
-open import BridgeExamples
-open import ExtentExamples
-open import GelExamples
-open import NativeReflGraphRelator
-open import ParamNativeRelator
+open import Bridgy.BridgePrims
+open import Bridgy.BridgeExamples
+open import Bridgy.ExtentExamples
+open import Bridgy.GelExamples
+open import Bridgy.NativeReflGraphRelator
+open import Bridgy.ParamNativeRelator
 open import Agda.Builtin.Bool
 open import Agda.Builtin.Unit
 open import Cubical.Foundations.Prelude

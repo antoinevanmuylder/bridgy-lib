@@ -20,7 +20,8 @@ Once this is done, add the following line to your =~/.agda/libraries= config fil
 #+begin_src shell
 <...>/cubical/cubical.agda-lib # where cubical/ is stored in <...>
 #+end_src
-If you don't have a ~libraries~ file yet, create one.
+If you don't have a ~libraries~ file yet, create one. You might have to add ~cubical~ to your defaults.
+see [[https://agda.readthedocs.io/en/v2.6.2.1/tools/package-system.html][agda lib management]].
 *** /!\ Revert cubical
 The latest version of the cubical library ("cubical") is currently not compatible with agda master.
 A fix is to revert cubical to commit d29db7f5e6cfe5d. The command is:
@@ -28,7 +29,7 @@ A fix is to revert cubical to commit d29db7f5e6cfe5d. The command is:
 git checkout d29db7f5e6cfe5d # while in cubical/
 #+end_src
 *** Enjoy
-Try opening ~src/BridgePrims.agda~ with emacs, and load with ~C-c C-l~.
+Try opening ~Bridgy/BridgePrims.agda~ with emacs, and load with ~C-c C-l~.
 other emacs commands:
   https://agda.readthedocs.io/en/v2.6.2.1/tools/emacs-mode.html
 *** Get rid of warnings

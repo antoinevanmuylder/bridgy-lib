@@ -1,7 +1,7 @@
 {-# OPTIONS --cubical --guarded #-}
 open import Agda.Builtin.Cubical.Path
 
-module LaterPrimsBug where
+module Bridgy.LaterPrimsBug where
 
 primitive
   primLockUniv : Set₁

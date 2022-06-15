@@ -1,5 +1,5 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce --allow-unsolved-metas #-}
-module ChurchCircle where
+module Bridgy.ChurchCircle where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Unit renaming (Unit to ⊤)
@@ -10,12 +10,12 @@ open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Function
 open import Cubical.HITs.S1
 
-open import BridgePrims
-open import BridgeExamples
-open import ExtentExamples
-open import GelExamples
-open import NativeReflGraphRelator
-open import ParamNativeRelator
+open import Bridgy.BridgePrims
+open import Bridgy.BridgeExamples
+open import Bridgy.ExtentExamples
+open import Bridgy.GelExamples
+open import Bridgy.NativeReflGraphRelator
+open import Bridgy.ParamNativeRelator
 
 
 -- in this file we prove a Church encoding for the circle

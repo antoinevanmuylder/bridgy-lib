@@ -1,8 +1,8 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
-module ExtentExamples where
+module Bridgy.ExtentExamples where
 
-open import BridgePrims
-open import BridgeExamples
+open import Bridgy.BridgePrims
+open import Bridgy.BridgeExamples
 open import Agda.Builtin.Bool
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Isomorphism
