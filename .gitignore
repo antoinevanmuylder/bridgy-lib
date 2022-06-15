@@ -49,4 +49,6 @@ _minted*
 # agda
 *.agdai
 
-/src/Test.agda
+/Bridgy/Test.agda
+
+!abstract.pdf

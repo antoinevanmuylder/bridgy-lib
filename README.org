@@ -1,6 +1,6 @@
 This repo contains internal parametricity experiments, coded in ~agda --bridges~. The ~--bridges~ branch can be found here https://github.com/antoinevanmuylder/agda/tree/bridges. It implements the parametricity primitives of Cavallo-Harper (CH) from https://arxiv.org/pdf/2005.11290.pdf. See ~INSTALL.org~ for instructions.
 *** Quick tour of the files
-Check out the ~src/~ directory.
+Check out the ~Bridgy/~ directory.
 - ~BridgePrims.agda~: contains CH primitives.
 - ~BridgeExamples.agda~: basic bridge behaviour + commutation principles for ~Bridge, Path, Σ, ×~.
 - ~ExtentExamples.agda~: commutation with Π.
@@ -8,7 +8,15 @@ Check out the ~src/~ directory.
 - ~NativeReflGraphRelator.agda~: native reflexive graphs and relators, needed to state parametricity.
 - ~ParamNativeRelator.agda~: general parametricity theorem: ~param~.
 - ~SimpleParam.agda~: proofs of simple Church encodings with ~param~.
-- ~ChurchCircle.agda~: partial proof of the circle Church encoding with ~param~. On 07/03/2022 we lack computational rules for transporting at Bridge types to conclude.
+- ~ChurchCircle.agda~: partial proof of the circle Church encoding with ~param~. We lack computational rules for transporting at Bridge types to conclude.
 - ~SystemF.agda~: shallow embedding of system F where each semantic term is parametric thanks to ~param~.
-
-
+*** Comparison with other internally parametric systems
+A previous experimental implementation by Cavallo ("ptt") exists [[https://github.com/ecavallo/ptt][here]].
+| criterion            | this impl        | ptt impl           |
+|----------------------+------------------+--------------------|
+| implements           | CH thy           | ≈BCM               |
+| on top of            | cubical          | intensional MLTT   |
+| arity                | binary           | nary               |
+| Gel polarity         | ⊖ (proj, η rule) | ⊕                  |
+| can form. relativity | yes              | no?                |
+| modelled in          | std. presheaves  | refined presheaves |

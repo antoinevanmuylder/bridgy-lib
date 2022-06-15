@@ -1,5 +1,5 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce --type-in-type #-} -- --no-termination-check
-module SystemF where
+module Bridgy.SystemF where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Unit renaming (Unit to ⊤)
@@ -12,12 +12,12 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Function using (_∘_ ; idfun ; flip)
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Univalence
-open import BridgePrims
-open import BridgeExamples
-open import ExtentExamples
-open import GelExamples
-open import NativeReflGraphRelator
-open import ParamNativeRelator
+open import Bridgy.BridgePrims
+open import Bridgy.BridgeExamples
+open import Bridgy.ExtentExamples
+open import Bridgy.GelExamples
+open import Bridgy.NativeReflGraphRelator
+open import Bridgy.ParamNativeRelator
 -- open import SimpleParam
 
 {-

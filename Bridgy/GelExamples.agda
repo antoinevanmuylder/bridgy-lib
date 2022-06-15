@@ -1,9 +1,9 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
-module GelExamples where
+module Bridgy.GelExamples where
 
-open import BridgePrims
-open import BridgeExamples
-open import ExtentExamples
+open import Bridgy.BridgePrims
+open import Bridgy.BridgeExamples
+open import Bridgy.ExtentExamples
 open import Agda.Builtin.Bool
 open import Agda.Builtin.Unit
 open import Cubical.Foundations.Prelude
