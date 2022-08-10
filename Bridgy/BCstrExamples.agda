@@ -77,3 +77,29 @@ module _ {ℓ} {B : Type ℓ} (b0 b1 : B) (@tick x : BI) (@tick y : BI) (i : I) 
   -- etachecking (i = i0) = comp1
   -- etachecking (i = i1) = comp2
 
+module _ (@tick x : BI) (@tick y : BI) (z : I) where
+
+  mSomething : CstrUniv --note: CstrUniv : univSort CstrUniv
+  mSomething = MCstr
+
+  ψyes : BCstr
+  ψyes = bno b∨ bi0 =bi1 b∨ byes b∨ bno
+
+  aψ : BCstr
+  aψ = bno b∨ x =bi1 b∨ ( y =bi0 b∨ bno ) b∨ (bi0 =bi1 b∨ bi1 =bi0)
+
+  aφ : I
+  aφ = ~ z
+
+  ζ : MCstr
+  ζ = aφ m∨ aψ
+
+  ζyes : MCstr
+  ζyes = i1 m∨ aψ
+
+  ζyes' : MCstr
+  ζyes' = aφ m∨ ψyes
+
+  ζno : MCstr
+  ζno = i0 m∨ (bi0 =bi1)
+
