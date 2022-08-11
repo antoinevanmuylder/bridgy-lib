@@ -103,11 +103,9 @@ open MCstrPrims public
   renaming ( primMno    to mno
            ; primMyes   to myes
            ; primMkmc   to infixl 18 _m∨_ )
-
--- {-# BUILTIN MKMC mkmc #-}   -- mkmc : I → BCstr → MCstr
--- {-# BUILTIN MHOLDS MHolds #-} -- MHolds : MCstr → Setω
--- postulate
---   MitHolds : MHolds (mkmc i1 byes)
--- {-# BUILTIN MITHOLDS MitHolds #-}
+{-# BUILTIN MHOLDS MHolds #-} -- MHolds : MCstr → SSet ℓ-zero
+postulate
+  MitHolds : MHolds myes
+{-# BUILTIN MITHOLDS MitHolds #-}
 -- {-# BUILTIN MPARTIAL MPartial #-} -- MPartial : ∀{ℓ} (mψ : MCstr) (A : Set ℓ) → SSet ℓ ; MPartial mψ A = MHolds mψ → A ; and reduces to .(MHolds mψ) → A
   
