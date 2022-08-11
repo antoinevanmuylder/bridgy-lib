@@ -107,5 +107,4 @@ open MCstrPrims public
 postulate
   MitHolds : MHolds myes
 {-# BUILTIN MITHOLDS MitHolds #-}
--- {-# BUILTIN MPARTIAL MPartial #-} -- MPartial : ∀{ℓ} (mψ : MCstr) (A : Set ℓ) → SSet ℓ ; MPartial mψ A = MHolds mψ → A ; and reduces to .(MHolds mψ) → A
-  
+{-# BUILTIN MPARTIAL MPartial #-} -- MPartial : ∀{ℓ} (ζ : MCstr) (A : Set ℓ) → SSet ℓ ; MPartial ζ A = MHolds ζ → A ; and reduces to .(MHolds ζ) → A

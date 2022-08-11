@@ -2,7 +2,7 @@
 module Everything where -- todo: generate Everything.agda by makefile
 
 open import Bridgy.BridgePrims
-open import Bridgy.BCstrExamples
+open import Bridgy.CstrExamples
 open import Bridgy.BridgeExamples
 open import Bridgy.ExtentExamples
 open import Bridgy.GelExamples
