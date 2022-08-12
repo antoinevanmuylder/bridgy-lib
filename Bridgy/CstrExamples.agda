@@ -1,6 +1,5 @@
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce -v tc.def.fun:40 -v tc.fun.def:40 -v tc.lhs.top:30 -v tc.lhs.split:40  -v tc.constr:30 -v tc.sys.cover:30 -v tc.conv.bdgfaces:50 -v tc.conv.substctx:50  -v conv.forall:20 #-}
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce -v tc.def.fun:40 -v tc.fun.def:40 -v tc.lhs.top:30 -v tc.lhs.split:40  -v tc.constr:30 -v tc.sys.cover:30 -v tc.conv.bdgfaces:50 -v tc.conv.substctx:50  -v conv.forall:20 -v tc.lhs.split.partial:10 #-}
 module Bridgy.CstrExamples where
-
 
 
 open import Agda.Builtin.Nat
@@ -77,7 +76,7 @@ module BPARTIALETA {ℓ} {B : Type ℓ} (b0 b1 : B) (@tick x : BI) (@tick y : BI
   -- etachecking (i = i0) = comp1
   -- etachecking (i = i1) = comp2
 
-module MCSTR (ℓ : Level) (A : Type ℓ) (@tick x : BI) (@tick y : BI) (z : I) where
+module MCSTR (ℓ : Level) (A : Type ℓ) (a : A) (@tick x : BI) (@tick y : BI) (z : I) where
 
   mSomething : CstrUniv --note: CstrUniv : univSort CstrUniv
   mSomething = MCstr
@@ -110,12 +109,9 @@ module MCSTR (ℓ : Level) (A : Type ℓ) (@tick x : BI) (@tick y : BI) (z : I) 
   -- applyX : MHolds (i0 m∨ x =bi0) → ⊤
   -- applyX prf = smBdg prf x
 
-  mpart1 : MPartial myes A
-  mpart1 = {!!}
 
-  mpart2 : MPartial mno A
-  mpart2 = {!!}
-
-  mpart3 : MPartial ζ A
-  mpart3 = {!!}
+  mpart3 : MPartial (~ z m∨ bno b∨ x =bi1 b∨ ( y =bi0 b∨ bno ) b∨ (bi0 =bi1 b∨ bi1 =bi0))  A
+  mpart3 (z = i0) = a
+  mpart3 (x = bi1) = a
+  mpart3 (y = bi0) = a
 
