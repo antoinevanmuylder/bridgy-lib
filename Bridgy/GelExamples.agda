@@ -16,7 +16,6 @@ open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.Path
 open import Cubical.Foundations.Transport
 
-
 -- ------------------------------------------------------------------------
 -- -- some cubical lemmas
 -- ------------------------------------------------------------------------

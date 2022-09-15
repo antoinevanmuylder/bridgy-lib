@@ -57,10 +57,7 @@ primitive
 
 {-# BUILTIN CSTRUNIV CstrUniv #-} -- CstrUniv : UnivSort _
 
-postulate
-  BCstr : CstrUniv
-
-{-# BUILTIN BCSTR BCstr #-}
+{-# BUILTIN BCSTR BCstr #-} -- BCstr : CstrUniv
 
 
 
@@ -87,6 +84,7 @@ postulate
 {-# BUILTIN BITHOLDS BitHolds #-} -- similar to itIsOne.
 
 
+
 -- BPartial : ∀{ℓ} (ψ : BCstr) (A : Set ℓ) → SSet ℓ
 -- BPartial ψ A = BHolds ψ → A
 -- and reduces to .(BHolds ψ) → A
@@ -108,3 +106,35 @@ postulate
   MitHolds : MHolds myes
 {-# BUILTIN MITHOLDS MitHolds #-}
 {-# BUILTIN MPARTIAL MPartial #-} -- MPartial : ∀{ℓ} (ζ : MCstr) (A : Set ℓ) → SSet ℓ ; MPartial ζ A = MHolds ζ → A ; and reduces to .(MHolds ζ) → A
+-- auxiliary builtins/prims for mixed hocom
+-- builtinEmbd, builtinMixedOr, builtinMPartialP, builtinMHoldsEmpty, builtinMHolds1, builtinMHolds2, builtinMPOr
+module AuxMhocom0 where
+  primitive
+    primReflectMCstr : ∀ {φ : I} -> .(MHolds (φ m∨ bno)) -> IsOne φ
+    primPrsvMCstr : ∀ {φ : I} → .(IsOne φ) → MHolds (φ m∨ bno)
+    primEmbd : I → MCstr
+    primMixedOr : MCstr → MCstr → MCstr
+open AuxMhocom0 public
+  renaming ( primMixedOr to infixl 17 _∨∨_ 
+           ; primEmbd to embdI
+           ; primPrsvMCstr to embdI⋆ --push fwd ( \* )
+           ; primReflectMCstr to embdI*) --pull back
+{-# BUILTIN MPARTIALP MPartialP #-}
+postulate
+  mholdsEmpty : ∀ {ℓ} {A : MPartial mno (Set ℓ)} → MPartialP mno A
+  MHolds1 : ∀ ζ1 ζ2 → .(MHolds ζ1) → MHolds (ζ1 ∨∨ ζ2)
+  MHolds2 : ∀ ζ1 ζ2 → .(MHolds ζ2) → MHolds (ζ1 ∨∨ ζ2)
+{-# BUILTIN MHOLDSEMPTY mholdsEmpty #-}
+{-# BUILTIN MHOLDS1 MHolds1 #-}
+{-# BUILTIN MHOLDS2 MHolds2 #-}
+primitive
+  prim^mpor : ∀ {ℓ} ζ1 ζ2 → {A : MPartial (ζ1 ∨∨ ζ2) (Type ℓ)} →
+               (u : MPartialP ζ1 (λ o1 → A (MHolds1 ζ1 ζ2 o1)))
+               (v : MPartialP ζ2 (λ o2 → A (MHolds2 ζ1 ζ2 o2)))
+               → MPartialP (ζ1 ∨∨ ζ2) A
+module MixedKan where
+  primitive
+    primMHComp : ∀ {ℓ} {A : Type ℓ} {ζ : MCstr} (u : ∀ i → MPartial ζ A) (u0 : A) → A
+open MixedKan public
+  renaming ( primMHComp to mhocom )
+

@@ -50,5 +50,7 @@ _minted*
 *.agdai
 
 /Bridgy/Test.agda
+/Bridgy/Test2.agda
+/Bridgy/NatGpd.adga
 
 !abstract.pdf
