@@ -23,8 +23,10 @@ Once this is done, add the following line to your =~/.agda/libraries= config fil
 If you don't have a ~libraries~ file yet, create one. You might have to add ~cubical~ to your defaults.
 see [[https://agda.readthedocs.io/en/v2.6.2.1/tools/package-system.html][agda lib management]].
 *** /!\ Revert cubical
-The cubical library is normally compatible with the latest release of agda. On the other hand, agda --bridges is developped on top of agda/master. We explain how to modify cubical to make it compatible with master.
-Note: in the future, agda --bridges will be developped on top of the latest agda release as well. We will have the following chain of dependencies: ~bridgy lib < cubical lib < latest agda release~. For now we stick to the hack explained here.
+The cubical library is normally compatible with the latest release of agda. On the other hand, ~agda --bridges~ is developped on top of agda/master. We explain how to modify cubical to make it compatible with master.
+Note: in the future, ~agda --bridges~ will be developped on top of the latest agda release as well. We will have the following chain of dependencies:
+~bridgy lib < cubical lib < agda --bridges (extends latest agda release)~.
+For now we stick to the hack explained here.
 
 Go to the root of the cubical library.
 #+begin_src shell
