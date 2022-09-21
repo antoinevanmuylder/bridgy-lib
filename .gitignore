@@ -49,9 +49,8 @@ _minted*
 # agda
 *.agdai
 
-/Bridgy/Test.agda
-/Bridgy/Test2.agda
-/Bridgy/NatGpd.adga
-
+NatGpd.agda
+Test.agda
+Test2.agda
 
 !abstract.pdf
