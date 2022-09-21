@@ -23,10 +23,18 @@ Once this is done, add the following line to your =~/.agda/libraries= config fil
 If you don't have a ~libraries~ file yet, create one. You might have to add ~cubical~ to your defaults.
 see [[https://agda.readthedocs.io/en/v2.6.2.1/tools/package-system.html][agda lib management]].
 *** /!\ Revert cubical
-The latest version of the cubical library ("cubical") is currently not compatible with agda master.
-A fix is to revert cubical to commit d29db7f5e6cfe5d. The command is:
+The cubical library is normally compatible with the latest release of agda. On the other hand, agda --bridges is developped on top of agda/master. We explain how to modify cubical to make it compatible with master.
+Note: in the future, agda --bridges will be developped on top of the latest agda release as well. We will have the following chain of dependencies: ~bridgy lib < cubical lib < latest agda release~. For now we stick to the hack explained here.
+
+Go to the root of the cubical library.
 #+begin_src shell
 git checkout d29db7f5e6cfe5d # while in cubical/
+cd Cubical/
+# replace old flag by new flag
+find . -iname '*.agda*' -exec sed -i 's/--experimental-lossy-unification/--lossy-unification/g' {} \;
+# replace old primitive names by appropriate names
+sed -i 's/hiding ( primIdJ )/-- hiding ( primIdJ )/g' Cubical/Core/Id.agda
+sed -i 's/inc to inS/inS to inS/g' Cubical/Core/Primitives.agda
 #+end_src
 *** Enjoy
 Try opening ~Bridgy/BridgePrims.agda~ with emacs, and load with ~C-c C-l~.
