@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-} -- -v tc.constr:60 -v tc.conv:50 -v tc.cover.iapply:40 -v tc.iapply:40 -v tc.conv.face:40 -v tc.conv.bridgeface:40 -v conv.forall:40
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce -v tc.reduce.fast:60 #-} -- -v tc.constr:60 -v tc.conv:50 -v tc.cover.iapply:40 -v tc.iapply:40 -v tc.conv.face:40 -v tc.conv.bridgeface:40 -v conv.forall:40
 module Bridgy.BridgeExamples where
 
 open import Bridgy.BridgePrims
@@ -192,6 +192,7 @@ module _ {ℓ} {A : (@tick x : BI) → Type ℓ} {a0 : A bi0} {a1 : A bi1}
   bridgePPath : BridgeP (λ x → down x ≡ up x) refl refl →
                  down ≡ up
   bridgePPath q = λ i x → q x i
+
 
 
 
