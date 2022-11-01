@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
 module Bridgy.BridgePrims where
 
 -- this is a reproduction of test/Succeed/LaterPrims.agda and-or Agda.Primitive.Cubical
@@ -137,4 +137,13 @@ module MixedKan where
     primMHComp : ∀ {ℓ} {A : Type ℓ} {ζ : MCstr} (u : ∀ i → MPartial ζ A) (u0 : A) → A
 open MixedKan public
   renaming ( primMHComp to mhocom )
+module AllMCstr where
+  primitive
+    primAllMCstr : ((@tick x : BI) → MCstr) → MCstr
+    primAllMCstrCounit : {absζ : ((@tick x : BI) → MCstr)} → .(oall : MHolds (primAllMCstr absζ)) → (@tick x : BI) → MHolds (absζ x)
+open AllMCstr public
+  renaming ( primAllMCstr to ∀-mcstr
+           ; primAllMCstrCounit to ∀-mcstr-ε )
+primitive
+  primRefoldMhocom : ∀ {ℓ} {T : Type ℓ} → T → T
 
