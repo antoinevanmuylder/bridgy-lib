@@ -50,7 +50,6 @@ _minted*
 *.agdai
 
 NatGpd.agda
-Test.agda
-Test2.agda
+test/
 
 !abstract.pdf
