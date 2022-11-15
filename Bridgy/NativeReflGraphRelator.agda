@@ -12,6 +12,7 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.Properties
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
+open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Data.Sigma using (_×_ ; ≃-× ; ≡-× ; Σ-cong-equiv)
 open import Cubical.Foundations.Function
 
@@ -32,7 +33,33 @@ module _ where
         (funExt λ a →
         equivFun (equivAdjointEquiv Bequiv)
         (λ i → hyp i a) ∙
-        cong fright (sym (secEq Aequiv a)))) 
+        cong fright (sym (secEq Aequiv a))))
+
+  -- {-
+  --             ulur
+  --         UL ----> UR
+  --         |        |
+  --   uldl  ∨        ∨ urdr
+  --         DL ----> DR
+  --            dldr
+
+  -- some  ulur reordering...
+  -- if uldl ∘ ulur⁻¹ ≡ dldr⁻¹ ∘ urdr (cf nativ-rel) then
+  --    uldl ≡ dldr⁻¹ ∘ urdr ∘ ulur
+  -- -}
+  -- cmp2compEquiv→1equivVs3Equiv : ∀ {ℓ ℓ'} {UL : Type ℓ} {UR : Type ℓ} {DL : Type ℓ'} {DR : Type ℓ'}
+  --   (uldl : UL ≃ DL)  (urdr : UR ≃ DR) (dldr : DL ≃ DR) (ulur : UL ≃ UR) →
+  --     compEquiv (invEquiv ulur) (uldl) ≡ compEquiv urdr (invEquiv dldr)
+  --     →
+  --     uldl ≡ compEquiv (compEquiv ulur urdr) (invEquiv dldr)
+  -- cmp2compEquiv→1equivVs3Equiv uldl urdr dldr ulur =
+
+  funExt2⁻ : {ℓ ℓ' : Level} {A : Type ℓ} {B : A → A → I → Type ℓ'}
+    {f : (x y : A) → B x y i0} {g : (x y : A) → B x y i1} →
+    (x y : A) →
+    PathP (λ i → (x y : A) → B x y i) f g →
+    PathP (B x y) (f x y) (g x y)
+  funExt2⁻ x y eq = λ i → eq i x y
   
 -- functions F have a canonical action on bridges
 bdg-action : ∀ {ℓ ℓ'} {X : Type ℓ} {Y : Type ℓ'} {x0 x1 : X} →
@@ -93,6 +120,22 @@ module NativeRelator {ℓG ℓH} (G : Type ℓG) (H : Type ℓH) ⦃ hnrgG : Has
     ∀ (g0 g1 : G) (q : BridgeP (λ _ → G) g0 g1) →
               (F .nedgeMap ((invEq (nativ g0 g1) q))) ≡ invEq (nativ (F .nobjMap g0) (F .nobjMap g1)) λ x → F .nobjMap (q x)
   pNativRel F g0 g1 q = cong (λ blank → blank q) (F .nativ-rel g0 g1)
+
+  -- preCompEquiv (nativ g0 g1) : (BridgeP (λ _ → G) g0 g1 → H{} ) ≃ (G{} → H{})
+  nedgeMap≡ByNativ : (g0 g1 : G) (F : NRelator) →
+    F .nedgeMap ≡ (invEq (nativ (F .nobjMap g0) (F .nobjMap g1) )) ∘ (bdg-action (F .nobjMap)) ∘ (nativ g0 g1 .fst)
+  nedgeMap≡ByNativ g0 g1 F = 
+    sym {!equivAdjointEquiv (preCompEquiv (nativ g0 g1))
+           {a =  (invEq (HasNRGraph.nativ hnrgH (F .nobjMap g0) (F .nobjMap g1)) ∘ bdg-action (F .nobjMap))}
+           {b = F .nedgeMap} .fst
+!}
+    ∙ ∘-assoc (invEq (nativ (F .nobjMap g0) (F .nobjMap g1))) (bdg-action (F .nobjMap)) (nativ g0 g1 .fst) -- ? (bdg-action (F .nobjMap)) ?
+    -- (equivAdjointEquiv (preCompEquiv {C = nedge (F .nobjMap g0) (F .nobjMap g1)} (nativ g0 g1)) {b = F .nedgeMap} .fst)
+
+       -- (invEq
+       -- (HasNRGraph.nativ hnrgH (F .nobjMap g0) (F .nobjMap g1))
+       -- ∘ bdg-action (F .nobjMap))
+
 open NativeRelator public
 
 NRelator' : ∀ {ℓG ℓH} (G : NRGraph ℓG) (H : Type ℓH) ⦃ hnrgH : HasNRGraph H ⦄ → Type (ℓ-max ℓG ℓH)
@@ -229,7 +272,10 @@ module Sigmas {ℓ ℓ'} {G : Type ℓ} ⦃ hnrgG : HasNRGraph G ⦄ (F : NRelat
                       ; nativ = λ gg0 gg1 → 
                           flip compEquiv ΣvsBridgeP (Σ-cong-equiv
                             (nativ (gg0 .fst) (gg1 .fst))
-                            λ e →  pathToEquiv {!!} )  }
+                            λ e →  pathToEquiv
+                              let aux = funExt⁻ (F .nativ-rel (gg0 .fst) (gg1 .fst)) (equivFun (nativ (gg0 .fst) (gg1 .fst)) e)
+                              in  {!funExt2⁻ {f = F .nedgeMap e} {g = BridgeP _} (gg0 .fst) (gg1 .fst) {!!} !} ) } -- 
+
 -- (funExt⁻ (F .nativ-rel (gg0 .fst) (gg1 .fst))
 -- (equivFun (nativ (gg0 .fst) (gg1 .fst)) e ))
  

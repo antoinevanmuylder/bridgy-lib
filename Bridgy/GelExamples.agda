@@ -57,7 +57,13 @@ switchInitPath : ∀ {ℓ} {A : Type ℓ} {top bot right : A} (up : top ≡ righ
                  up ≡ change ⁻¹ ∙ down → change ∙ up ≡ down
 switchInitPath up down change = switchInitInvPath up down (change ⁻¹)
 
-
+{-
+      top -
+       |   - up
+change ∨     ->
+      bot ---> right
+          down
+-}
 switchInitInvEquiv : ∀ {ℓ} {top bot right : Type ℓ} (up : top ≃ right) (down : bot ≃ right) (change : top ≃ bot) →
                      up ≡ compEquiv change down → compEquiv (invEquiv change) up ≡ down
 switchInitInvEquiv up down change hyp = ua-inj _ _ (uaCompEquiv _ _ ∙ cong (λ blank → blank ∙ (ua up)) (uaInvEquiv _) ∙
