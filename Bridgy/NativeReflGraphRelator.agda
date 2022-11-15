@@ -12,7 +12,7 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.Properties
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
-open import Cubical.Data.Sigma using (_×_ ; ≃-× ; ≡-×)
+open import Cubical.Data.Sigma using (_×_ ; ≃-× ; ≡-× ; Σ-cong-equiv)
 open import Cubical.Foundations.Function
 
 
@@ -63,6 +63,16 @@ open NativeReflexiveGraph public
 -- TODO: ℓ's implicit? endpoints implicit in nedgeMap? implicit fields? nativ-rel irrelevant?
 -- isProp nativ-rel? (maybe necessary for a propositional η rule)
 -- NRelator is just a record - no typeclasses are used
+
+{-
+                         G nativ
+              G{g0,g1}  ---------->  BridgeP (_.G) g0 g1
+                 |                         |
+     F nedgeMap  |                         | λ q x. F(q x)
+                 ∨                         ∨
+              H{Fg0, Fg1} -------->  BridgeP (_.H) (F g0) (F g1)
+                           Hnativ
+-}
 module NativeRelator {ℓG ℓH} (G : Type ℓG) (H : Type ℓH) ⦃ hnrgG : HasNRGraph G ⦄ ⦃ hnrgH : HasNRGraph H ⦄ where
 
   record NRelator : Type (ℓ-max ℓG ℓH) where
@@ -203,3 +213,23 @@ churchUnitNRelator = compNRelator diagNRelator arrowNRelator
 -- example: X ↦ X → X → X relator
 churchBoolNRelator : ∀ {ℓ} → NRelator (Type ℓ) (Type ℓ)
 churchBoolNRelator = compNRelator ( ⟨ idNRelator , churchUnitNRelator ⟩nrel ) arrowNRelator
+
+-- sigmas?
+module Sigmas {ℓ ℓ'} {G : Type ℓ} ⦃ hnrgG : HasNRGraph G ⦄ (F : NRelator G (Type ℓ')) where
+
+  -- instance
+  --   topHasNRG : HasNRGraph ⊤
+  --   topHasNRG = record { nedge = λ _ _ → ⊤
+  --                      ; nativ = λ where tt tt → topBdgDiscrEquiv}
+
+  instance
+    ΣHasNRG : HasNRGraph (Σ G (F .nobjMap))
+    ΣHasNRG = record { nedge = λ gg0 gg1 → 
+                         Σ (nedge (gg0 .fst) (gg1 .fst)) (λ e → F .nedgeMap e (gg0 .snd) (gg1 .snd))
+                      ; nativ = λ gg0 gg1 → 
+                          flip compEquiv ΣvsBridgeP (Σ-cong-equiv
+                            (nativ (gg0 .fst) (gg1 .fst))
+                            λ e →  pathToEquiv {!!} )  }
+-- (funExt⁻ (F .nativ-rel (gg0 .fst) (gg1 .fst))
+-- (equivFun (nativ (gg0 .fst) (gg1 .fst)) e ))
+ 
