@@ -13,9 +13,9 @@ open import Cubical.Foundations.Equiv.Properties
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.GroupoidLaws
-open import Cubical.Data.Sigma using (_×_ ; ≃-× ; ≡-× ; Σ-cong-equiv)
+open import Cubical.Data.Sigma using (_×_ ; ≃-× ; ≡-× ; Σ-cong-equiv ; Σ-cong-equiv-snd)
 open import Cubical.Foundations.Function
-
+open import Cubical.Foundations.HLevels
 
 -- cubical lemmas
 module _ where
@@ -125,10 +125,9 @@ module NativeRelator {ℓG ℓH} (G : Type ℓG) (H : Type ℓH) ⦃ hnrgG : Has
   nedgeMap≡ByNativ : (g0 g1 : G) (F : NRelator) →
     F .nedgeMap ≡ (invEq (nativ (F .nobjMap g0) (F .nobjMap g1) )) ∘ (bdg-action (F .nobjMap)) ∘ (nativ g0 g1 .fst)
   nedgeMap≡ByNativ g0 g1 F = 
-    sym {!equivAdjointEquiv (preCompEquiv (nativ g0 g1))
+    sym ( equivAdjointEquiv (preCompEquiv (nativ g0 g1))
            {a =  (invEq (HasNRGraph.nativ hnrgH (F .nobjMap g0) (F .nobjMap g1)) ∘ bdg-action (F .nobjMap))}
-           {b = F .nedgeMap} .fst
-!}
+           {b = F .nedgeMap} .fst (sym ( F .nativ-rel g0 g1)) )
     ∙ ∘-assoc (invEq (nativ (F .nobjMap g0) (F .nobjMap g1))) (bdg-action (F .nobjMap)) (nativ g0 g1 .fst) -- ? (bdg-action (F .nobjMap)) ?
     -- (equivAdjointEquiv (preCompEquiv {C = nedge (F .nobjMap g0) (F .nobjMap g1)} (nativ g0 g1)) {b = F .nedgeMap} .fst)
 
@@ -258,12 +257,7 @@ churchBoolNRelator : ∀ {ℓ} → NRelator (Type ℓ) (Type ℓ)
 churchBoolNRelator = compNRelator ( ⟨ idNRelator , churchUnitNRelator ⟩nrel ) arrowNRelator
 
 -- sigmas?
-module Sigmas {ℓ ℓ'} {G : Type ℓ} ⦃ hnrgG : HasNRGraph G ⦄ (F : NRelator G (Type ℓ')) where
-
-  -- instance
-  --   topHasNRG : HasNRGraph ⊤
-  --   topHasNRG = record { nedge = λ _ _ → ⊤
-  --                      ; nativ = λ where tt tt → topBdgDiscrEquiv}
+module Sigmas0 {ℓ ℓ'} {G : Type ℓ} ⦃ hnrgG : HasNRGraph G ⦄ (F : NRelator G (Type ℓ')) where
 
   instance
     ΣHasNRG : HasNRGraph (Σ G (F .nobjMap))
@@ -272,10 +266,58 @@ module Sigmas {ℓ ℓ'} {G : Type ℓ} ⦃ hnrgG : HasNRGraph G ⦄ (F : NRelat
                       ; nativ = λ gg0 gg1 → 
                           flip compEquiv ΣvsBridgeP (Σ-cong-equiv
                             (nativ (gg0 .fst) (gg1 .fst))
-                            λ e →  pathToEquiv
-                              let aux = funExt⁻ (F .nativ-rel (gg0 .fst) (gg1 .fst)) (equivFun (nativ (gg0 .fst) (gg1 .fst)) e)
-                              in  {!funExt2⁻ {f = F .nedgeMap e} {g = BridgeP _} (gg0 .fst) (gg1 .fst) {!!} !} ) } -- 
-
--- (funExt⁻ (F .nativ-rel (gg0 .fst) (gg1 .fst))
--- (equivFun (nativ (gg0 .fst) (gg1 .fst)) e ))
+                            λ e →   pathToEquiv (flip funExt⁻ (gg1 .snd) (flip funExt⁻ (gg0 .snd) (funExt⁻ (nedgeMap≡ByNativ G (Type ℓ') (gg0 .fst) (gg1 .fst) F) e)))  ) }  
+open Sigmas0 public
  
+
+-- conjecture (kind of proven on paper for hProp):
+-- for any level n, nType is a native reflexive graph by taking "nType relations" as edges
+--    ∀ A0 A1 → (A0 → A1 → nType) ≃ BridgeP (λ _ → nType) A0 A1
+-- For instance a bridge between two hProps is a proof irrelvant relation:)
+module HSet (ℓ : Level) where
+
+  -- We begin by proving the conjecture for hContr
+
+  hContr : Type (ℓ-suc ℓ)
+  hContr = TypeOfHLevel ℓ 0
+
+  instance
+    hContrHasNRG : HasNRGraph hContr
+    hContrHasNRG = {!!}
+
+                   -- flip compEquiv ΣvsBridgeP
+                   -- (flip compEquiv (Σ-cong-equiv relativity
+                   --   λ R → flip compEquiv ΣvsBridgeP (flip compEquiv (Σ-cong-equiv (pathToEquiv (λ i → retEq relativity R (~ i) (prf0 .fst) (prf1 .fst)))
+                   --   λ rprf → {!ΠvsBridgeP!}) {!!}))
+                   --   {!!})
+
+                   -- flip compEquiv ΣvsBridgeP
+                   -- (flip compEquiv (Σ-cong-equiv-snd  (λ q → ΣvsBridgeP))
+                   -- (flip compEquiv (Σ-cong-equiv-snd {A = (BridgeP (λ x → Type ℓ) A0 A1)}
+                   --    {B = {!Σ-cong-equiv-snd!}}
+                   --    λ q →  flip compEquiv (Σ-cong-equiv-snd {A = (BridgeP (λ x → q x) (fst prf0) (fst prf1))}
+                   --    {B = {!!}} λ q → ΠvsBridgeP ) {!!})
+                   --    {!!}))
+
+
+{- 
+need rewriting badly
+?0 : l ≡ r0
+    α0 : R0 r1 ≡ r0
+?0 := ?1 ∙ α0
+    α1 : R1 r2 ≡ r1
+?1 := ?2 ∙ R0 α1
+    α2 : R2 r3 ≡ r2
+?2 := ?3 ∙ R0 R1 α2
+    α3 : R3 r4 ≡ r3
+?3 := ?4 ∙ R0 R1 R2 α3
+
+...
+
+?0      
+?1 ∙ α0           
+(?2 ∙ R0 α1) ∙ α0
+((?3 ∙ R0 R1 α2) ∙ R0 α1) ∙ α0
+(((?4 ∙ R0 R1 R2 α3) ∙ R0 R1 α2) ∙ R0 α1) ∙ α0
+((((?5 ∙ R0 R1 R2 R3 α4) ∙ R0 R1 R2 α3) ∙ R0 R1 α2) ∙ R0 α1) ∙ α0
+-}

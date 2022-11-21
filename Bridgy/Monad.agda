@@ -14,8 +14,15 @@ open import Cubical.Data.Unit
 open import Cubical.Foundations.HLevels
 
 
--- if F : A → Type is a native relator then Σ A F is a native relator as well?
+-- We have to prove
+-- (1) hSet ℓ → hSet ℓ is a native reflexive graph
+--     To that end, sufficient to prove that hSet ℓ is a nRG
+-- (2) HasMonad : M ↦ Type (ℓ-suc ℓ) is a native relator
+--
+-- then Monad := Σ (hSet ℓ → hSet ℓ) HasMonad
 
 
 record HasMonad {ℓ : Level} (M : hSet ℓ → hSet ℓ) : Type (ℓ-suc ℓ) where
+
+
 
