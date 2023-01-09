@@ -281,9 +281,9 @@ module HSet (ℓ : Level) where
   hContr : Type (ℓ-suc ℓ)
   hContr = TypeOfHLevel ℓ 0
 
-  instance
-    hContrHasNRG : HasNRGraph hContr
-    hContrHasNRG = {!!}
+  -- instance
+  --   hContrHasNRG : HasNRGraph hContr
+  --   hContrHasNRG = {!!}
 
                    -- flip compEquiv ΣvsBridgeP
                    -- (flip compEquiv (Σ-cong-equiv relativity
