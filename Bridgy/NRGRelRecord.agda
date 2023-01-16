@@ -511,11 +511,13 @@ module ΣrulesNRG {ℓ ℓA ℓB} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : 
                                             B .dnativ (γ0 , ab0 .fst) (γ1 , ab1 .fst) (γγ , aa) (ab0 .snd) (ab1 .snd)) }
 open ΣrulesNRG public
 
-
+-- TODO: Pi and Path are displayed NRGs
 
 module PointedTypes where
 
   -- We build the NRG of pointed types in one go
+  -- Its field are the expected ones up to normalisation.
+
   PointedTypesNRG0 : ∀ (ℓ : Level) → DispNRG (ℓ-suc ℓ) topNRG
   PointedTypesNRG0 ℓ = ΣForm topNRG
                          (UForm topNRG ℓ) -- Γ ⊢ Ul type(l+1)
