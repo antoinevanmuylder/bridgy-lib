@@ -370,6 +370,26 @@ record DispNRG {ℓ} (ℓ' : Level) (Γ : NRGraph ℓ) : Type (ℓ-max ℓ (ℓ-
                    dedge γ0 γ1 e a0 a1 ≃ BridgeP (λ x → dcr (Γ .nativ γ0 γ1 .fst e x)) a0 a1
 open DispNRG public
 
+_⦅_,_⦆#_ : ∀ {ℓ ℓ' : Level} {Γ} (A : DispNRG {ℓ = ℓ} ℓ' Γ) {γ0 γ1 : Γ .nrg-cr} (a0 : A .dcr γ0) (a1 : A .dcr γ1) (γγ : Γ ⦅ γ0 , γ1 ⦆) → Type ℓ'
+_⦅_,_⦆#_ {ℓ} {ℓ'} {Γ} A {γ0} {γ1} a0 a1 γγ = A .dedge γ0 γ1 γγ a0 a1
+
+-- semantical terms are sections of displayed NRGs
+record SectNRG {ℓ} {ℓA} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) : Type (ℓ-max ℓ ℓA) where
+  field
+    -- action on Γ's 0-cells
+    ac0 : ∀ (γ : Γ .nrg-cr) → A .dcr γ
+    -- action on Γ's 1-cells
+    ac1 : ∀ {γ0 γ1 : Γ .nrg-cr} (γγ : Γ ⦅ γ0 , γ1 ⦆) → A ⦅ ac0 γ0 , ac0 γ1 ⦆# γγ
+    -- nativeness (must be stated dependently, and pointwise)
+    -- this is the forward formulation.
+    -- easier as displayed nativeness for types is edge dependent
+    -- but mismatch with common nativeness formulation for relators...
+    tm-nativ : ∀ (γ0 γ1 : Γ .nrg-cr) (γγ : Γ ⦅ γ0 , γ1 ⦆ ) →
+                   PathP (λ _ → BridgeP (λ x → A .dcr (equivFun( Γ .nativ γ0 γ1  ) γγ x)) (ac0 γ0) (ac0 γ1))
+                     (λ x → ac0 ((equivFun (Γ .nativ γ0 γ1) γγ) x) ) --use ac0
+                     (equivFun (A .dnativ γ0 γ1 γγ (ac0 γ0) (ac0 γ1)) (ac1 γγ))
+
+
 -- one side of the NRG Grothendieck correspondance.
 -- makePsh : ∀ (ℓ : Level) (E B : NRGraph ℓ) (F : NRelator E B) → DispNRG B
 -- makePsh ℓ E B F =
@@ -382,15 +402,18 @@ open DispNRG public
 -- Ctx extension, ~the other side of the NRG Grothendieck correspondance.
 module CtxExtension {ℓ ℓ'} where
 
+  -- Γ ctx
+  -- Γ ⊢ A type
+  -- ----------
+  -- Γ.A ctx
   _#_ : ∀ (Γ : NRGraph ℓ) (A : DispNRG ℓ' Γ) → NRGraph (ℓ-max ℓ ℓ')
   _#_ Γ A =
     record {
       nrg-cr = Σ (Γ .nrg-cr) (A .dcr) ;
-      nedge = λ { ( γ0 , a0 ) (γ1 , a1 ) → Σ (Γ .nedge (γ0) (γ1)) (λ γγ → A .dedge γ0 γ1 γγ a0 a1) } ;
-      nativ = λ where
-                 (γ0 , a0) (γ1 , a1) →
-                   flip compEquiv ΣvsBridgeP
-                   (Σ-cong-equiv (Γ .nativ γ0 γ1) λ γγ → A .dnativ γ0 γ1 γγ a0 a1)  }
+      nedge = λ γa0 γa1 → Σ (Γ .nedge (γa0 .fst) (γa1 .fst)) (λ γγ → A .dedge (γa0 .fst) (γa1 .fst) γγ (γa0 .snd) (γa1 .snd)) ;
+      -- nedge = λ { ( γ0 , a0 ) (γ1 , a1 ) → Σ (Γ .nedge (γ0) (γ1)) (λ γγ → A .dedge γ0 γ1 γγ a0 a1) } ;
+      nativ = λ γa0 γa1 → flip compEquiv ΣvsBridgeP
+                 (Σ-cong-equiv (Γ .nativ (γa0 .fst) (γa1 .fst)) λ γγ → A .dnativ (γa0 .fst) (γa1 .fst) γγ (γa0 .snd) (γa1 .snd)) }
   infixl 40 _#_
 
 
@@ -398,20 +421,27 @@ open CtxExtension public
 
 module AuxRules {ℓ} (Γ : NRGraph ℓ) where
 
-  var-rule : ∀ {ℓA} (A : DispNRG ℓA Γ) → DispNRG ℓA (Γ # A)
-  var-rule A =
-    record {
-      dcr = λ { (γ , _) → A .dcr γ } ;
-      dedge = λ { (γ0 , _) (γ1 , _) (γγ , _) → A .dedge γ0 γ1 γγ  }  ;
-      dnativ = λ { (γ0 , _) (γ1 , _) (γγ , _) → A .dnativ γ0 γ1 γγ}  }
 
+  -- not really the var rule though
+  -- var-rule : ∀ {ℓA} (A : DispNRG ℓA Γ) → DispNRG ℓA (Γ # A)
+  -- var-rule A =
+  --   record {
+  --     dcr = λ { (γ , _) → A .dcr γ } ;
+  --     dedge = λ { (γ0 , _) (γ1 , _) (γγ , _) → A .dedge γ0 γ1 γγ  }  ;
+  --     dnativ = λ { (γ0 , _) (γ1 , _) (γγ , _) → A .dnativ γ0 γ1 γγ}  }
+
+  -- Γ ⊢ A type
+  -- Γ ⊢ B type
+  -- ----------
+  -- Γ . A ⊢ B type
   wkn-type-by : ∀ {ℓA ℓB} (A : DispNRG ℓA Γ) (B : DispNRG ℓB Γ) →
                DispNRG ℓB (Γ # A)
   wkn-type-by A B =
     record {
-      dcr = λ { (γ , _) → B .dcr γ } ;
-      dedge =  λ { (γ0 , _) (γ1 , _) (γγ , _) → B .dedge γ0 γ1 γγ } ;
-      dnativ = λ { (γ0 , _) (γ1 , _) (γγ , _) → B .dnativ γ0 γ1 γγ } }
+      dcr = λ γa → B .dcr (γa .fst) ;
+      dedge = λ γa0 γa1 γγaa → B .dedge (γa0 .fst) (γa1 .fst) (γγaa .fst) ;
+      dnativ = λ γa0 γa1 γγaa → B .dnativ (γa0 .fst) (γa1 .fst) (γγaa .fst)
+    }
 
 open AuxRules public
 
@@ -423,43 +453,59 @@ rem-top-ctx A =
     nedge = λ a0 a1 → A .dedge tt tt tt a0 a1 ;
     nativ = λ a0 a1 → A .dnativ tt tt tt a0 a1  }
 
+
 module UrulesNRG {ℓ} (Γ : NRGraph ℓ) where
 
+  -- -----------
+  -- Γ ⊢ U(l) type(l+1)
   UForm : ∀ (ℓU : Level) → DispNRG (ℓ-suc ℓU) Γ
   UForm ℓU =
     record {
     dcr = λ _ → Type ℓU ;
     dedge = λ _ _ _ A0 A1 → A0 → A1 → Type ℓU ;
     dnativ = λ _ _ _ A0 A1 → relativity }
+
+  -- applied version of the El universal family
+  -- Γ ⊢ C : U(l)
+  -- -----------------
+  -- Γ ⊢ El C : type(l)
+  -- {ℓ'} (Disp ℓ' Γ)
+
+  
+
 open UrulesNRG public
 
 
 module ΣrulesNRG {ℓ ℓA ℓB} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) where
 
+  -- Γ ⊢ A type
+  -- Γ . A ⊢ B type
+  -- --------------
+  -- Γ ⊢ Σ A B type
   ΣForm : DispNRG (ℓ-max ℓA ℓB) Γ
   ΣForm =
     record {
       dcr = λ γ → Σ (A .dcr γ) (λ a → B .dcr (γ , a))  ;
-      dedge = λ { γ0 γ1 γγ (a0 , b0) (a1 , b1) →  Σ (A .dedge γ0 γ1 γγ a0 a1) (λ aa → B .dedge (γ0 , a0) (γ1 , a1) ( (γγ , aa)) b0 b1) } ;
+      dedge = λ γ0 γ1 γγ ab0 ab1 →  Σ (A .dedge γ0 γ1 γγ (ab0 .fst) (ab1 .fst)) (λ aa → B .dedge (γ0 , ab0 .fst) (γ1 , ab1 .fst) ( (γγ , aa)) (ab0 .snd) (ab1 .snd)) ;
       dnativ =
-        λ { γ0 γ1 γγ (a0 , b0) (a1 , b1) → flip compEquiv ΣvsBridgeP
-                                            (Σ-cong-equiv (A .dnativ γ0 γ1 γγ a0 a1) λ aa →
-                                            B .dnativ (γ0 , a0) (γ1 , a1) (γγ , aa) b0 b1) } }
+        λ γ0 γ1 γγ ab0 ab1 → flip compEquiv ΣvsBridgeP
+                                            (Σ-cong-equiv (A .dnativ γ0 γ1 γγ (ab0 .fst) (ab1 .fst)) λ aa →
+                                            B .dnativ (γ0 , ab0 .fst) (γ1 , ab1 .fst) (γγ , aa) (ab0 .snd) (ab1 .snd)) }
 open ΣrulesNRG public
 
 
 
-PtdTypeNRG'' : ∀ (ℓ : Level) → DispNRG (ℓ-suc ℓ) topNRG
-PtdTypeNRG'' ℓ = ΣForm
-                   topNRG -- ctx
-                   (UForm topNRG ℓ) -- 1 ⊢ Ul type
-                   -- 1, A:Ul ⊢ A : Ul
-                   (wkn-type-by topNRG (UForm topNRG ℓ) {!!})
+-- PtdTypeNRG'' : ∀ (ℓ : Level) → DispNRG (ℓ-suc ℓ) topNRG
+-- PtdTypeNRG'' ℓ = ΣForm
+--                    topNRG -- ctx
+--                    (UForm topNRG ℓ) -- 1 ⊢ Ul type
+--                    -- 1, A:Ul ⊢ A : Ul
+--                    (wkn-type-by topNRG (UForm topNRG ℓ) {!!})
 
--- goal DispNRG _ℓB_1562 (topNRG # UForm topNRG ℓ)
+-- -- goal DispNRG _ℓB_1562 (topNRG # UForm topNRG ℓ)
 
-PtdTypeNRG' : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
-PtdTypeNRG' ℓ = rem-top-ctx (PtdTypeNRG'' ℓ)
+-- PtdTypeNRG' : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+-- PtdTypeNRG' ℓ = rem-top-ctx (PtdTypeNRG'' ℓ)
 
-testt : _
-testt = PtdTypeNRG' ℓ-zero .nedge {!!}
+-- testt : _
+-- testt = PtdTypeNRG' ℓ-zero .nedge {!!}
