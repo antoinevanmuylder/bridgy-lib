@@ -379,7 +379,7 @@ record SectNRG {ℓ} {ℓA} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) : Type (ℓ
     -- action on Γ's 0-cells
     ac0 : ∀ (γ : Γ .nrg-cr) → A .dcr γ
     -- action on Γ's 1-cells
-    ac1 : ∀ {γ0 γ1 : Γ .nrg-cr} (γγ : Γ ⦅ γ0 , γ1 ⦆) → A ⦅ ac0 γ0 , ac0 γ1 ⦆# γγ
+    ac1 : ∀ (γ0 γ1 : Γ .nrg-cr) (γγ : Γ ⦅ γ0 , γ1 ⦆) → A ⦅ ac0 γ0 , ac0 γ1 ⦆# γγ
     -- nativeness (must be stated dependently, and pointwise)
     -- this is the forward formulation.
     -- easier as displayed nativeness for types is edge dependent
@@ -387,7 +387,16 @@ record SectNRG {ℓ} {ℓA} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) : Type (ℓ
     tm-nativ : ∀ (γ0 γ1 : Γ .nrg-cr) (γγ : Γ ⦅ γ0 , γ1 ⦆ ) →
                    PathP (λ _ → BridgeP (λ x → A .dcr (equivFun( Γ .nativ γ0 γ1  ) γγ x)) (ac0 γ0) (ac0 γ1))
                      (λ x → ac0 ((equivFun (Γ .nativ γ0 γ1) γγ) x) ) --use ac0
-                     (equivFun (A .dnativ γ0 γ1 γγ (ac0 γ0) (ac0 γ1)) (ac1 γγ))
+                     (equivFun (A .dnativ γ0 γ1 γγ (ac0 γ0) (ac0 γ1)) (ac1 γ0 γ1 γγ))
+open SectNRG public
+
+left-skew-tm-nativ : ∀ {ℓ ℓA} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (a : SectNRG Γ A) (γ0 γ1 : Γ .nrg-cr) (γγ : Γ ⦅ γ0 , γ1 ⦆ ) →
+  Path (A ⦅ ac0 a γ0 , ac0 a γ1 ⦆# γγ)
+    (a .ac1 γ0 γ1 γγ)
+    (invEq (A .dnativ γ0 γ1 γγ (a .ac0 γ0) (a .ac0 γ1)) λ x → a .ac0 ((equivFun (Γ .nativ γ0 γ1) γγ) x))
+left-skew-tm-nativ Γ A a γ0 γ1 γγ =
+   invEq (equivAdjointEquiv (A .dnativ γ0 γ1 γγ (a .ac0 γ0) (a .ac0 γ1)) {a = a .ac1 γ0 γ1 γγ} {b = λ x → a .ac0 ((equivFun (Γ .nativ γ0 γ1) γγ) x)})
+     (sym (a .tm-nativ γ0 γ1 γγ))
 
 
 -- one side of the NRG Grothendieck correspondance.
@@ -421,15 +430,6 @@ open CtxExtension public
 
 module AuxRules {ℓ} (Γ : NRGraph ℓ) where
 
-
-  -- not really the var rule though
-  -- var-rule : ∀ {ℓA} (A : DispNRG ℓA Γ) → DispNRG ℓA (Γ # A)
-  -- var-rule A =
-  --   record {
-  --     dcr = λ { (γ , _) → A .dcr γ } ;
-  --     dedge = λ { (γ0 , _) (γ1 , _) (γγ , _) → A .dedge γ0 γ1 γγ  }  ;
-  --     dnativ = λ { (γ0 , _) (γ1 , _) (γγ , _) → A .dnativ γ0 γ1 γγ}  }
-
   -- Γ ⊢ A type
   -- Γ ⊢ B type
   -- ----------
@@ -442,6 +442,18 @@ module AuxRules {ℓ} (Γ : NRGraph ℓ) where
       dedge = λ γa0 γa1 γγaa → B .dedge (γa0 .fst) (γa1 .fst) (γγaa .fst) ;
       dnativ = λ γa0 γa1 γγaa → B .dnativ (γa0 .fst) (γa1 .fst) (γγaa .fst)
     }
+
+  -- Γ ⊢ A type
+  -- -------------------
+  -- Γ , (x : A) ⊢ x : A
+  var-rule : ∀ {ℓA} (A : DispNRG ℓA Γ) →
+    SectNRG (Γ # A) (wkn-type-by A A)
+  var-rule A =
+    record {
+      ac0 = λ γa → γa .snd ;
+      ac1 = λ γa0 γa1 γγaa → γγaa .snd ;
+      tm-nativ = λ γa0 γa1 γγaa → refl }
+
 
 open AuxRules public
 
@@ -466,10 +478,16 @@ module UrulesNRG {ℓ} (Γ : NRGraph ℓ) where
     dnativ = λ _ _ _ A0 A1 → relativity }
 
   -- applied version of the El universal family
-  -- Γ ⊢ C : U(l)
+  -- Γ ⊢ C : U(l')
   -- -----------------
-  -- Γ ⊢ El C : type(l)
-  -- {ℓ'} (Disp ℓ' Γ)
+  -- Γ ⊢ El C : type(l')
+  ElApply : ∀ {ℓ' : Level} → (SectNRG Γ (UForm ℓ')) → DispNRG ℓ' Γ
+  ElApply {ℓ'} C {- codes over Γ -} =
+    record {
+      dcr = C .ac0 ;
+      dedge = λ γ0 γ1 γγ → C .ac1 γ0 γ1 γγ ;
+      dnativ = λ γ0 γ1 γγ a0 a1 →
+        pathToEquiv (funExt⁻ (funExt⁻ (left-skew-tm-nativ Γ (UForm ℓ') C γ0 γ1 γγ) a0) a1) }
 
   
 
@@ -495,17 +513,4 @@ open ΣrulesNRG public
 
 
 
--- PtdTypeNRG'' : ∀ (ℓ : Level) → DispNRG (ℓ-suc ℓ) topNRG
--- PtdTypeNRG'' ℓ = ΣForm
---                    topNRG -- ctx
---                    (UForm topNRG ℓ) -- 1 ⊢ Ul type
---                    -- 1, A:Ul ⊢ A : Ul
---                    (wkn-type-by topNRG (UForm topNRG ℓ) {!!})
-
--- -- goal DispNRG _ℓB_1562 (topNRG # UForm topNRG ℓ)
-
--- PtdTypeNRG' : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
--- PtdTypeNRG' ℓ = rem-top-ctx (PtdTypeNRG'' ℓ)
-
--- testt : _
--- testt = PtdTypeNRG' ℓ-zero .nedge {!!}
+module PointedTypes where
