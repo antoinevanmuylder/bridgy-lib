@@ -514,3 +514,21 @@ open ΣrulesNRG public
 
 
 module PointedTypes where
+
+  -- We build the NRG of pointed types in one go
+  PointedTypesNRG0 : ∀ (ℓ : Level) → DispNRG (ℓ-suc ℓ) topNRG
+  PointedTypesNRG0 ℓ = ΣForm topNRG
+                         (UForm topNRG ℓ) -- Γ ⊢ Ul type(l+1)
+                         (ElApply (topNRG # (UForm  topNRG ℓ)) -- 1.X:Ul ⊢ X type(l)
+                           (var-rule topNRG (UForm topNRG ℓ))) -- 1.X:Ul ⊢ X : Ul
+
+  PointedTypesNRG1 : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+  PointedTypesNRG1 ℓ = rem-top-ctx (PointedTypesNRG0 ℓ)
+
+  pointedTypesCarrier : PointedTypesNRG1 ℓ-zero .nrg-cr ≡ Σ Type (λ A → A)
+  pointedTypesCarrier = refl
+  
+  pointedTypesEdges : PointedTypesNRG1 ℓ-zero .nedge
+                     ≡ 
+                     λ Aa0 Aa1 → Σ (Aa0 .fst → Aa1 .fst → Type) λ R → R (Aa0 .snd) (Aa1 .snd)
+  pointedTypesEdges = refl
