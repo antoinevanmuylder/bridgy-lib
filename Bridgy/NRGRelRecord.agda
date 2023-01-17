@@ -2,7 +2,7 @@
   a record version of NRGraph, instead of instance version
 -}
 
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  -v tc.reduce:90 #-} -- -v tc.conv.term:30 -v tc.conv.gel:40
 module Bridgy.NRGRelRecord where
 
 open import Bridgy.BridgePrims
@@ -626,6 +626,8 @@ module PointedTypes where
 
 module HContr where
 
+  thing : Bool
+  thing = {!!}
 
   -- . ⊢ hContr ℓ   type(ℓ + 1)
   hContrNRG0 : ∀ (ℓ : Level) → DispNRG (ℓ-suc ℓ) topNRG
@@ -646,4 +648,138 @@ module HContr where
                         (var1-rule topNRG (UForm topNRG ℓ)
                          (ElApply (topNRG # UForm topNRG ℓ)
                           (var-rule topNRG (UForm topNRG ℓ)))))))
-               {!!} {!!})))
+               {!var1over3 topNRG (UForm topNRG ℓ) 
+                  (ElApply (topNRG # UForm topNRG ℓ)
+                  (var-rule topNRG (UForm topNRG ℓ)))
+                    (ElApply
+                     (topNRG # UForm topNRG ℓ #
+                      ElApply (topNRG # UForm topNRG ℓ)
+                      (var-rule topNRG (UForm topNRG ℓ)))
+                     (var1-rule topNRG (UForm topNRG ℓ)
+                      (ElApply (topNRG # UForm topNRG ℓ)
+                       (var-rule topNRG (UForm topNRG ℓ)))))!} {!!})))
+
+-- conversion seems to loop. why
+-- {compareTerm
+-- and then loop.
+-- tc.conv.term:30 loops after a comparison at primGel (compareTm')
+-- (bm' , m') <- reduceWithBlocker m for m equals
+
+{-
+
+m in context:
+(ℓ₁ : Level)
+(γ0
+ : (topNRG # UForm topNRG ℓ₁ #
+    ElApply (topNRG # UForm topNRG ℓ₁)
+    (var-rule topNRG (UForm topNRG ℓ₁))
+    #
+    ElApply
+    (topNRG # UForm topNRG ℓ₁ #
+     ElApply (topNRG # UForm topNRG ℓ₁)
+     (var-rule topNRG (UForm topNRG ℓ₁)))
+    (var1-rule topNRG (UForm topNRG ℓ₁)
+     (ElApply (topNRG # UForm topNRG ℓ₁)
+      (var-rule topNRG (UForm topNRG ℓ₁)))))
+   .nrg-cr)
+(γ1
+ : (topNRG # UForm topNRG ℓ₁ #
+    ElApply (topNRG # UForm topNRG ℓ₁)
+    (var-rule topNRG (UForm topNRG ℓ₁))
+    #
+    ElApply
+    (topNRG # UForm topNRG ℓ₁ #
+     ElApply (topNRG # UForm topNRG ℓ₁)
+     (var-rule topNRG (UForm topNRG ℓ₁)))
+    (var1-rule topNRG (UForm topNRG ℓ₁)
+     (ElApply (topNRG # UForm topNRG ℓ₁)
+      (var-rule topNRG (UForm topNRG ℓ₁)))))
+   .nrg-cr)
+(e
+ : (topNRG # UForm topNRG ℓ₁ #
+    ElApply (topNRG # UForm topNRG ℓ₁)
+    (var-rule topNRG (UForm topNRG ℓ₁))
+    #
+    ElApply
+    (topNRG # UForm topNRG ℓ₁ #
+     ElApply (topNRG # UForm topNRG ℓ₁)
+     (var-rule topNRG (UForm topNRG ℓ₁)))
+    (var1-rule topNRG (UForm topNRG ℓ₁)
+     (ElApply (topNRG # UForm topNRG ℓ₁)
+      (var-rule topNRG (UForm topNRG ℓ₁)))))
+   ⦅ γ0 , γ1 ⦆)
+(a0
+ : dcr
+   (wkn-type-by
+    (topNRG # UForm topNRG ℓ₁ #
+     ElApply (topNRG # UForm topNRG ℓ₁)
+     (var-rule topNRG (UForm topNRG ℓ₁)))
+    (ElApply
+     (topNRG # UForm topNRG ℓ₁ #
+      ElApply (topNRG # UForm topNRG ℓ₁)
+      (var-rule topNRG (UForm topNRG ℓ₁)))
+     (var1-rule topNRG (UForm topNRG ℓ₁)
+      (ElApply (topNRG # UForm topNRG ℓ₁)
+       (var-rule topNRG (UForm topNRG ℓ₁)))))
+    (wkn-type-by (topNRG # UForm topNRG ℓ₁)
+     (ElApply (topNRG # UForm topNRG ℓ₁)
+      (var-rule topNRG (UForm topNRG ℓ₁)))
+     (ElApply (topNRG # UForm topNRG ℓ₁)
+      (var-rule topNRG (UForm topNRG ℓ₁)))))
+   γ0)
+(a1
+ : dcr
+   (wkn-type-by
+    (topNRG # UForm topNRG ℓ₁ #
+     ElApply (topNRG # UForm topNRG ℓ₁)
+     (var-rule topNRG (UForm topNRG ℓ₁)))
+    (ElApply
+     (topNRG # UForm topNRG ℓ₁ #
+      ElApply (topNRG # UForm topNRG ℓ₁)
+      (var-rule topNRG (UForm topNRG ℓ₁)))
+     (var1-rule topNRG (UForm topNRG ℓ₁)
+      (ElApply (topNRG # UForm topNRG ℓ₁)
+       (var-rule topNRG (UForm topNRG ℓ₁)))))
+    (wkn-type-by (topNRG # UForm topNRG ℓ₁)
+     (ElApply (topNRG # UForm topNRG ℓ₁)
+      (var-rule topNRG (UForm topNRG ℓ₁)))
+     (ElApply (topNRG # UForm topNRG ℓ₁)
+      (var-rule topNRG (UForm topNRG ℓ₁)))))
+   γ1)
+(x
+ : dedge
+   (wkn-type-by
+    (topNRG # UForm topNRG ℓ₁ #
+     ElApply (topNRG # UForm topNRG ℓ₁)
+     (var-rule topNRG (UForm topNRG ℓ₁)))
+    (ElApply
+     (topNRG # UForm topNRG ℓ₁ #
+      ElApply (topNRG # UForm topNRG ℓ₁)
+      (var-rule topNRG (UForm topNRG ℓ₁)))
+     (var1-rule topNRG (UForm topNRG ℓ₁)
+      (ElApply (topNRG # UForm topNRG ℓ₁)
+       (var-rule topNRG (UForm topNRG ℓ₁)))))
+    (wkn-type-by (topNRG # UForm topNRG ℓ₁)
+     (ElApply (topNRG # UForm topNRG ℓ₁)
+      (var-rule topNRG (UForm topNRG ℓ₁)))
+     (ElApply (topNRG # UForm topNRG ℓ₁)
+      (var-rule topNRG (UForm topNRG ℓ₁)))))
+   γ0 γ1 e a0 a1)
+(i : BI)
+
+(fst
+ (lineToEquiv
+  (λ i →
+     funExt⁻
+     (funExt⁻
+      (left-skew-tm-nativ (topNRG # UForm topNRG ℓ)
+       (UForm (topNRG # UForm topNRG ℓ) ℓ)
+       (var-rule topNRG (UForm topNRG ℓ)) (γ0 .fst .fst) (γ1 .fst .fst)
+       (e .fst .fst))
+      a0)
+     a1 i))
+ x i)
+
+with tc.reduce:90, we have a loop (?) of prim^gel appearing
+
+-}
