@@ -459,6 +459,38 @@ module AuxRules {ℓ} (Γ : NRGraph ℓ) where
 
 open AuxRules public
 
+
+-- Γ ⊢ A type   Γ.A ⊢ B type
+-- -----------------------
+-- Γ, a : A, b : B ⊢ a : A
+var1-rule : ∀ {ℓ} {ℓA} {ℓB} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) →
+  SectNRG (Γ # A # B) (wkn-type-by _ B (wkn-type-by _ A A))
+var1-rule = λ Γ A B → record {
+  ac0 = λ γa-b → γa-b .fst .snd ;
+  ac1 = λ γa-b0 γa-b1 γγaa-bb → γγaa-bb .fst .snd ;
+  tm-nativ = λ γa-b0 γa-b1 γγaa-bb → refl }
+
+-- Γ ⊢ A type   Γ.A ⊢ B type   Γ.A.B ⊢ C type
+-- -------------------------------------------
+-- Γ, a:A, b:B, c:C ⊢ a:A
+var2-rule : ∀ {ℓ} {ℓA} {ℓB} {ℓC} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) (C : DispNRG ℓC (Γ # A # B)) →
+  SectNRG (Γ # A # B # C) (wkn-type-by _ C (wkn-type-by _ B (wkn-type-by _ A A)))
+var2-rule = λ Γ A B C → record {
+  ac0 = λ γa-b-c → γa-b-c .fst .fst .snd ;
+  ac1 = λ γa-b-c0 γa-b-c1 → λ γγaa-bb-cc → γγaa-bb-cc .fst .fst .snd ;
+  tm-nativ = λ _ _ _ → refl }
+
+-- Γ ⊢ A type   Γ.A ⊢ B type   Γ.A.B ⊢ C type
+-- -------------------------------------------
+-- Γ, a:A, b:B, c:C ⊢ b:B
+var1over3 : ∀ {ℓ} {ℓA} {ℓB} {ℓC} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) (C : DispNRG ℓC (Γ # A # B)) →
+  SectNRG (Γ # A # B # C) (wkn-type-by _ C (wkn-type-by _ B B))
+var1over3 Γ A B C = record {
+  ac0 = λ γa-b-c → γa-b-c .fst .snd ;
+  ac1 = λ γa-b-c0 γa-b-c1 γγaa-bb-cc → γγaa-bb-cc .fst .snd ;
+  tm-nativ = λ _ _ _ → refl }
+
+
 -- remove empty context dependency.
 rem-top-ctx : ∀ {ℓA} (A : DispNRG ℓA topNRG) → NRGraph ℓA
 rem-top-ctx A =
@@ -564,13 +596,7 @@ module PathNRG {ℓ ℓA} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ)
     dnativ = λ γ0 γ1 γγ pa pb → flip compEquiv (PathPvsBridgeP (λ x i → A .dcr (Γ .nativ γ0 γ1 .fst γγ x)))
                                  (flip compEquiv (adjustPathPEnds (sym (a .tm-nativ γ0 γ1 γγ)) (sym (b .tm-nativ γ0 γ1 γγ)))
                                 (congPathEquiv λ i → A .dnativ γ0 γ1 γγ (pa i) (pb i))) }
-
--- adjust PathP endpoints by using tm nativeness
--- then cong A .dnativ
-
--- congP (λ i → A .dnativ γ0 γ1 γγ (pa i) (pb i) .fst)
--- congPathEquiv useful
--- (λ x → a .ac0 (Γ .nativ γ0 γ1 .fst γγ x))
+open PathNRG public
   
   
   
@@ -597,3 +623,27 @@ module PointedTypes where
                      ≡ 
                      λ Aa0 Aa1 → Σ (Aa0 .fst → Aa1 .fst → Type) λ R → R (Aa0 .snd) (Aa1 .snd)
   pointedTypesEdges = refl
+
+module HContr where
+
+
+  -- . ⊢ hContr ℓ   type(ℓ + 1)
+  hContrNRG0 : ∀ (ℓ : Level) → DispNRG (ℓ-suc ℓ) topNRG
+  hContrNRG0 ℓ =
+    ΣForm topNRG
+      {- A type code A-} (UForm topNRG ℓ)
+      {- isContr(El A) -} (ΣForm {ℓA = ℓ} {ℓB = ℓ} (topNRG # UForm topNRG ℓ)
+        {- El A -} (ElApply (topNRG # UForm topNRG ℓ) (var-rule topNRG (UForm topNRG ℓ)))
+        {- isContr -} (ΠForm (topNRG # UForm topNRG ℓ #
+           ElApply (topNRG # UForm topNRG ℓ)
+           (var-rule topNRG (UForm topNRG ℓ)))
+             (ElApply _ (var1-rule topNRG (UForm topNRG ℓ) (ElApply (topNRG # UForm topNRG ℓ) (var-rule topNRG (UForm topNRG ℓ)))))
+             (PathForm _ (ElApply _ (var2-rule topNRG (UForm topNRG ℓ) (ElApply (topNRG # UForm topNRG ℓ) (var-rule topNRG (UForm topNRG ℓ)))
+                       (ElApply
+                        (topNRG # UForm topNRG ℓ #
+                         ElApply (topNRG # UForm topNRG ℓ)
+                         (var-rule topNRG (UForm topNRG ℓ)))
+                        (var1-rule topNRG (UForm topNRG ℓ)
+                         (ElApply (topNRG # UForm topNRG ℓ)
+                          (var-rule topNRG (UForm topNRG ℓ)))))))
+               {!!} {!!})))
