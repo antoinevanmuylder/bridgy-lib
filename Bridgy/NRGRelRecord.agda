@@ -20,7 +20,8 @@ open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Data.Sigma using (_×_ ; ≃-× ; ≡-× ; Σ-cong-equiv ; Σ-cong-equiv-snd)
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
-open import Cubical.Foundations.Path using (congPathEquiv)
+open import Cubical.Foundations.Path using (congPathEquiv ; PathP≃Path ; compPathrEquiv ; compPathlEquiv)
+open import Cubical.Foundations.Transport using (transportEquiv)
 
 -- cubical lemmas
 module _ where
@@ -356,7 +357,7 @@ ATTEMPT: shallow CwF structure on NRG
 
 -}
 
-
+-- TYPES
 -- a Γ-displayed NRG is basically a NRG over Gamma (other side of some Grothendieck corr for NRG)
 -- this would correspond to semantics of the @Ty@ operation of CwFs
 record DispNRG {ℓ} (ℓ' : Level) (Γ : NRGraph ℓ) : Type (ℓ-max ℓ (ℓ-suc ℓ')) where
@@ -365,7 +366,7 @@ record DispNRG {ℓ} (ℓ' : Level) (Γ : NRGraph ℓ) : Type (ℓ-max ℓ (ℓ-
     dcr : Γ .nrg-cr → Type ℓ'
     -- displayed edges
     dedge : ∀ (γ0 γ1 : Γ .nrg-cr) (e : Γ ⦅ γ0 , γ1 ⦆ ) (a0 : dcr γ0) (a1 : dcr γ1) → Type ℓ'
-    -- displayed nativeness
+    -- displayed nativeness ("forall edge" version)
     dnativ : ∀ (γ0 γ1 : Γ .nrg-cr) (e : Γ ⦅ γ0 , γ1 ⦆ ) (a0 : dcr γ0) (a1 : dcr γ1) →
                    dedge γ0 γ1 e a0 a1 ≃ BridgeP (λ x → dcr (Γ .nativ γ0 γ1 .fst e x)) a0 a1
 open DispNRG public
@@ -373,6 +374,7 @@ open DispNRG public
 _⦅_,_⦆#_ : ∀ {ℓ ℓ' : Level} {Γ} (A : DispNRG {ℓ = ℓ} ℓ' Γ) {γ0 γ1 : Γ .nrg-cr} (a0 : A .dcr γ0) (a1 : A .dcr γ1) (γγ : Γ ⦅ γ0 , γ1 ⦆) → Type ℓ'
 _⦅_,_⦆#_ {ℓ} {ℓ'} {Γ} A {γ0} {γ1} a0 a1 γγ = A .dedge γ0 γ1 γγ a0 a1
 
+-- TERMS
 -- semantical terms are sections of displayed NRGs
 record SectNRG {ℓ} {ℓA} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) : Type (ℓ-max ℓ ℓA) where
   field
@@ -381,13 +383,13 @@ record SectNRG {ℓ} {ℓA} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) : Type (ℓ
     -- action on Γ's 1-cells
     ac1 : ∀ (γ0 γ1 : Γ .nrg-cr) (γγ : Γ ⦅ γ0 , γ1 ⦆) → A ⦅ ac0 γ0 , ac0 γ1 ⦆# γγ
     -- nativeness (must be stated dependently, and pointwise)
-    -- this is the forward formulation.
-    -- easier as displayed nativeness for types is edge dependent
-    -- but mismatch with common nativeness formulation for relators...
+    -- "forall edge" formulation.
+    -- mismatch with nativeness formulation for relators
+    -- this is essentially nativeness of a section of (pr : Γ.A → Γ) relator
     tm-nativ : ∀ (γ0 γ1 : Γ .nrg-cr) (γγ : Γ ⦅ γ0 , γ1 ⦆ ) →
                    PathP (λ _ → BridgeP (λ x → A .dcr (equivFun( Γ .nativ γ0 γ1  ) γγ x)) (ac0 γ0) (ac0 γ1))
                      (λ x → ac0 ((equivFun (Γ .nativ γ0 γ1) γγ) x) ) --use ac0
-                     (equivFun (A .dnativ γ0 γ1 γγ (ac0 γ0) (ac0 γ1)) (ac1 γ0 γ1 γγ))
+                     (equivFun (A .dnativ γ0 γ1 γγ (ac0 γ0) (ac0 γ1)) (ac1 γ0 γ1 γγ)) --use ac1
 open SectNRG public
 
 left-skew-tm-nativ : ∀ {ℓ ℓA} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (a : SectNRG Γ A) (γ0 γ1 : Γ .nrg-cr) (γγ : Γ ⦅ γ0 , γ1 ⦆ ) →
@@ -494,7 +496,7 @@ module UrulesNRG {ℓ} (Γ : NRGraph ℓ) where
 open UrulesNRG public
 
 
-module ΣrulesNRG {ℓ ℓA ℓB} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) where
+module ΣΠrulesNRG {ℓ ℓA ℓB} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) where
 
   -- Γ ⊢ A type
   -- Γ . A ⊢ B type
@@ -509,9 +511,70 @@ module ΣrulesNRG {ℓ ℓA ℓB} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : 
         λ γ0 γ1 γγ ab0 ab1 → flip compEquiv ΣvsBridgeP
                                             (Σ-cong-equiv (A .dnativ γ0 γ1 γγ (ab0 .fst) (ab1 .fst)) λ aa →
                                             B .dnativ (γ0 , ab0 .fst) (γ1 , ab1 .fst) (γγ , aa) (ab0 .snd) (ab1 .snd)) }
-open ΣrulesNRG public
 
--- TODO: Pi and Path are displayed NRGs
+  -- Γ ⊢ A type
+  -- Γ.A ⊢ B type
+  -- --------------
+  -- Γ ⊢ Π A B type
+  ΠForm : DispNRG (ℓ-max ℓA ℓB) Γ
+  ΠForm = record {
+    dcr = λ γ → ∀ (a : A .dcr γ) → B .dcr (γ , a) ;
+    dedge = λ γ0 γ1 γγ f0 f1 → ∀ (a0 : A .dcr γ0) (a1 : A .dcr γ1) (aa : A ⦅ a0 , a1 ⦆# γγ ) → B ⦅ f0 a0 , f1 a1 ⦆# (γγ , aa) ;
+    dnativ = λ γ0 γ1 γγ f0 f1 → flip compEquiv ΠvsBridgeP
+                                 (equivΠCod λ a0 →
+                                 equivΠCod λ a1 →
+                                 equivΠ (A .dnativ γ0 γ1 γγ a0 a1) λ aa →
+                                 compEquiv (B .dnativ (γ0 , a0) (γ1 , a1) (γγ , aa) (f0 a0) (f1 a1)) (idEquiv _)) }
+
+open ΣΠrulesNRG public
+
+
+adjustPathPEnds : ∀ {ℓ : Level} {A : I → Type ℓ} {a0' a0 : A i0} {a1' a1 : A i1} (prf0 : a0' ≡ a0) (prf1 : a1' ≡ a1)  →
+                    PathP A a0' a1' ≃ PathP A a0 a1
+adjustPathPEnds {A = A} {a0' = a0'} {a0 = a0}{a1' = a1'} {a1 = a1} prf0 prf1 =
+  compEquiv (PathP≃Path A a0' a1')
+  (compEquiv (compPathrEquiv prf1)
+  (compEquiv (compPathlEquiv {x = transport (λ i → A i) a0} (cong (transport (λ i → A i)) (sym prf0)) )
+  (invEquiv (PathP≃Path (λ i → A i) a0 a1))))
+
+
+-- adjustPathPEnds {A = A} {a0' = a0'} {a0 = a0} prf0 prf1 =
+--   isoToEquiv (iso
+--     (λ strt i →  hcomp (λ j → λ {(i = i0) → prf0 j ; (i = i1) → prf1 j}) (strt i))
+--     (λ end i →  hcomp (λ j → λ {(i = i0) → prf0 (~ j) ; (i = i1) → prf1 (~ j)}) (end i) )
+--     (λ thing → {!!})
+--     {!!})
+
+
+
+
+
+module PathNRG {ℓ ℓA} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ)
+                  (a b : SectNRG Γ A) where
+
+  -- Γ ⊢ A type
+  -- Γ ⊢ a : A
+  -- Γ ⊢ b : A
+  -------------------
+  -- Γ ⊢ a ≡A b type
+  PathForm : DispNRG ℓA Γ
+  PathForm = record {
+    dcr = λ γ → (Path (A .dcr γ) (a .ac0 γ) (b .ac0 γ)) ;
+    dedge = λ γ0 γ1 γγ pa pb → PathP (λ i → A ⦅ pa i , pb i ⦆# γγ) (a .ac1 γ0 γ1 γγ) (b .ac1 γ0 γ1 γγ) ;
+    dnativ = λ γ0 γ1 γγ pa pb → flip compEquiv (PathPvsBridgeP (λ x i → A .dcr (Γ .nativ γ0 γ1 .fst γγ x)))
+                                 (flip compEquiv (adjustPathPEnds (sym (a .tm-nativ γ0 γ1 γγ)) (sym (b .tm-nativ γ0 γ1 γγ)))
+                                (congPathEquiv λ i → A .dnativ γ0 γ1 γγ (pa i) (pb i))) }
+
+-- adjust PathP endpoints by using tm nativeness
+-- then cong A .dnativ
+
+-- congP (λ i → A .dnativ γ0 γ1 γγ (pa i) (pb i) .fst)
+-- congPathEquiv useful
+-- (λ x → a .ac0 (Γ .nativ γ0 γ1 .fst γγ x))
+  
+  
+  
+
 
 module PointedTypes where
 
