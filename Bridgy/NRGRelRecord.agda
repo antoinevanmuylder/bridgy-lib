@@ -2,7 +2,8 @@
   a record version of NRGraph, instead of instance version
 -}
 
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  -v tc.reduce:90 #-} -- -v tc.conv.term:30 -v tc.conv.gel:40
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce   #-}
+-- -v tc.prim.ungel:30 -v tc.conv.term:30 -v tc.conv.gel:40 -v tc.reduce:90
 module Bridgy.NRGRelRecord where
 
 open import Bridgy.BridgePrims
@@ -624,10 +625,10 @@ module PointedTypes where
                      λ Aa0 Aa1 → Σ (Aa0 .fst → Aa1 .fst → Type) λ R → R (Aa0 .snd) (Aa1 .snd)
   pointedTypesEdges = refl
 
+{-
+
 module HContr where
 
-  thing : Bool
-  thing = {!!}
 
   -- . ⊢ hContr ℓ   type(ℓ + 1)
   hContrNRG0 : ∀ (ℓ : Level) → DispNRG (ℓ-suc ℓ) topNRG
@@ -658,6 +659,8 @@ module HContr where
                      (var1-rule topNRG (UForm topNRG ℓ)
                       (ElApply (topNRG # UForm topNRG ℓ)
                        (var-rule topNRG (UForm topNRG ℓ)))))!} {!!})))
+
+-}
 
 -- conversion seems to loop. why
 -- {compareTerm
@@ -783,3 +786,81 @@ m in context:
 with tc.reduce:90, we have a loop (?) of prim^gel appearing
 
 -}
+
+
+atel : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+atel ℓ = (topNRG # UForm topNRG ℓ #
+          ElApply (topNRG # UForm topNRG ℓ)
+          (var-rule topNRG (UForm topNRG ℓ))
+          #
+          ElApply
+          (topNRG # UForm topNRG ℓ #
+           ElApply (topNRG # UForm topNRG ℓ)
+           (var-rule topNRG (UForm topNRG ℓ)))
+          (var1-rule topNRG (UForm topNRG ℓ)
+           (ElApply (topNRG # UForm topNRG ℓ)
+            (var-rule topNRG (UForm topNRG ℓ)))))
+
+atyp : ∀ (ℓ : Level) → DispNRG _ (atel ℓ)
+atyp ℓ = (wkn-type-by
+          (topNRG # UForm topNRG ℓ #
+           ElApply (topNRG # UForm topNRG ℓ)
+           (var-rule topNRG (UForm topNRG ℓ)))
+          (ElApply
+           (topNRG # UForm topNRG ℓ #
+            ElApply (topNRG # UForm topNRG ℓ)
+            (var-rule topNRG (UForm topNRG ℓ)))
+           (var1-rule topNRG (UForm topNRG ℓ)
+            (ElApply (topNRG # UForm topNRG ℓ)
+             (var-rule topNRG (UForm topNRG ℓ)))))
+          (wkn-type-by (topNRG # UForm topNRG ℓ)
+           (ElApply (topNRG # UForm topNRG ℓ)
+            (var-rule topNRG (UForm topNRG ℓ)))
+           (ElApply (topNRG # UForm topNRG ℓ)
+            (var-rule topNRG (UForm topNRG ℓ)))))
+
+module Bug (ℓ : Level) (γ0 γ1 : atel ℓ .nrg-cr) (γγ : atel ℓ ⦅ γ0 , γ1 ⦆)
+              (a0 : atyp ℓ .dcr γ0) (a1 : atyp ℓ .dcr γ1) (aa : atyp ℓ ⦅ a0 , a1 ⦆# γγ)
+              (@tick z : BI) where
+
+{-
+(fst
+ (lineToEquiv
+  (λ i →
+     funExt⁻
+     (funExt⁻
+      (left-skew-tm-nativ (topNRG # UForm topNRG ℓ)
+       (UForm (topNRG # UForm topNRG ℓ) ℓ)
+       (var-rule topNRG (UForm topNRG ℓ)) (γ0 .fst .fst) (γ1 .fst .fst)
+       (e .fst .fst))
+      a0)
+     a1 i))
+ x i)
+-}
+  1,X:Ul⊢Ul:type = (UForm (topNRG # UForm topNRG ℓ) ℓ)
+
+  1,X:Ul⊢X:Ul = (var-rule topNRG (UForm topNRG ℓ))
+  t = 1,X:Ul⊢X:Ul
+
+  thing : Bool
+  thing = {!left-skew-tm-nativ (topNRG # UForm topNRG ℓ) (UForm (topNRG # UForm topNRG ℓ) ℓ) t (γ0 .fst .fst) (γ1 .fst .fst) (γγ .fst .fst)!}
+
+{-
+ goal : γγ .fst .fst .snd ≡
+                              BridgeP
+                              (λ x →
+                                 primGel (γ0 .fst .fst .snd) (γ1 .fst .fst .snd)
+                                 (snd (γγ .fst .fst)) x)
+
+leads to impossible when normalised
+-}
+
+
+
+module Bug2 (ℓ : Level) (A0 A1 : Type ℓ) (R : A0 → A1 → Type ℓ) (a0 : A0) (a1 : A1)
+               (base : BridgeP (λ x → primGel A0 A1 R x) a0 a1) (@tick j : BI) where
+
+  end : BridgeP (λ x → primGel A0 A1 R x) a0 a1
+  end = {!transp (λ _ → BridgeP (λ x → primGel A0 A1 R x) a0 a1) i0 base j!}
+
+  
