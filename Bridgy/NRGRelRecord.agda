@@ -2,7 +2,7 @@
   a record version of NRGraph, instead of instance version
 -}
 
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce -v tc.prim.ungel:30  #-}
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce -v tc.prim.ungel:30  -v tc.prim.transp.bridge:40 -v tc.prim.mhcomp.gel:30 -v tc.app.mpor:30 -v tc.app.mhocom:30 #-}
 -- -v tc.prim.ungel:30 -v tc.conv.term:30 -v tc.conv.gel:40 -v tc.reduce:90 -v tc.prim.mhcomp.gel:30 
 module Bridgy.NRGRelRecord where
 
@@ -14,6 +14,7 @@ open import Agda.Builtin.Bool
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Equiv.HalfAdjoint
 open import Cubical.Foundations.Equiv.Properties
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
@@ -842,9 +843,10 @@ module Bug (ℓ : Level) (γ0 γ1 : atel ℓ .nrg-cr) (γγ : atel ℓ ⦅ γ0 ,
   1,X:Ul⊢X:Ul = (var-rule topNRG (UForm topNRG ℓ))
   t = 1,X:Ul⊢X:Ul
 
-  thing : Bool
-  thing = {!left-skew-tm-nativ (topNRG # UForm topNRG ℓ) (UForm (topNRG # UForm topNRG ℓ) ℓ) t (γ0 .fst .fst) (γ1 .fst .fst) (γγ .fst .fst)!}
+-- 
 
+  thing : Bool
+  thing = {! left-skew-tm-nativ (topNRG # UForm topNRG ℓ) (UForm (topNRG # UForm topNRG ℓ) ℓ) t (γ0 .fst .fst) (γ1 .fst .fst) (γγ .fst .fst) !}
 {-
  goal : γγ .fst .fst .snd ≡
                               BridgeP
@@ -862,3 +864,21 @@ module Bug2 (ℓ : Level) (A0 A1 : Type ℓ) (R : A0 → A1 → Type ℓ) (a0 : 
 
   end : BridgeP (λ x → primGel A0 A1 R x) a0 a1
   end = {!transp (λ _ → BridgeP (λ x → primGel A0 A1 R x) a0 a1) i0 base j!}
+
+
+module Bug3 (ℓ : Level) (A0 A1 : Type ℓ) (R : A0 → A1 → Type ℓ) (a0 : A0) (a1 : A1)
+               (base : BridgeP (λ x → primGel A0 A1 R x) a0 a1)  where -- (@tick j : BI)
+
+  -- whnf (C-u C-u C-u C-n) the hole leads to impossible.
+  heyy : R a0 a1
+  heyy = {!prim^ungel λ j  → transp (λ _ → BridgeP (λ x → primGel A0 A1 R x) a0 a1) i0 base j!} 
+
+-- λ j → transp (λ _ → BridgeP (λ x → primGel A0 A1 R x) a0 a1) i0 base j
+
+
+
+
+
+
+
+
