@@ -2,8 +2,10 @@
   a record version of NRGraph, instead of instance version
 -}
 
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce -v tc.prim.ungel:30  -v tc.prim.transp.bridge:40 -v tc.prim.mhcomp.gel:30 -v tc.app.mpor:30 -v tc.app.mhocom:30 #-}
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  -v tc.prim.ungel:27 -v tc.prim.mhcomp:25 -v tc.prim.transp:25 -v tc.conv.gel:25 #-}
 -- -v tc.prim.ungel:30 -v tc.conv.term:30 -v tc.conv.gel:40 -v tc.reduce:90 -v tc.prim.mhcomp.gel:30 
+-- -v tc.prim.ungel:30  -v tc.prim.transp.bridge:40 -v tc.prim.mhcomp.gel:30 -v tc.app.mpor:30 -v tc.app.mhocom:30
+--  -v tc.prim.mhcomp.gel:30 
 module Bridgy.NRGRelRecord where
 
 open import Bridgy.BridgePrims
@@ -874,9 +876,6 @@ module Bug3 (ℓ : Level) (A0 A1 : Type ℓ) (R : A0 → A1 → Type ℓ) (a0 : 
   heyy = {!prim^ungel λ j  → transp (λ _ → BridgeP (λ x → primGel A0 A1 R x) a0 a1) i0 base j!} 
 
 -- λ j → transp (λ _ → BridgeP (λ x → primGel A0 A1 R x) a0 a1) i0 base j
-
-
-
 
 
 
