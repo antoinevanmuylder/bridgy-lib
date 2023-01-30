@@ -2,11 +2,14 @@
   a record version of NRGraph, instead of instance version
 -}
 
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  -v tc.prim.ungel:27 -v tc.prim.mhcomp:25 -v tc.prim.transp:25 -v tc.conv.gel:25 #-}
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
 -- -v tc.prim.ungel:30 -v tc.conv.term:30 -v tc.conv.gel:40 -v tc.reduce:90 -v tc.prim.mhcomp.gel:30 
 -- -v tc.prim.ungel:30  -v tc.prim.transp.bridge:40 -v tc.prim.mhcomp.gel:30 -v tc.app.mpor:30 -v tc.app.mhocom:30
 --  -v tc.prim.mhcomp.gel:30 
 -- -v tc.prim.ungel:27 -v tc.prim.mhcomp:25 -v tc.prim.transp:25 -v tc.conv.gel:25
+-- -v tc.term.args.target:30 
+
+
 module Bridgy.NRGRelRecord where
 
 open import Bridgy.BridgePrims
@@ -414,10 +417,10 @@ open SectNRG public
 -- σ : Γ → Δ    Δ ⊢ A type
 -- ------------------------
 -- Γ ⊢ A type
-tySubst : ∀ {ℓΓ ℓΔ ℓ} {Γ : NRGraph ℓΓ} {Δ : NRGraph ℓΔ} →
+tySubst : ∀ {ℓΓ ℓΔ ℓ} (Γ : NRGraph ℓΓ) (Δ : NRGraph ℓΔ) →
             (NRelator Γ Δ) → (DispNRG ℓ Δ) → 
             DispNRG ℓ Γ
-tySubst {ℓΔ = ℓΔ} {Γ = Γ} {Δ = Δ} σ A = record {
+tySubst {ℓΔ = ℓΔ} Γ Δ σ A = record {
   dcr = λ γ → A .dcr ( σ .nobjMap γ )
   ; dedge = λ γ0 γ1 γγ → A .dedge (σ .nobjMap γ0) (σ .nobjMap γ1) (σ .nedgeMap γγ) 
   ; dnativ = λ γ0 γ1 γbdg a0 a1 → flip compEquiv (A .dnativ (σ .nobjMap γ0) (σ .nobjMap γ1) (λ x → σ .nobjMap (γbdg x)) a0 a1)
@@ -486,9 +489,9 @@ wkn-type-by Γ A B =
 -- Γ ⊢ A type
 -- -------------------
 -- Γ , (x : A) ⊢ x : A
-var-rule : ∀ {ℓ} {ℓA} {Γ : NRGraph ℓ} (A : DispNRG ℓA Γ) →
+var-rule : ∀ {ℓ} {ℓA} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) →
   SectNRG (Γ # A) (wkn-type-by Γ A A)
-var-rule A =
+var-rule Γ A =
   record {
     ac0 = λ γa → γa .snd ;
     ac1 = λ γa0 γa1 γγaa → γγaa .snd ;
@@ -542,18 +545,18 @@ rem-top-ctx A =
 
 -- -----------------
 -- Γ ⊢ U(l) type(l+1)
-TypeForm : ∀ {ℓΓ} {Γ : NRGraph ℓΓ} → (ℓ : Level) → DispNRG (ℓ-suc ℓ) Γ
-TypeForm ℓU =
+TypeForm : ∀ {ℓΓ} (Γ : NRGraph ℓΓ) → (ℓ : Level) → DispNRG (ℓ-suc ℓ) Γ
+TypeForm Γ ℓ =
   record {
-  dcr = λ _ → Type ℓU ;
-  dedge = λ _ _ _ A0 A1 → A0 → A1 → Type ℓU ;
+  dcr = λ _ → Type ℓ ;
+  dedge = λ _ _ _ A0 A1 → A0 → A1 → Type ℓ ;
   dnativ = λ _ _ _ A0 A1 → relativity }
 
 -- ----------------------------
 -- Γ, A : Type ℓ ⊢ El A type(ℓ)
-El : ∀ {ℓΓ} {Γ : NRGraph ℓΓ} (ℓ : Level) →
-       DispNRG ℓ (Γ # TypeForm ℓ)
-El ℓ = record {
+El : ∀ {ℓΓ} (Γ : NRGraph ℓΓ) (ℓ : Level) →
+       DispNRG ℓ (Γ # TypeForm Γ ℓ)
+El Γ ℓ = record {
   dcr = λ γA → γA .snd
   ; dedge = λ γA0 γA1 γγAA → γγAA .snd 
   ; dnativ = λ { (γ0 , A0) (γ1 , A1) γbdg a0 a1 → idEquiv _ } }
@@ -636,9 +639,9 @@ adjustPathPEnds {A = A} {a0' = a0'} {a0 = a0}{a1' = a1'} {a1 = a1} prf0 prf1 =
 -- Γ ⊢ b : A
 -------------------
 -- Γ ⊢ a ≡A b type
-PathForm : ∀ {ℓΓ ℓA} {Γ : NRGraph ℓΓ}
+PathForm : ∀ {ℓΓ ℓA} (Γ : NRGraph ℓΓ)
              (A : DispNRG ℓA Γ) (a b : SectNRG Γ A) → DispNRG ℓA Γ
-PathForm {Γ = Γ} A a b = record {
+PathForm Γ A a b = record {
   dcr = λ γ → (Path (A .dcr γ) (a .ac0 γ) (b .ac0 γ)) ;
   dedge = λ γ0 γ1 γγ pa pb → PathP (λ i → A ⦅ pa i , pb i ⦆# γγ) (a .ac1 γ0 γ1 γγ) (b .ac1 γ0 γ1 γγ) ;
   dnativ = λ γ0 γ1 γbdg pa pb →
@@ -679,21 +682,110 @@ PathForm {Γ = Γ} A a b = record {
 
 -- {-
 
+-- heyy : ∀ {ℓ} →
+--          DispNRG ℓ (topNRG # TypeForm ℓ # El ℓ # wkn-type-by (topNRG # TypeForm ℓ) (El ℓ) (El ℓ)) →
+--          DispNRG ℓ (topNRG # TypeForm ℓ # El ℓ # wkn-type-by (topNRG # TypeForm ℓ) (El ℓ) (El ℓ))
+-- heyy stuff = stuff
+
+
+
+
+
 module HContr where
 
+
+  -- the context is explicit in our DSL
+  -- this way we have syntactic equality
+  -- else agda compares at record types with exponential time
 
   -- 1, A : Type ℓ, c c' : El A ⊢ c ≡ c' type(l)
   -- ------------------------------------------- ...
   -- . ⊢ hContr ℓ   type(ℓ + 1)
   hContrNRGFromOpenPath :
     ∀ (ℓ : Level) →
-    DispNRG ℓ (topNRG # TypeForm ℓ # El ℓ # wkn-type-by (topNRG # TypeForm ℓ) (El ℓ) (El ℓ)) →
+    DispNRG ℓ (topNRG # 
+      TypeForm topNRG ℓ #
+      El topNRG ℓ #
+      wkn-type-by (topNRG # TypeForm topNRG ℓ) (El topNRG ℓ) (El topNRG ℓ)) →
     DispNRG (ℓ-suc ℓ) topNRG
   hContrNRGFromOpenPath ℓ  openPath =
-    ΣForm {ℓA = ℓ-suc ℓ} {ℓB = ℓ} {Γ = topNRG} (TypeForm ℓ) -- Σ  (Type ℓ) $ λ A → 
-    (ΠForm (El ℓ) -- Π A $ λ c → 
-    (ΠForm {ℓB = ℓ} (wkn-type-by (topNRG # TypeForm ℓ) (El ℓ) (El ℓ))
-    {!!} ))
+    ΣForm (TypeForm topNRG ℓ) -- Σ  (Type ℓ) $ λ A → 
+    (ΠForm (El topNRG ℓ) -- Π A $ λ c → 
+    (ΠForm {ℓB = ℓ} (wkn-type-by (topNRG # TypeForm topNRG ℓ) (El topNRG ℓ) (El topNRG ℓ))
+    openPath ))
+
+  -- 1, A : Type ℓ, c c' : El A ⊢ c ≡ c' type(l)
+  myOpenPath : ∀ (ℓ : Level) →
+    DispNRG ℓ (
+      topNRG # 
+      TypeForm topNRG ℓ #
+      El topNRG ℓ #
+      wkn-type-by (topNRG # TypeForm topNRG ℓ) (El topNRG ℓ) (El topNRG ℓ)
+    )
+  myOpenPath ℓ =
+    PathForm totalCtx
+    -- 1, A : Type ℓ, c, c' ⊢ El A type(l)
+    -- wkning the type = substituting by a 'forgetful' subst
+    (tySubst totalCtx (topNRG # TypeForm topNRG ℓ) aWkSubst (El topNRG ℓ))
+    -- 1, A : Type ℓ, c : El A, c' : El A ⊢ c : El A
+    lhs rhs
+
+    where
+      
+      totalCtx : NRGraph (ℓ-suc ℓ)
+      totalCtx = topNRG # 
+        TypeForm topNRG ℓ #
+        El topNRG ℓ #
+        wkn-type-by (topNRG # TypeForm topNRG ℓ) (El topNRG ℓ) (El topNRG ℓ)  
+
+      smlrCtx : NRGraph (ℓ-suc ℓ)
+      smlrCtx = topNRG # TypeForm topNRG ℓ # El topNRG ℓ
+
+      aWkSubst : NRelator totalCtx (topNRG # TypeForm topNRG ℓ)
+      aWkSubst = record {
+        nobjMap =  λ { ( ( ( tt , A ) , c ) , c' ) →  ( tt , A ) } ;
+        nedgeMap =
+          λ { {g0 = ( ( ( tt , A0 ) , c0 ) , c0' ) } {g1 = ( ( ( tt , A1 ) , c1 ) , c1' ) } ( ( ( tt , AA ) , cc ) , cc' ) → 
+           (tt , AA)  } ;
+        nativ-rel =  λ { ( ( ( tt , A0 ) , c0 ) , c0' ) ( ( ( tt , A1 ) , c1 ) , c1' ) → refl } 
+        }
+
+      lhs : SectNRG totalCtx
+             (tySubst totalCtx (topNRG # TypeForm topNRG ℓ) aWkSubst (El topNRG ℓ))
+      lhs = record {
+        ac0 = λ { ( ( ( tt , A ) , c ) , c' ) → c } ;
+        ac1 =  λ { ( ( ( tt , A0 ) , c0 ) , c0' ) ( ( ( tt , A1 ) , c1 ) , c1' ) ( ( ( tt , AA ) , cc ) , cc' ) →
+          cc  } ;
+        tm-nativ =  λ { ( ( ( tt , A0 ) , c0 ) , c0' ) ( ( ( tt , A1 ) , c1 ) , c1' ) γbdg →
+          sym (transportRefl (λ x → snd (fst (γbdg x)))) }
+        }
+
+      rhs : SectNRG totalCtx
+             (tySubst totalCtx (topNRG # TypeForm topNRG ℓ) aWkSubst
+              (El topNRG ℓ))
+      rhs = record {
+        ac0 =  λ { ( ( ( tt , A ) , c ) , c' ) → c' } ;
+        ac1 =  λ { ( ( ( tt , A0 ) , c0 ) , c0' ) ( ( ( tt , A1 ) , c1 ) , c1' ) ( ( ( tt , AA ) , cc ) , cc' ) →
+          cc'  }  ;
+        tm-nativ =  λ { ( ( ( tt , A0 ) , c0 ) , c0' ) ( ( ( tt , A1 ) , c1 ) , c1' ) γbdg →
+          sym (transportRefl (λ x → snd (γbdg x))) } }
+
+  hContrNRG0 : ∀ (ℓ : Level) → DispNRG (ℓ-suc ℓ) topNRG
+  hContrNRG0 ℓ = hContrNRGFromOpenPath ℓ (myOpenPath ℓ)
+
+  hContrNRG : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+  hContrNRG ℓ = rem-top-ctx (hContrNRG0 ℓ)
+
+  test : (ℓ : Level) → Bool
+  test ℓ = {!hContrNRG  ℓ .nativ!}
+
+
+
+
+
+
+
+
 
 
 
