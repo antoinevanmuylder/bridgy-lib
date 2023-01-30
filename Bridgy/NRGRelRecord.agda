@@ -6,6 +6,7 @@
 -- -v tc.prim.ungel:30 -v tc.conv.term:30 -v tc.conv.gel:40 -v tc.reduce:90 -v tc.prim.mhcomp.gel:30 
 -- -v tc.prim.ungel:30  -v tc.prim.transp.bridge:40 -v tc.prim.mhcomp.gel:30 -v tc.app.mpor:30 -v tc.app.mhocom:30
 --  -v tc.prim.mhcomp.gel:30 
+-- -v tc.prim.ungel:27 -v tc.prim.mhcomp:25 -v tc.prim.transp:25 -v tc.conv.gel:25
 module Bridgy.NRGRelRecord where
 
 open import Bridgy.BridgePrims
@@ -355,6 +356,13 @@ open PathpNRG public
 -- open NRGraph public
 
 
+
+
+
+
+
+
+
 {-
 
 ATTEMPT: shallow CwF structure on NRG
@@ -365,18 +373,29 @@ ATTEMPT: shallow CwF structure on NRG
 -- a Γ-displayed NRG is basically a NRG over Gamma (other side of some Grothendieck corr for NRG)
 -- this would correspond to semantics of the @Ty@ operation of CwFs
 record DispNRG {ℓ} (ℓ' : Level) (Γ : NRGraph ℓ) : Type (ℓ-max ℓ (ℓ-suc ℓ')) where
+  no-eta-equality
   field
     -- displayed carriers
     dcr : Γ .nrg-cr → Type ℓ'
     -- displayed edges
     dedge : ∀ (γ0 γ1 : Γ .nrg-cr) (e : Γ ⦅ γ0 , γ1 ⦆ ) (a0 : dcr γ0) (a1 : dcr γ1) → Type ℓ'
-    -- displayed nativeness ("forall edge" version)
-    dnativ : ∀ (γ0 γ1 : Γ .nrg-cr) (e : Γ ⦅ γ0 , γ1 ⦆ ) (a0 : dcr γ0) (a1 : dcr γ1) →
-                   dedge γ0 γ1 e a0 a1 ≃ BridgeP (λ x → dcr (Γ .nativ γ0 γ1 .fst e x)) a0 a1
+    -- displayed nativeness ("forall bridge" version)
+    -- we choose this version to be able to formulate tm-natv as ∀ bridge as well.
+    dnativ : ∀ (γ0 γ1 : Γ .nrg-cr) (γbdg : BridgeP (λ _ → Γ .nrg-cr) γ0 γ1) (a0 : dcr γ0) (a1 : dcr γ1) →
+                   dedge γ0 γ1 (invEq (Γ .nativ γ0 γ1) γbdg) a0 a1 ≃ BridgeP (λ x → dcr (γbdg x)) a0 a1
 open DispNRG public
+
+    -- dnativ : ∀ (γ0 γ1 : Γ .nrg-cr) (e : Γ ⦅ γ0 , γ1 ⦆ ) (a0 : dcr γ0) (a1 : dcr γ1) →
+    --                dedge γ0 γ1 e a0 a1 ≃ BridgeP (λ x → dcr (Γ .nativ γ0 γ1 .fst e x)) a0 a1
 
 _⦅_,_⦆#_ : ∀ {ℓ ℓ' : Level} {Γ} (A : DispNRG {ℓ = ℓ} ℓ' Γ) {γ0 γ1 : Γ .nrg-cr} (a0 : A .dcr γ0) (a1 : A .dcr γ1) (γγ : Γ ⦅ γ0 , γ1 ⦆) → Type ℓ'
 _⦅_,_⦆#_ {ℓ} {ℓ'} {Γ} A {γ0} {γ1} a0 a1 γγ = A .dedge γ0 γ1 γγ a0 a1
+
+
+-- dnativ' : ∀ {ℓ ℓ'} (Γ : NRGraph ℓ) (A : DispNRG ℓ' Γ)
+--               (γ0 γ1 : Γ .nrg-cr) (q : BridgeP (λ _ → Γ .nrg-cr) γ0 γ1) →
+--               A .dedge γ0 γ1
+-- dnativ' = {!!}
 
 -- TERMS
 -- semantical terms are sections of displayed NRGs
@@ -386,113 +405,128 @@ record SectNRG {ℓ} {ℓA} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) : Type (ℓ
     ac0 : ∀ (γ : Γ .nrg-cr) → A .dcr γ
     -- action on Γ's 1-cells
     ac1 : ∀ (γ0 γ1 : Γ .nrg-cr) (γγ : Γ ⦅ γ0 , γ1 ⦆) → A ⦅ ac0 γ0 , ac0 γ1 ⦆# γγ
-    -- nativeness (must be stated dependently, and pointwise)
-    -- "forall edge" formulation.
-    -- mismatch with nativeness formulation for relators
-    -- this is essentially nativeness of a section of (pr : Γ.A → Γ) relator
-    tm-nativ : ∀ (γ0 γ1 : Γ .nrg-cr) (γγ : Γ ⦅ γ0 , γ1 ⦆ ) →
-                   PathP (λ _ → BridgeP (λ x → A .dcr (equivFun( Γ .nativ γ0 γ1  ) γγ x)) (ac0 γ0) (ac0 γ1))
-                     (λ x → ac0 ((equivFun (Γ .nativ γ0 γ1) γγ) x) ) --use ac0
-                     (equivFun (A .dnativ γ0 γ1 γγ (ac0 γ0) (ac0 γ1)) (ac1 γ0 γ1 γγ)) --use ac1
+    tm-nativ : ∀ (γ0 γ1 : Γ .nrg-cr) (γbdg : BridgeP (λ _ → Γ .nrg-cr) γ0 γ1) →
+                 ac1 γ0 γ1 (invEq (Γ .nativ γ0 γ1) γbdg) ≡ invEq (A .dnativ γ0 γ1 γbdg (ac0 γ0) (ac0 γ1)) (λ x → ac0 (γbdg x) )
 open SectNRG public
 
-left-skew-tm-nativ : ∀ {ℓ ℓA} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (a : SectNRG Γ A) (γ0 γ1 : Γ .nrg-cr) (γγ : Γ ⦅ γ0 , γ1 ⦆ ) →
-  Path (A ⦅ ac0 a γ0 , ac0 a γ1 ⦆# γγ)
-    (a .ac1 γ0 γ1 γγ)
-    (invEq (A .dnativ γ0 γ1 γγ (a .ac0 γ0) (a .ac0 γ1)) λ x → a .ac0 ((equivFun (Γ .nativ γ0 γ1) γγ) x))
-left-skew-tm-nativ Γ A a γ0 γ1 γγ =
-   invEq (equivAdjointEquiv (A .dnativ γ0 γ1 γγ (a .ac0 γ0) (a .ac0 γ1)) {a = a .ac1 γ0 γ1 γγ} {b = λ x → a .ac0 ((equivFun (Γ .nativ γ0 γ1) γγ) x)})
-     (sym (a .tm-nativ γ0 γ1 γγ))
+
+-- Ty subst
+-- σ : Γ → Δ    Δ ⊢ A type
+-- ------------------------
+-- Γ ⊢ A type
+tySubst : ∀ {ℓΓ ℓΔ ℓ} {Γ : NRGraph ℓΓ} {Δ : NRGraph ℓΔ} →
+            (NRelator Γ Δ) → (DispNRG ℓ Δ) → 
+            DispNRG ℓ Γ
+tySubst {ℓΔ = ℓΔ} {Γ = Γ} {Δ = Δ} σ A = record {
+  dcr = λ γ → A .dcr ( σ .nobjMap γ )
+  ; dedge = λ γ0 γ1 γγ → A .dedge (σ .nobjMap γ0) (σ .nobjMap γ1) (σ .nedgeMap γγ) 
+  ; dnativ = λ γ0 γ1 γbdg a0 a1 → flip compEquiv (A .dnativ (σ .nobjMap γ0) (σ .nobjMap γ1) (λ x → σ .nobjMap (γbdg x)) a0 a1)
+                                   (pathToEquiv (cong (λ blank → A .dedge (σ .nobjMap γ0) (σ .nobjMap γ1) blank a0 a1)
+                                   (funExt⁻ (σ .nativ-rel γ0 γ1) γbdg))) }
+
+-- + equations... behaves as a functor
+
+-- this cwf would be wonderful if we had cwf equations by refl.
+-- tySubstId : ∀ {ℓΔ ℓ} {Δ : NRGraph ℓΔ} (A : DispNRG ℓ Δ) → 
+--               tySubst (idNRelator {G = Δ}) A ≡ A
+-- tySubstId {Δ = Δ} A = {!!} 
 
 
--- one side of the NRG Grothendieck correspondance.
--- makePsh : ∀ (ℓ : Level) (E B : NRGraph ℓ) (F : NRelator E B) → DispNRG B
--- makePsh ℓ E B F =
---   record {
---     dcr = fiber (F .nobjMap) ;
---     dedge = λ b0 b1 bb e0 e1 → fiber (F .nedgeMap {g0 = e0 .fst} {g1 = e1 .fst}) {!!}   ;
---     dnativ = {!!} }
-    
+-- tm subst, + equations...
 
--- Ctx extension, ~the other side of the NRG Grothendieck correspondance.
-module CtxExtension {ℓ ℓ'} where
-
-  -- Γ ctx
-  -- Γ ⊢ A type
-  -- ----------
-  -- Γ.A ctx
-  _#_ : ∀ (Γ : NRGraph ℓ) (A : DispNRG ℓ' Γ) → NRGraph (ℓ-max ℓ ℓ')
-  _#_ Γ A =
-    record {
-      nrg-cr = Σ (Γ .nrg-cr) (A .dcr) ;
-      nedge = λ γa0 γa1 → Σ (Γ .nedge (γa0 .fst) (γa1 .fst)) (λ γγ → A .dedge (γa0 .fst) (γa1 .fst) γγ (γa0 .snd) (γa1 .snd)) ;
-      -- nedge = λ { ( γ0 , a0 ) (γ1 , a1 ) → Σ (Γ .nedge (γ0) (γ1)) (λ γγ → A .dedge γ0 γ1 γγ a0 a1) } ;
-      nativ = λ γa0 γa1 → flip compEquiv ΣvsBridgeP
-                 (Σ-cong-equiv (Γ .nativ (γa0 .fst) (γa1 .fst)) λ γγ → A .dnativ (γa0 .fst) (γa1 .fst) γγ (γa0 .snd) (γa1 .snd)) }
-  infixl 40 _#_
+-- we choose topNRG as our empty context.
 
 
-open CtxExtension public
+-- Ctx extension: one side of the NRG Grothendieck correspondance.
 
-module AuxRules {ℓ} (Γ : NRGraph ℓ) where
+-- Γ ctx
+-- Γ ⊢ A type
+-- ----------
+-- Γ.A ctx
+_#_ : ∀ {ℓ ℓ'} (Γ : NRGraph ℓ) (A : DispNRG ℓ' Γ) → NRGraph (ℓ-max ℓ ℓ')
+_#_ Γ A =
+  record {
+    nrg-cr = Σ (Γ .nrg-cr) (A .dcr)
+    -- nedge maps by copatterns, nativ by pattern matching seems nice?
+    ; nedge = λ γa0 γa1 → Σ (Γ .nedge (γa0 .fst) (γa1 .fst)) (λ γγ → A .dedge (γa0 .fst) (γa1 .fst) γγ (γa0 .snd) (γa1 .snd))
+    -- ; nedge = λ { ( γ0 , a0 ) (γ1 , a1 ) → Σ (Γ .nedge (γ0) (γ1)) (λ γγ → A .dedge γ0 γ1 γγ a0 a1) }
+    ; nativ = λ { (γ0 , a0 ) (γ1 , a1 ) →
+                flip compEquiv ΣvsBridgeP (invEquiv
+                (Σ-cong-equiv (invEquiv (Γ .nativ γ0 γ1)) λ γbdg → invEquiv (A .dnativ γ0 γ1 γbdg a0 a1)))   }}
 
-  -- Γ ⊢ A type
-  -- Γ ⊢ B type
-  -- ----------
-  -- Γ . A ⊢ B type
-  wkn-type-by : ∀ {ℓA ℓB} (A : DispNRG ℓA Γ) (B : DispNRG ℓB Γ) →
-               DispNRG ℓB (Γ # A)
-  wkn-type-by A B =
-    record {
-      dcr = λ γa → B .dcr (γa .fst) ;
-      dedge = λ γa0 γa1 γγaa → B .dedge (γa0 .fst) (γa1 .fst) (γγaa .fst) ;
-      dnativ = λ γa0 γa1 γγaa → B .dnativ (γa0 .fst) (γa1 .fst) (γγaa .fst)
-    }
-
-  -- Γ ⊢ A type
-  -- -------------------
-  -- Γ , (x : A) ⊢ x : A
-  var-rule : ∀ {ℓA} (A : DispNRG ℓA Γ) →
-    SectNRG (Γ # A) (wkn-type-by A A)
-  var-rule A =
-    record {
-      ac0 = λ γa → γa .snd ;
-      ac1 = λ γa0 γa1 γγaa → γγaa .snd ;
-      tm-nativ = λ γa0 γa1 γγaa → refl }
+infixl 40 _#_
 
 
-open AuxRules public
+-- Γ ⊢ A type
+-- Γ ⊢ B type
+-- ----------
+-- Γ . A ⊢ B type
+wkn-type-by : ∀ {ℓ ℓA ℓB} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB Γ) →
+             DispNRG ℓB (Γ # A)
+wkn-type-by Γ A B =
+  record {
+    dcr = λ γa → B .dcr (γa .fst) ;
+    dedge = λ γa0 γa1 γγaa → B .dedge (γa0 .fst) (γa1 .fst) (γγaa .fst) ;
+    dnativ = λ { (γ0 , a0) (γ1 , a1) γbdg b0 b1 → B .dnativ γ0 γ1 (λ x → γbdg x .fst) b0 b1 }
+  }
+
+-- gen-wkn-type-by : ∀ {ℓΓ ℓA ℓΔ ℓB} {Γ : NRGraph ℓ}
+--                     (A : DispNRG ℓA Γ) 
+
+-- -- Γ ⊢ A type
+-- -- Γ ⊢ B type
+-- -- Γ ⊢ C type
+-- -- ----------
+-- -- (Γ . A) . B ⊢ C type
+-- wkn-type-by-by : ∀ {ℓ ℓA ℓB ℓC} {Γ : NRGraph ℓ} (A : DispNRG ℓA Γ) (B : DispNRG ℓB Γ) (C : DispNRG ℓC Γ)
+--                     → DispNRG ℓC (Γ # A # B)
+-- wkn-type-by-by A B C = ?
 
 
--- Γ ⊢ A type   Γ.A ⊢ B type
--- -----------------------
--- Γ, a : A, b : B ⊢ a : A
-var1-rule : ∀ {ℓ} {ℓA} {ℓB} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) →
-  SectNRG (Γ # A # B) (wkn-type-by _ B (wkn-type-by _ A A))
-var1-rule = λ Γ A B → record {
-  ac0 = λ γa-b → γa-b .fst .snd ;
-  ac1 = λ γa-b0 γa-b1 γγaa-bb → γγaa-bb .fst .snd ;
-  tm-nativ = λ γa-b0 γa-b1 γγaa-bb → refl }
+-- Γ ⊢ A type
+-- -------------------
+-- Γ , (x : A) ⊢ x : A
+var-rule : ∀ {ℓ} {ℓA} {Γ : NRGraph ℓ} (A : DispNRG ℓA Γ) →
+  SectNRG (Γ # A) (wkn-type-by Γ A A)
+var-rule A =
+  record {
+    ac0 = λ γa → γa .snd ;
+    ac1 = λ γa0 γa1 γγaa → γγaa .snd ;
+    tm-nativ = λ γa0 γa1 γγaa → refl }
 
--- Γ ⊢ A type   Γ.A ⊢ B type   Γ.A.B ⊢ C type
--- -------------------------------------------
--- Γ, a:A, b:B, c:C ⊢ a:A
-var2-rule : ∀ {ℓ} {ℓA} {ℓB} {ℓC} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) (C : DispNRG ℓC (Γ # A # B)) →
-  SectNRG (Γ # A # B # C) (wkn-type-by _ C (wkn-type-by _ B (wkn-type-by _ A A)))
-var2-rule = λ Γ A B C → record {
-  ac0 = λ γa-b-c → γa-b-c .fst .fst .snd ;
-  ac1 = λ γa-b-c0 γa-b-c1 → λ γγaa-bb-cc → γγaa-bb-cc .fst .fst .snd ;
-  tm-nativ = λ _ _ _ → refl }
 
--- Γ ⊢ A type   Γ.A ⊢ B type   Γ.A.B ⊢ C type
--- -------------------------------------------
--- Γ, a:A, b:B, c:C ⊢ b:B
-var1over3 : ∀ {ℓ} {ℓA} {ℓB} {ℓC} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) (C : DispNRG ℓC (Γ # A # B)) →
-  SectNRG (Γ # A # B # C) (wkn-type-by _ C (wkn-type-by _ B B))
-var1over3 Γ A B C = record {
-  ac0 = λ γa-b-c → γa-b-c .fst .snd ;
-  ac1 = λ γa-b-c0 γa-b-c1 γγaa-bb-cc → γγaa-bb-cc .fst .snd ;
-  tm-nativ = λ _ _ _ → refl }
+-- open AuxRules public
+
+
+-- -- Γ ⊢ A type   Γ.A ⊢ B type
+-- -- -----------------------
+-- -- Γ, a : A, b : B ⊢ a : A
+-- var1-rule : ∀ {ℓ} {ℓA} {ℓB} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) →
+--   SectNRG (Γ # A # B) (wkn-type-by _ B (wkn-type-by _ A A))
+-- var1-rule = λ Γ A B → record {
+--   ac0 = λ γa-b → γa-b .fst .snd ;
+--   ac1 = λ γa-b0 γa-b1 γγaa-bb → γγaa-bb .fst .snd ;
+--   tm-nativ = λ γa-b0 γa-b1 γγaa-bb → refl }
+
+-- -- Γ ⊢ A type   Γ.A ⊢ B type   Γ.A.B ⊢ C type
+-- -- -------------------------------------------
+-- -- Γ, a:A, b:B, c:C ⊢ a:A
+-- var2-rule : ∀ {ℓ} {ℓA} {ℓB} {ℓC} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) (C : DispNRG ℓC (Γ # A # B)) →
+--   SectNRG (Γ # A # B # C) (wkn-type-by _ C (wkn-type-by _ B (wkn-type-by _ A A)))
+-- var2-rule = λ Γ A B C → record {
+--   ac0 = λ γa-b-c → γa-b-c .fst .fst .snd ;
+--   ac1 = λ γa-b-c0 γa-b-c1 → λ γγaa-bb-cc → γγaa-bb-cc .fst .fst .snd ;
+--   tm-nativ = λ _ _ _ → refl }
+
+-- -- Γ ⊢ A type   Γ.A ⊢ B type   Γ.A.B ⊢ C type
+-- -- -------------------------------------------
+-- -- Γ, a:A, b:B, c:C ⊢ b:B
+-- var1over3 : ∀ {ℓ} {ℓA} {ℓB} {ℓC} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) (C : DispNRG ℓC (Γ # A # B)) →
+--   SectNRG (Γ # A # B # C) (wkn-type-by _ C (wkn-type-by _ B B))
+-- var1over3 Γ A B C = record {
+--   ac0 = λ γa-b-c → γa-b-c .fst .snd ;
+--   ac1 = λ γa-b-c0 γa-b-c1 γγaa-bb-cc → γγaa-bb-cc .fst .snd ;
+--   tm-nativ = λ _ _ _ → refl }
 
 
 -- remove empty context dependency.
@@ -501,38 +535,47 @@ rem-top-ctx A =
   record {
     nrg-cr = A .dcr tt ;
     nedge = λ a0 a1 → A .dedge tt tt tt a0 a1 ;
-    nativ = λ a0 a1 → A .dnativ tt tt tt a0 a1  }
+    nativ = λ a0 a1 → A .dnativ tt tt (λ _ → tt) _ _  }
 
 
-module UrulesNRG {ℓ} (Γ : NRGraph ℓ) where
 
-  -- -----------
-  -- Γ ⊢ U(l) type(l+1)
-  UForm : ∀ (ℓU : Level) → DispNRG (ℓ-suc ℓU) Γ
-  UForm ℓU =
-    record {
-    dcr = λ _ → Type ℓU ;
-    dedge = λ _ _ _ A0 A1 → A0 → A1 → Type ℓU ;
-    dnativ = λ _ _ _ A0 A1 → relativity }
 
-  -- applied version of the El universal family
-  -- Γ ⊢ C : U(l')
-  -- -----------------
-  -- Γ ⊢ El C : type(l')
-  ElApply : ∀ {ℓ' : Level} → (SectNRG Γ (UForm ℓ')) → DispNRG ℓ' Γ
-  ElApply {ℓ'} C {- codes over Γ -} =
-    record {
-      dcr = C .ac0 ;
-      dedge = λ γ0 γ1 γγ → C .ac1 γ0 γ1 γγ ;
-      dnativ = λ γ0 γ1 γγ a0 a1 →
-        pathToEquiv (funExt⁻ (funExt⁻ (left-skew-tm-nativ Γ (UForm ℓ') C γ0 γ1 γγ) a0) a1) }
+-- -----------------
+-- Γ ⊢ U(l) type(l+1)
+TypeForm : ∀ {ℓΓ} {Γ : NRGraph ℓΓ} → (ℓ : Level) → DispNRG (ℓ-suc ℓ) Γ
+TypeForm ℓU =
+  record {
+  dcr = λ _ → Type ℓU ;
+  dedge = λ _ _ _ A0 A1 → A0 → A1 → Type ℓU ;
+  dnativ = λ _ _ _ A0 A1 → relativity }
+
+-- ----------------------------
+-- Γ, A : Type ℓ ⊢ El A type(ℓ)
+El : ∀ {ℓΓ} {Γ : NRGraph ℓΓ} (ℓ : Level) →
+       DispNRG ℓ (Γ # TypeForm ℓ)
+El ℓ = record {
+  dcr = λ γA → γA .snd
+  ; dedge = λ γA0 γA1 γγAA → γγAA .snd 
+  ; dnativ = λ { (γ0 , A0) (γ1 , A1) γbdg a0 a1 → idEquiv _ } }
+
+--   -- applied version of the El universal family
+--   -- Γ ⊢ C : U(l')
+--   -- -----------------
+--   -- Γ ⊢ El C : type(l')
+--   ElApply : ∀ {ℓ' : Level} → (SectNRG Γ (UForm ℓ')) → DispNRG ℓ' Γ
+--   ElApply {ℓ'} C {- codes over Γ -} =
+--     record {
+--       dcr = C .ac0 ;
+--       dedge = λ γ0 γ1 γγ → C .ac1 γ0 γ1 γγ ;
+--       dnativ = λ γ0 γ1 γγ a0 a1 →
+--         pathToEquiv (funExt⁻ (funExt⁻ (left-skew-tm-nativ Γ (UForm ℓ') C γ0 γ1 γγ) a0) a1) }
 
   
 
-open UrulesNRG public
+-- open UrulesNRG public
 
 
-module ΣΠrulesNRG {ℓ ℓA ℓB} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) where
+module ΣΠrulesNRG {ℓΓ ℓA ℓB} {Γ : NRGraph ℓΓ} (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) where
 
   -- Γ ⊢ A type
   -- Γ . A ⊢ B type
@@ -543,25 +586,27 @@ module ΣΠrulesNRG {ℓ ℓA ℓB} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B 
     record {
       dcr = λ γ → Σ (A .dcr γ) (λ a → B .dcr (γ , a))  ;
       dedge = λ γ0 γ1 γγ ab0 ab1 →  Σ (A .dedge γ0 γ1 γγ (ab0 .fst) (ab1 .fst)) (λ aa → B .dedge (γ0 , ab0 .fst) (γ1 , ab1 .fst) ( (γγ , aa)) (ab0 .snd) (ab1 .snd)) ;
-      dnativ =
-        λ γ0 γ1 γγ ab0 ab1 → flip compEquiv ΣvsBridgeP
-                                            (Σ-cong-equiv (A .dnativ γ0 γ1 γγ (ab0 .fst) (ab1 .fst)) λ aa →
-                                            B .dnativ (γ0 , ab0 .fst) (γ1 , ab1 .fst) (γγ , aa) (ab0 .snd) (ab1 .snd)) }
+      dnativ = λ { γ0 γ1 γbdg (a0 , b0) (a1 , b1) →
+        flip compEquiv ΣvsBridgeP (invEquiv
+        (Σ-cong-equiv (invEquiv (A .dnativ _ _ γbdg a0 a1 )) λ abdg →
+        invEquiv (B .dnativ (γ0 , a0) (γ1 , a1) (λ x → (γbdg x , abdg x )) b0 b1) )) }
+    }
 
-  -- Γ ⊢ A type
-  -- Γ.A ⊢ B type
-  -- --------------
-  -- Γ ⊢ Π A B type
+  -- -- Γ ⊢ A type
+  -- -- Γ.A ⊢ B type
+  -- -- --------------
+  -- -- Γ ⊢ Π A B type
   ΠForm : DispNRG (ℓ-max ℓA ℓB) Γ
   ΠForm = record {
     dcr = λ γ → ∀ (a : A .dcr γ) → B .dcr (γ , a) ;
     dedge = λ γ0 γ1 γγ f0 f1 → ∀ (a0 : A .dcr γ0) (a1 : A .dcr γ1) (aa : A ⦅ a0 , a1 ⦆# γγ ) → B ⦅ f0 a0 , f1 a1 ⦆# (γγ , aa) ;
-    dnativ = λ γ0 γ1 γγ f0 f1 → flip compEquiv ΠvsBridgeP
-                                 (equivΠCod λ a0 →
-                                 equivΠCod λ a1 →
-                                 equivΠ (A .dnativ γ0 γ1 γγ a0 a1) λ aa →
-                                 compEquiv (B .dnativ (γ0 , a0) (γ1 , a1) (γγ , aa) (f0 a0) (f1 a1)) (idEquiv _)) }
-
+    dnativ = λ γ0 γ1 γbdg f0 f1 →
+      flip compEquiv ΠvsBridgeP
+      (equivΠCod λ a0 →
+      equivΠCod λ a1 → invEquiv
+      (equivΠ (invEquiv (A .dnativ _ _ γbdg a0 a1)) λ abdg →
+      (invEquiv (B .dnativ (γ0 , a0) (γ1 , a1) (λ x → (γbdg x , abdg x)) (f0 a0) (f1 a1))) ) )
+    }
 open ΣΠrulesNRG public
 
 
@@ -574,310 +619,366 @@ adjustPathPEnds {A = A} {a0' = a0'} {a0 = a0}{a1' = a1'} {a1 = a1} prf0 prf1 =
   (invEquiv (PathP≃Path (λ i → A i) a0 a1))))
 
 
--- adjustPathPEnds {A = A} {a0' = a0'} {a0 = a0} prf0 prf1 =
---   isoToEquiv (iso
---     (λ strt i →  hcomp (λ j → λ {(i = i0) → prf0 j ; (i = i1) → prf1 j}) (strt i))
---     (λ end i →  hcomp (λ j → λ {(i = i0) → prf0 (~ j) ; (i = i1) → prf1 (~ j)}) (end i) )
---     (λ thing → {!!})
---     {!!})
+-- -- adjustPathPEnds {A = A} {a0' = a0'} {a0 = a0} prf0 prf1 =
+-- --   isoToEquiv (iso
+-- --     (λ strt i →  hcomp (λ j → λ {(i = i0) → prf0 j ; (i = i1) → prf1 j}) (strt i))
+-- --     (λ end i →  hcomp (λ j → λ {(i = i0) → prf0 (~ j) ; (i = i1) → prf1 (~ j)}) (end i) )
+-- --     (λ thing → {!!})
+-- --     {!!})
 
 
 
 
 
-module PathNRG {ℓ ℓA} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ)
-                  (a b : SectNRG Γ A) where
 
-  -- Γ ⊢ A type
-  -- Γ ⊢ a : A
-  -- Γ ⊢ b : A
-  -------------------
-  -- Γ ⊢ a ≡A b type
-  PathForm : DispNRG ℓA Γ
-  PathForm = record {
-    dcr = λ γ → (Path (A .dcr γ) (a .ac0 γ) (b .ac0 γ)) ;
-    dedge = λ γ0 γ1 γγ pa pb → PathP (λ i → A ⦅ pa i , pb i ⦆# γγ) (a .ac1 γ0 γ1 γγ) (b .ac1 γ0 γ1 γγ) ;
-    dnativ = λ γ0 γ1 γγ pa pb → flip compEquiv (PathPvsBridgeP (λ x i → A .dcr (Γ .nativ γ0 γ1 .fst γγ x)))
-                                 (flip compEquiv (adjustPathPEnds (sym (a .tm-nativ γ0 γ1 γγ)) (sym (b .tm-nativ γ0 γ1 γγ)))
-                                (congPathEquiv λ i → A .dnativ γ0 γ1 γγ (pa i) (pb i))) }
-open PathNRG public
+-- Γ ⊢ A type
+-- Γ ⊢ a : A
+-- Γ ⊢ b : A
+-------------------
+-- Γ ⊢ a ≡A b type
+PathForm : ∀ {ℓΓ ℓA} {Γ : NRGraph ℓΓ}
+             (A : DispNRG ℓA Γ) (a b : SectNRG Γ A) → DispNRG ℓA Γ
+PathForm {Γ = Γ} A a b = record {
+  dcr = λ γ → (Path (A .dcr γ) (a .ac0 γ) (b .ac0 γ)) ;
+  dedge = λ γ0 γ1 γγ pa pb → PathP (λ i → A ⦅ pa i , pb i ⦆# γγ) (a .ac1 γ0 γ1 γγ) (b .ac1 γ0 γ1 γγ) ;
+  dnativ = λ γ0 γ1 γbdg pa pb →
+    flip compEquiv (PathPvsBridgeP (λ x i → A .dcr (γbdg x))) (invEquiv
+    (compEquiv (congPathEquiv (λ i → invEquiv (A .dnativ _ _ γbdg (pa i) (pb i)) )) (invEquiv
+    (adjustPathPEnds (a .tm-nativ _ _ γbdg) (b .tm-nativ _ _ γbdg)))))
+  }
+  -- when dnativ had ∀edge phrasing...
+  -- dnativ = λ γ0 γ1 γγ pa pb → flip compEquiv (PathPvsBridgeP (λ x i → A .dcr (Γ .nativ γ0 γ1 .fst γγ x)))
+  --                              (flip compEquiv (adjustPathPEnds (sym (a .tm-nativ γ0 γ1 γγ)) (sym (b .tm-nativ γ0 γ1 γγ)))
+  --                             (congPathEquiv λ i → A .dnativ γ0 γ1 γγ (pa i) (pb i))) }
   
   
   
 
 
-module PointedTypes where
+-- module PointedTypes where
 
-  -- We build the NRG of pointed types in one go
-  -- Its field are the expected ones up to normalisation.
+--   -- We build the NRG of pointed types in one go
+--   -- Its field are the expected ones up to normalisation.
 
-  PointedTypesNRG0 : ∀ (ℓ : Level) → DispNRG (ℓ-suc ℓ) topNRG
-  PointedTypesNRG0 ℓ = ΣForm topNRG
-                         (UForm topNRG ℓ) -- Γ ⊢ Ul type(l+1)
-                         (ElApply (topNRG # (UForm  topNRG ℓ)) -- 1.X:Ul ⊢ X type(l)
-                           (var-rule topNRG (UForm topNRG ℓ))) -- 1.X:Ul ⊢ X : Ul
+--   PointedTypesNRG0 : ∀ (ℓ : Level) → DispNRG (ℓ-suc ℓ) topNRG
+--   PointedTypesNRG0 ℓ = ΣForm topNRG
+--                          (UForm topNRG ℓ) -- Γ ⊢ Ul type(l+1)
+--                          (ElApply (topNRG # (UForm  topNRG ℓ)) -- 1.X:Ul ⊢ X type(l)
+--                            (var-rule topNRG (UForm topNRG ℓ))) -- 1.X:Ul ⊢ X : Ul
 
-  PointedTypesNRG1 : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
-  PointedTypesNRG1 ℓ = rem-top-ctx (PointedTypesNRG0 ℓ)
+--   PointedTypesNRG1 : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+--   PointedTypesNRG1 ℓ = rem-top-ctx (PointedTypesNRG0 ℓ)
 
-  pointedTypesCarrier : PointedTypesNRG1 ℓ-zero .nrg-cr ≡ Σ Type (λ A → A)
-  pointedTypesCarrier = refl
+--   pointedTypesCarrier : PointedTypesNRG1 ℓ-zero .nrg-cr ≡ Σ Type (λ A → A)
+--   pointedTypesCarrier = refl
   
-  pointedTypesEdges : PointedTypesNRG1 ℓ-zero .nedge
-                     ≡ 
-                     λ Aa0 Aa1 → Σ (Aa0 .fst → Aa1 .fst → Type) λ R → R (Aa0 .snd) (Aa1 .snd)
-  pointedTypesEdges = refl
+--   pointedTypesEdges : PointedTypesNRG1 ℓ-zero .nedge
+--                      ≡ 
+--                      λ Aa0 Aa1 → Σ (Aa0 .fst → Aa1 .fst → Type) λ R → R (Aa0 .snd) (Aa1 .snd)
+--   pointedTypesEdges = refl
 
-{-
+-- {-
 
 module HContr where
 
 
+  -- 1, A : Type ℓ, c c' : El A ⊢ c ≡ c' type(l)
+  -- ------------------------------------------- ...
   -- . ⊢ hContr ℓ   type(ℓ + 1)
-  hContrNRG0 : ∀ (ℓ : Level) → DispNRG (ℓ-suc ℓ) topNRG
-  hContrNRG0 ℓ =
-    ΣForm topNRG
-      {- A type code A-} (UForm topNRG ℓ)
-      {- isContr(El A) -} (ΣForm {ℓA = ℓ} {ℓB = ℓ} (topNRG # UForm topNRG ℓ)
-        {- El A -} (ElApply (topNRG # UForm topNRG ℓ) (var-rule topNRG (UForm topNRG ℓ)))
-        {- isContr -} (ΠForm (topNRG # UForm topNRG ℓ #
-           ElApply (topNRG # UForm topNRG ℓ)
-           (var-rule topNRG (UForm topNRG ℓ)))
-             (ElApply _ (var1-rule topNRG (UForm topNRG ℓ) (ElApply (topNRG # UForm topNRG ℓ) (var-rule topNRG (UForm topNRG ℓ)))))
-             (PathForm _ (ElApply _ (var2-rule topNRG (UForm topNRG ℓ) (ElApply (topNRG # UForm topNRG ℓ) (var-rule topNRG (UForm topNRG ℓ)))
-                       (ElApply
-                        (topNRG # UForm topNRG ℓ #
-                         ElApply (topNRG # UForm topNRG ℓ)
-                         (var-rule topNRG (UForm topNRG ℓ)))
-                        (var1-rule topNRG (UForm topNRG ℓ)
-                         (ElApply (topNRG # UForm topNRG ℓ)
-                          (var-rule topNRG (UForm topNRG ℓ)))))))
-               {!var1over3 topNRG (UForm topNRG ℓ) 
-                  (ElApply (topNRG # UForm topNRG ℓ)
-                  (var-rule topNRG (UForm topNRG ℓ)))
-                    (ElApply
-                     (topNRG # UForm topNRG ℓ #
-                      ElApply (topNRG # UForm topNRG ℓ)
-                      (var-rule topNRG (UForm topNRG ℓ)))
-                     (var1-rule topNRG (UForm topNRG ℓ)
-                      (ElApply (topNRG # UForm topNRG ℓ)
-                       (var-rule topNRG (UForm topNRG ℓ)))))!} {!!})))
+  hContrNRGFromOpenPath :
+    ∀ (ℓ : Level) →
+    DispNRG ℓ (topNRG # TypeForm ℓ # El ℓ # wkn-type-by (topNRG # TypeForm ℓ) (El ℓ) (El ℓ)) →
+    DispNRG (ℓ-suc ℓ) topNRG
+  hContrNRGFromOpenPath ℓ  openPath =
+    ΣForm {ℓA = ℓ-suc ℓ} {ℓB = ℓ} {Γ = topNRG} (TypeForm ℓ) -- Σ  (Type ℓ) $ λ A → 
+    (ΠForm (El ℓ) -- Π A $ λ c → 
+    (ΠForm {ℓB = ℓ} (wkn-type-by (topNRG # TypeForm ℓ) (El ℓ) (El ℓ))
+    {!!} ))
+
+
+
+
+
+
+
+
+
+
+
+
+--     ΣForm topNRG
+--       {- A type code A-} (UForm topNRG ℓ)
+--       {- isContr(El A) -} (ΣForm {ℓA = ℓ} {ℓB = ℓ} (topNRG # UForm topNRG ℓ)
+--         {- El A -} (ElApply (topNRG # UForm topNRG ℓ) (var-rule topNRG (UForm topNRG ℓ)))
+--         {- isContr -} (ΠForm (topNRG # UForm topNRG ℓ #
+--            ElApply (topNRG # UForm topNRG ℓ)
+--            (var-rule topNRG (UForm topNRG ℓ)))
+--              (ElApply _ (var1-rule topNRG (UForm topNRG ℓ) (ElApply (topNRG # UForm topNRG ℓ) (var-rule topNRG (UForm topNRG ℓ)))))
+--              (PathForm _ (ElApply _ (var2-rule topNRG (UForm topNRG ℓ) (ElApply (topNRG # UForm topNRG ℓ) (var-rule topNRG (UForm topNRG ℓ)))
+--                        (ElApply
+--                         (topNRG # UForm topNRG ℓ #
+--                          ElApply (topNRG # UForm topNRG ℓ)
+--                          (var-rule topNRG (UForm topNRG ℓ)))
+--                         (var1-rule topNRG (UForm topNRG ℓ)
+--                          (ElApply (topNRG # UForm topNRG ℓ)
+--                           (var-rule topNRG (UForm topNRG ℓ)))))))
+--                {!var1over3 topNRG (UForm topNRG ℓ) 
+--                   (ElApply (topNRG # UForm topNRG ℓ)
+--                   (var-rule topNRG (UForm topNRG ℓ)))
+--                     (ElApply
+--                      (topNRG # UForm topNRG ℓ #
+--                       ElApply (topNRG # UForm topNRG ℓ)
+--                       (var-rule topNRG (UForm topNRG ℓ)))
+--                      (var1-rule topNRG (UForm topNRG ℓ)
+--                       (ElApply (topNRG # UForm topNRG ℓ)
+--                        (var-rule topNRG (UForm topNRG ℓ)))))!} {!!})))
+
+-- -}
+
+-- -- conversion seems to loop. why
+-- -- {compareTerm
+-- -- and then loop.
+-- -- tc.conv.term:30 loops after a comparison at primGel (compareTm')
+-- -- (bm' , m') <- reduceWithBlocker m for m equals
+
+-- {-
+
+-- m in context:
+-- (ℓ₁ : Level)
+-- (γ0
+--  : (topNRG # UForm topNRG ℓ₁ #
+--     ElApply (topNRG # UForm topNRG ℓ₁)
+--     (var-rule topNRG (UForm topNRG ℓ₁))
+--     #
+--     ElApply
+--     (topNRG # UForm topNRG ℓ₁ #
+--      ElApply (topNRG # UForm topNRG ℓ₁)
+--      (var-rule topNRG (UForm topNRG ℓ₁)))
+--     (var1-rule topNRG (UForm topNRG ℓ₁)
+--      (ElApply (topNRG # UForm topNRG ℓ₁)
+--       (var-rule topNRG (UForm topNRG ℓ₁)))))
+--    .nrg-cr)
+-- (γ1
+--  : (topNRG # UForm topNRG ℓ₁ #
+--     ElApply (topNRG # UForm topNRG ℓ₁)
+--     (var-rule topNRG (UForm topNRG ℓ₁))
+--     #
+--     ElApply
+--     (topNRG # UForm topNRG ℓ₁ #
+--      ElApply (topNRG # UForm topNRG ℓ₁)
+--      (var-rule topNRG (UForm topNRG ℓ₁)))
+--     (var1-rule topNRG (UForm topNRG ℓ₁)
+--      (ElApply (topNRG # UForm topNRG ℓ₁)
+--       (var-rule topNRG (UForm topNRG ℓ₁)))))
+--    .nrg-cr)
+-- (e
+--  : (topNRG # UForm topNRG ℓ₁ #
+--     ElApply (topNRG # UForm topNRG ℓ₁)
+--     (var-rule topNRG (UForm topNRG ℓ₁))
+--     #
+--     ElApply
+--     (topNRG # UForm topNRG ℓ₁ #
+--      ElApply (topNRG # UForm topNRG ℓ₁)
+--      (var-rule topNRG (UForm topNRG ℓ₁)))
+--     (var1-rule topNRG (UForm topNRG ℓ₁)
+--      (ElApply (topNRG # UForm topNRG ℓ₁)
+--       (var-rule topNRG (UForm topNRG ℓ₁)))))
+--    ⦅ γ0 , γ1 ⦆)
+-- (a0
+--  : dcr
+--    (wkn-type-by
+--     (topNRG # UForm topNRG ℓ₁ #
+--      ElApply (topNRG # UForm topNRG ℓ₁)
+--      (var-rule topNRG (UForm topNRG ℓ₁)))
+--     (ElApply
+--      (topNRG # UForm topNRG ℓ₁ #
+--       ElApply (topNRG # UForm topNRG ℓ₁)
+--       (var-rule topNRG (UForm topNRG ℓ₁)))
+--      (var1-rule topNRG (UForm topNRG ℓ₁)
+--       (ElApply (topNRG # UForm topNRG ℓ₁)
+--        (var-rule topNRG (UForm topNRG ℓ₁)))))
+--     (wkn-type-by (topNRG # UForm topNRG ℓ₁)
+--      (ElApply (topNRG # UForm topNRG ℓ₁)
+--       (var-rule topNRG (UForm topNRG ℓ₁)))
+--      (ElApply (topNRG # UForm topNRG ℓ₁)
+--       (var-rule topNRG (UForm topNRG ℓ₁)))))
+--    γ0)
+-- (a1
+--  : dcr
+--    (wkn-type-by
+--     (topNRG # UForm topNRG ℓ₁ #
+--      ElApply (topNRG # UForm topNRG ℓ₁)
+--      (var-rule topNRG (UForm topNRG ℓ₁)))
+--     (ElApply
+--      (topNRG # UForm topNRG ℓ₁ #
+--       ElApply (topNRG # UForm topNRG ℓ₁)
+--       (var-rule topNRG (UForm topNRG ℓ₁)))
+--      (var1-rule topNRG (UForm topNRG ℓ₁)
+--       (ElApply (topNRG # UForm topNRG ℓ₁)
+--        (var-rule topNRG (UForm topNRG ℓ₁)))))
+--     (wkn-type-by (topNRG # UForm topNRG ℓ₁)
+--      (ElApply (topNRG # UForm topNRG ℓ₁)
+--       (var-rule topNRG (UForm topNRG ℓ₁)))
+--      (ElApply (topNRG # UForm topNRG ℓ₁)
+--       (var-rule topNRG (UForm topNRG ℓ₁)))))
+--    γ1)
+-- (x
+--  : dedge
+--    (wkn-type-by
+--     (topNRG # UForm topNRG ℓ₁ #
+--      ElApply (topNRG # UForm topNRG ℓ₁)
+--      (var-rule topNRG (UForm topNRG ℓ₁)))
+--     (ElApply
+--      (topNRG # UForm topNRG ℓ₁ #
+--       ElApply (topNRG # UForm topNRG ℓ₁)
+--       (var-rule topNRG (UForm topNRG ℓ₁)))
+--      (var1-rule topNRG (UForm topNRG ℓ₁)
+--       (ElApply (topNRG # UForm topNRG ℓ₁)
+--        (var-rule topNRG (UForm topNRG ℓ₁)))))
+--     (wkn-type-by (topNRG # UForm topNRG ℓ₁)
+--      (ElApply (topNRG # UForm topNRG ℓ₁)
+--       (var-rule topNRG (UForm topNRG ℓ₁)))
+--      (ElApply (topNRG # UForm topNRG ℓ₁)
+--       (var-rule topNRG (UForm topNRG ℓ₁)))))
+--    γ0 γ1 e a0 a1)
+-- (i : BI)
+
+-- (fst
+--  (lineToEquiv
+--   (λ i →
+--      funExt⁻
+--      (funExt⁻
+--       (left-skew-tm-nativ (topNRG # UForm topNRG ℓ)
+--        (UForm (topNRG # UForm topNRG ℓ) ℓ)
+--        (var-rule topNRG (UForm topNRG ℓ)) (γ0 .fst .fst) (γ1 .fst .fst)
+--        (e .fst .fst))
+--       a0)
+--      a1 i))
+--  x i)
+
+-- with tc.reduce:90, we have a loop (?) of prim^gel appearing
+
+-- -}
+
+
+-- atel : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+-- atel ℓ = (topNRG # UForm topNRG ℓ #
+--           ElApply (topNRG # UForm topNRG ℓ)
+--           (var-rule topNRG (UForm topNRG ℓ))
+--           #
+--           ElApply
+--           (topNRG # UForm topNRG ℓ #
+--            ElApply (topNRG # UForm topNRG ℓ)
+--            (var-rule topNRG (UForm topNRG ℓ)))
+--           (var1-rule topNRG (UForm topNRG ℓ)
+--            (ElApply (topNRG # UForm topNRG ℓ)
+--             (var-rule topNRG (UForm topNRG ℓ)))))
+
+-- atyp : ∀ (ℓ : Level) → DispNRG _ (atel ℓ)
+-- atyp ℓ = (wkn-type-by
+--           (topNRG # UForm topNRG ℓ #
+--            ElApply (topNRG # UForm topNRG ℓ)
+--            (var-rule topNRG (UForm topNRG ℓ)))
+--           (ElApply
+--            (topNRG # UForm topNRG ℓ #
+--             ElApply (topNRG # UForm topNRG ℓ)
+--             (var-rule topNRG (UForm topNRG ℓ)))
+--            (var1-rule topNRG (UForm topNRG ℓ)
+--             (ElApply (topNRG # UForm topNRG ℓ)
+--              (var-rule topNRG (UForm topNRG ℓ)))))
+--           (wkn-type-by (topNRG # UForm topNRG ℓ)
+--            (ElApply (topNRG # UForm topNRG ℓ)
+--             (var-rule topNRG (UForm topNRG ℓ)))
+--            (ElApply (topNRG # UForm topNRG ℓ)
+--             (var-rule topNRG (UForm topNRG ℓ)))))
+
+-- module Bug (ℓ : Level) (γ0 γ1 : atel ℓ .nrg-cr) (γγ : atel ℓ ⦅ γ0 , γ1 ⦆)
+--               (a0 : atyp ℓ .dcr γ0) (a1 : atyp ℓ .dcr γ1) (aa : atyp ℓ ⦅ a0 , a1 ⦆# γγ)
+--               (@tick z : BI) where
+
+-- {-
+-- (fst
+--  (lineToEquiv
+--   (λ i →
+--      funExt⁻
+--      (funExt⁻
+--       (left-skew-tm-nativ (topNRG # UForm topNRG ℓ)
+--        (UForm (topNRG # UForm topNRG ℓ) ℓ)
+--        (var-rule topNRG (UForm topNRG ℓ)) (γ0 .fst .fst) (γ1 .fst .fst)
+--        (e .fst .fst))
+--       a0)
+--      a1 i))
+--  x i)
+-- -}
+--   1,X:Ul⊢Ul:type = (UForm (topNRG # UForm topNRG ℓ) ℓ)
+
+--   1,X:Ul⊢X:Ul = (var-rule topNRG (UForm topNRG ℓ))
+--   t = 1,X:Ul⊢X:Ul
+
+-- -- 
+
+--   thing : Bool
+--   thing = {! left-skew-tm-nativ (topNRG # UForm topNRG ℓ) (UForm (topNRG # UForm topNRG ℓ) ℓ) t (γ0 .fst .fst) (γ1 .fst .fst) (γγ .fst .fst) !}
+-- {-
+--  goal : γγ .fst .fst .snd ≡
+--                               BridgeP
+--                               (λ x →
+--                                  primGel (γ0 .fst .fst .snd) (γ1 .fst .fst .snd)
+--                                  (snd (γγ .fst .fst)) x)
+
+-- leads to impossible when normalised
+-- -}
+
+
+
+-- module Bug2 (ℓ : Level) (A0 A1 : Type ℓ) (R : A0 → A1 → Type ℓ) (a0 : A0) (a1 : A1)
+--                (base : BridgeP (λ x → primGel A0 A1 R x) a0 a1) (@tick j : BI) where
+
+--   end : BridgeP (λ x → primGel A0 A1 R x) a0 a1
+--   end = {!transp (λ _ → BridgeP (λ x → primGel A0 A1 R x) a0 a1) i0 base j!}
+
+
+-- module Bug3 (ℓ : Level) (A0 A1 : Type ℓ) (R : A0 → A1 → Type ℓ) (a0 : A0) (a1 : A1)
+--                (base : BridgeP (λ x → primGel A0 A1 R x) a0 a1)  where -- (@tick j : BI)
+
+--   -- whnf (C-u C-u C-u C-n) the hole leads to impossible.
+--   heyy : R a0 a1
+--   heyy = {!prim^ungel λ j  → transp (λ _ → BridgeP (λ x → primGel A0 A1 R x) a0 a1) i0 base j!} 
+
+-- -- λ j → transp (λ _ → BridgeP (λ x → primGel A0 A1 R x) a0 a1) i0 base j
+
+
+
+
+
+{- JUNK 
+
+
+
+    -- nativeness (must be stated dependently, and pointwise)
+    -- "forall edge" formulation.
+    -- mismatch with nativeness formulation for relators
+    -- this is essentially nativeness of a section of (pr : Γ.A → Γ) relator
+    -- tm-nativ : ∀ (γ0 γ1 : Γ .nrg-cr) (γγ : Γ ⦅ γ0 , γ1 ⦆ ) →
+    --                PathP (λ _ → BridgeP (λ x → A .dcr (equivFun( Γ .nativ γ0 γ1  ) γγ x)) (ac0 γ0) (ac0 γ1))
+    --                  (λ x → ac0 ((equivFun (Γ .nativ γ0 γ1) γγ) x) ) --use ac0
+    --                  (equivFun (A .dnativ γ0 γ1 γγ (ac0 γ0) (ac0 γ1)) (ac1 γ0 γ1 γγ)) --use ac1
+
+-- left-skew-tm-nativ : ∀ {ℓ ℓA} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (a : SectNRG Γ A) (γ0 γ1 : Γ .nrg-cr) (γγ : Γ ⦅ γ0 , γ1 ⦆ ) →
+--   Path (A ⦅ ac0 a γ0 , ac0 a γ1 ⦆# γγ)
+--     (a .ac1 γ0 γ1 γγ)
+--     (invEq (A .dnativ γ0 γ1 γγ (a .ac0 γ0) (a .ac0 γ1)) λ x → a .ac0 ((equivFun (Γ .nativ γ0 γ1) γγ) x))
+-- left-skew-tm-nativ Γ A a γ0 γ1 γγ =
+--    invEq (equivAdjointEquiv (A .dnativ γ0 γ1 γγ (a .ac0 γ0) (a .ac0 γ1)) {a = a .ac1 γ0 γ1 γγ} {b = λ x → a .ac0 ((equivFun (Γ .nativ γ0 γ1) γγ) x)})
+--      (sym (a .tm-nativ γ0 γ1 γγ))
+
+
+
+
+
+
+
+
+
 
 -}
-
--- conversion seems to loop. why
--- {compareTerm
--- and then loop.
--- tc.conv.term:30 loops after a comparison at primGel (compareTm')
--- (bm' , m') <- reduceWithBlocker m for m equals
-
-{-
-
-m in context:
-(ℓ₁ : Level)
-(γ0
- : (topNRG # UForm topNRG ℓ₁ #
-    ElApply (topNRG # UForm topNRG ℓ₁)
-    (var-rule topNRG (UForm topNRG ℓ₁))
-    #
-    ElApply
-    (topNRG # UForm topNRG ℓ₁ #
-     ElApply (topNRG # UForm topNRG ℓ₁)
-     (var-rule topNRG (UForm topNRG ℓ₁)))
-    (var1-rule topNRG (UForm topNRG ℓ₁)
-     (ElApply (topNRG # UForm topNRG ℓ₁)
-      (var-rule topNRG (UForm topNRG ℓ₁)))))
-   .nrg-cr)
-(γ1
- : (topNRG # UForm topNRG ℓ₁ #
-    ElApply (topNRG # UForm topNRG ℓ₁)
-    (var-rule topNRG (UForm topNRG ℓ₁))
-    #
-    ElApply
-    (topNRG # UForm topNRG ℓ₁ #
-     ElApply (topNRG # UForm topNRG ℓ₁)
-     (var-rule topNRG (UForm topNRG ℓ₁)))
-    (var1-rule topNRG (UForm topNRG ℓ₁)
-     (ElApply (topNRG # UForm topNRG ℓ₁)
-      (var-rule topNRG (UForm topNRG ℓ₁)))))
-   .nrg-cr)
-(e
- : (topNRG # UForm topNRG ℓ₁ #
-    ElApply (topNRG # UForm topNRG ℓ₁)
-    (var-rule topNRG (UForm topNRG ℓ₁))
-    #
-    ElApply
-    (topNRG # UForm topNRG ℓ₁ #
-     ElApply (topNRG # UForm topNRG ℓ₁)
-     (var-rule topNRG (UForm topNRG ℓ₁)))
-    (var1-rule topNRG (UForm topNRG ℓ₁)
-     (ElApply (topNRG # UForm topNRG ℓ₁)
-      (var-rule topNRG (UForm topNRG ℓ₁)))))
-   ⦅ γ0 , γ1 ⦆)
-(a0
- : dcr
-   (wkn-type-by
-    (topNRG # UForm topNRG ℓ₁ #
-     ElApply (topNRG # UForm topNRG ℓ₁)
-     (var-rule topNRG (UForm topNRG ℓ₁)))
-    (ElApply
-     (topNRG # UForm topNRG ℓ₁ #
-      ElApply (topNRG # UForm topNRG ℓ₁)
-      (var-rule topNRG (UForm topNRG ℓ₁)))
-     (var1-rule topNRG (UForm topNRG ℓ₁)
-      (ElApply (topNRG # UForm topNRG ℓ₁)
-       (var-rule topNRG (UForm topNRG ℓ₁)))))
-    (wkn-type-by (topNRG # UForm topNRG ℓ₁)
-     (ElApply (topNRG # UForm topNRG ℓ₁)
-      (var-rule topNRG (UForm topNRG ℓ₁)))
-     (ElApply (topNRG # UForm topNRG ℓ₁)
-      (var-rule topNRG (UForm topNRG ℓ₁)))))
-   γ0)
-(a1
- : dcr
-   (wkn-type-by
-    (topNRG # UForm topNRG ℓ₁ #
-     ElApply (topNRG # UForm topNRG ℓ₁)
-     (var-rule topNRG (UForm topNRG ℓ₁)))
-    (ElApply
-     (topNRG # UForm topNRG ℓ₁ #
-      ElApply (topNRG # UForm topNRG ℓ₁)
-      (var-rule topNRG (UForm topNRG ℓ₁)))
-     (var1-rule topNRG (UForm topNRG ℓ₁)
-      (ElApply (topNRG # UForm topNRG ℓ₁)
-       (var-rule topNRG (UForm topNRG ℓ₁)))))
-    (wkn-type-by (topNRG # UForm topNRG ℓ₁)
-     (ElApply (topNRG # UForm topNRG ℓ₁)
-      (var-rule topNRG (UForm topNRG ℓ₁)))
-     (ElApply (topNRG # UForm topNRG ℓ₁)
-      (var-rule topNRG (UForm topNRG ℓ₁)))))
-   γ1)
-(x
- : dedge
-   (wkn-type-by
-    (topNRG # UForm topNRG ℓ₁ #
-     ElApply (topNRG # UForm topNRG ℓ₁)
-     (var-rule topNRG (UForm topNRG ℓ₁)))
-    (ElApply
-     (topNRG # UForm topNRG ℓ₁ #
-      ElApply (topNRG # UForm topNRG ℓ₁)
-      (var-rule topNRG (UForm topNRG ℓ₁)))
-     (var1-rule topNRG (UForm topNRG ℓ₁)
-      (ElApply (topNRG # UForm topNRG ℓ₁)
-       (var-rule topNRG (UForm topNRG ℓ₁)))))
-    (wkn-type-by (topNRG # UForm topNRG ℓ₁)
-     (ElApply (topNRG # UForm topNRG ℓ₁)
-      (var-rule topNRG (UForm topNRG ℓ₁)))
-     (ElApply (topNRG # UForm topNRG ℓ₁)
-      (var-rule topNRG (UForm topNRG ℓ₁)))))
-   γ0 γ1 e a0 a1)
-(i : BI)
-
-(fst
- (lineToEquiv
-  (λ i →
-     funExt⁻
-     (funExt⁻
-      (left-skew-tm-nativ (topNRG # UForm topNRG ℓ)
-       (UForm (topNRG # UForm topNRG ℓ) ℓ)
-       (var-rule topNRG (UForm topNRG ℓ)) (γ0 .fst .fst) (γ1 .fst .fst)
-       (e .fst .fst))
-      a0)
-     a1 i))
- x i)
-
-with tc.reduce:90, we have a loop (?) of prim^gel appearing
-
--}
-
-
-atel : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
-atel ℓ = (topNRG # UForm topNRG ℓ #
-          ElApply (topNRG # UForm topNRG ℓ)
-          (var-rule topNRG (UForm topNRG ℓ))
-          #
-          ElApply
-          (topNRG # UForm topNRG ℓ #
-           ElApply (topNRG # UForm topNRG ℓ)
-           (var-rule topNRG (UForm topNRG ℓ)))
-          (var1-rule topNRG (UForm topNRG ℓ)
-           (ElApply (topNRG # UForm topNRG ℓ)
-            (var-rule topNRG (UForm topNRG ℓ)))))
-
-atyp : ∀ (ℓ : Level) → DispNRG _ (atel ℓ)
-atyp ℓ = (wkn-type-by
-          (topNRG # UForm topNRG ℓ #
-           ElApply (topNRG # UForm topNRG ℓ)
-           (var-rule topNRG (UForm topNRG ℓ)))
-          (ElApply
-           (topNRG # UForm topNRG ℓ #
-            ElApply (topNRG # UForm topNRG ℓ)
-            (var-rule topNRG (UForm topNRG ℓ)))
-           (var1-rule topNRG (UForm topNRG ℓ)
-            (ElApply (topNRG # UForm topNRG ℓ)
-             (var-rule topNRG (UForm topNRG ℓ)))))
-          (wkn-type-by (topNRG # UForm topNRG ℓ)
-           (ElApply (topNRG # UForm topNRG ℓ)
-            (var-rule topNRG (UForm topNRG ℓ)))
-           (ElApply (topNRG # UForm topNRG ℓ)
-            (var-rule topNRG (UForm topNRG ℓ)))))
-
-module Bug (ℓ : Level) (γ0 γ1 : atel ℓ .nrg-cr) (γγ : atel ℓ ⦅ γ0 , γ1 ⦆)
-              (a0 : atyp ℓ .dcr γ0) (a1 : atyp ℓ .dcr γ1) (aa : atyp ℓ ⦅ a0 , a1 ⦆# γγ)
-              (@tick z : BI) where
-
-{-
-(fst
- (lineToEquiv
-  (λ i →
-     funExt⁻
-     (funExt⁻
-      (left-skew-tm-nativ (topNRG # UForm topNRG ℓ)
-       (UForm (topNRG # UForm topNRG ℓ) ℓ)
-       (var-rule topNRG (UForm topNRG ℓ)) (γ0 .fst .fst) (γ1 .fst .fst)
-       (e .fst .fst))
-      a0)
-     a1 i))
- x i)
--}
-  1,X:Ul⊢Ul:type = (UForm (topNRG # UForm topNRG ℓ) ℓ)
-
-  1,X:Ul⊢X:Ul = (var-rule topNRG (UForm topNRG ℓ))
-  t = 1,X:Ul⊢X:Ul
-
--- 
-
-  thing : Bool
-  thing = {! left-skew-tm-nativ (topNRG # UForm topNRG ℓ) (UForm (topNRG # UForm topNRG ℓ) ℓ) t (γ0 .fst .fst) (γ1 .fst .fst) (γγ .fst .fst) !}
-{-
- goal : γγ .fst .fst .snd ≡
-                              BridgeP
-                              (λ x →
-                                 primGel (γ0 .fst .fst .snd) (γ1 .fst .fst .snd)
-                                 (snd (γγ .fst .fst)) x)
-
-leads to impossible when normalised
--}
-
-
-
-module Bug2 (ℓ : Level) (A0 A1 : Type ℓ) (R : A0 → A1 → Type ℓ) (a0 : A0) (a1 : A1)
-               (base : BridgeP (λ x → primGel A0 A1 R x) a0 a1) (@tick j : BI) where
-
-  end : BridgeP (λ x → primGel A0 A1 R x) a0 a1
-  end = {!transp (λ _ → BridgeP (λ x → primGel A0 A1 R x) a0 a1) i0 base j!}
-
-
-module Bug3 (ℓ : Level) (A0 A1 : Type ℓ) (R : A0 → A1 → Type ℓ) (a0 : A0) (a1 : A1)
-               (base : BridgeP (λ x → primGel A0 A1 R x) a0 a1)  where -- (@tick j : BI)
-
-  -- whnf (C-u C-u C-u C-n) the hole leads to impossible.
-  heyy : R a0 a1
-  heyy = {!prim^ungel λ j  → transp (λ _ → BridgeP (λ x → primGel A0 A1 R x) a0 a1) i0 base j!} 
-
--- λ j → transp (λ _ → BridgeP (λ x → primGel A0 A1 R x) a0 a1) i0 base j
-
-
-
-
-
