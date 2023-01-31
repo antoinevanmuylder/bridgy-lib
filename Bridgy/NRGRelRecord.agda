@@ -28,7 +28,7 @@ open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Data.Sigma using (_×_ ; ≃-× ; ≡-× ; Σ-cong-equiv ; Σ-cong-equiv-snd)
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
-open import Cubical.Foundations.Path using (congPathEquiv ; PathP≃Path ; compPathrEquiv ; compPathlEquiv)
+open import Cubical.Foundations.Path -- using (congPathEquiv ; PathP≃Path ; compPathrEquiv ; compPathlEquiv)
 open import Cubical.Foundations.Transport using (transportEquiv)
 
 -- cubical lemmas
@@ -771,19 +771,19 @@ module HProp where
           sym (transportRefl (λ x → snd (γbdg x))) } }
 
   -- 1, A : Type ℓ ⊢ isProp(A) type(l)
-  isPropDispNRG : ∀ {ℓ : Level} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
-  isPropDispNRG {ℓ = ℓ} = isPropNRGFromOpenPath ℓ (myOpenPath ℓ)
+  isPropDispNRG0 : ∀ {ℓ : Level} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
+  isPropDispNRG0 {ℓ = ℓ} = isPropNRGFromOpenPath ℓ (myOpenPath ℓ)
 
   -- there's a simpler characterization of hProp { P0 , P1 }
   hPropNRG0 : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
   hPropNRG0 ℓ =
     rem-top-ctx -- DispNRG ℓ+1 topNRG
-      (ΣForm (TypeForm topNRG ℓ) (isPropDispNRG))
+      (ΣForm (TypeForm topNRG ℓ) (isPropDispNRG0))
       
 
   -- just rewriting nicely
-  hPropNRG1 : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
-  hPropNRG1 ℓ = record {
+  hPropNRG0rew : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+  hPropNRG0rew ℓ = record {
     nrg-cr = hProp ℓ ;
     nedge =  λ { (P0 , isp0) (P1 , isp1) →
                   Σ (P0 → P1 → (Type ℓ)) (λ PP →
@@ -793,21 +793,55 @@ module HProp where
     nativ = hPropNRG0 ℓ .nativ
     }
 
-  hPropEdgeCharac : ∀ {ℓ} (P0 P1 : Type ℓ) (isp0 : isProp P0) (isp1 : isProp P1) →
-    (P0 → P1 → (hProp ℓ))
-    ≃
-    Σ (P0 → P1 → Type ℓ) (λ PP →
-        (p0 : P0) (p1 : P1) (pp : PP p0 p1) →
-        (p0' : P0) (p1' : P1) (pp' : PP p0' p1') →
-        PathP (λ i → PP (isp0 p0 p0' i) (isp1 p1 p1' i)) pp pp')
-  hPropEdgeCharac P0 P1 isp0 isp1 =
+  -- hPropEdgeCharac : ∀ {ℓ} (P0 P1 : Type ℓ) (isp0 : isProp P0) (isp1 : isProp P1) →
+  --   (P0 → P1 → (hProp ℓ))
+  --   ≃
+  --   Σ (P0 → P1 → Type ℓ) (λ PP →
+  --       (p0 : P0) (p1 : P1) (pp : PP p0 p1) →
+  --       (p0' : P0) (p1' : P1) (pp' : PP p0' p1') →
+  --       PathP (λ i → PP (isp0 p0 p0' i) (isp1 p1 p1' i)) pp pp')
+  -- hPropEdgeCharac P0 P1 isp0 isp1 =
+  --   isoToEquiv (iso
+  --     (λ mrel →  (  (λ p0 p1 → mrel p0 p1 .fst) ,
+  --                    λ p0 p1 pp p0' p1' pp' →  toPathP (mrel p0' p1' .snd _ _) ))
+  --     (λ { (PP , prf) →  λ p0 p1 →
+  --              (PP p0 p1 ,
+  --              λ aa aa' → {!congPathEquiv {A = λ i → PP (isp0 p0 p0 i) (isp1 p1 p1 i)} {B = λ i → PP p0 p1}
+  --                          (λ i → pathToEquiv (λ j → PP (ispRefl P0 isp0 p0 i j) (ispRefl P1 isp1 p1 i j) ) )!} ) }) {!!} {!!}) -- prf p0 p1 aa p0 p1 aa'
+
+  --   where
+
+  --     ispRefl : ∀ {ℓ} (P : Type ℓ) (isp : isProp P) (p : P) (i : I) →
+  --       isp p p i ≡ p
+  --     ispRefl P isp p i = isp (isp p p i) p
+
+  mereRelRew : ∀ {ℓ} (P0 P1 : Type ℓ) →
+    (P0 → P1 → hProp ℓ)
+    ≃ 
+    Σ (P0 → P1 → Type ℓ) (λ R →
+      ∀ p0 p1 → isProp (R p0 p1)) 
+  mereRelRew P0 P1 = isoToEquiv (iso
+    (λ R → (λ p0 p1 → R p0 p1 .fst) ,
+            λ p0 p1 → R p0 p1 .snd)
+    (λ { (R , Rprf) → λ p0 p1 → (R p0 p1 , Rprf p0 p1) } )
+    (λ { (R , prf) → refl } )
+    λ _ → refl)
+
+  
+
+  isPropDedgeCharac : ∀ {ℓ} (P0 P1 : Type ℓ) (isp0 : isProp P0) (isp1 : isProp P1)
+                        (R : P0 → P1 → Type ℓ) →
+                        (∀ (p0 : P0) (p1 : P1) → isProp (R p0 p1)) ≃ isPropDispNRG0 ⦅ isp0 , isp1 ⦆# ( (tt , R))
+  isPropDedgeCharac P0 P1 isp0 isp1 R =
     isoToEquiv (iso
-      (λ mrel →  (  (λ p0 p1 → mrel p0 p1 .fst) ,
-                     λ p0 p1 pp p0' p1' pp' →  toPathP (mrel p0' p1' .snd _ _) ))
-      (λ { (PP , prf) →  λ p0 p1 →
-               (PP p0 p1 ,
-               λ aa aa' → {!congPathEquiv {A = λ i → PP (isp0 p0 p0 i) (isp1 p1 p1 i)} {B = λ i → PP p0 p1}
-                           (λ i → pathToEquiv (λ j → PP (ispRefl P0 isp0 p0 i j) (ispRefl P1 isp1 p1 i j) ) )!} ) }) {!!} {!!}) -- prf p0 p1 aa p0 p1 aa'
+      (λ RPropFib → λ a0 a1 aa a0' a1' aa' →
+        -- a path along a line of props always exist
+        isProp→isContrPathP (λ i → RPropFib _ _) aa aa' .fst )
+      (λ flr → λ b0 b1 → 
+        λ bb bb' →
+         let myflr = flr _ _ bb _ _ bb' in
+            flip _∙_ (fromPathP {A = (λ i → R (isp0 b0 b0 i) (isp1 b1 b1 i))} myflr)
+            {!transport-filler!} ) {!!} {!!})
 
     where
 
@@ -815,13 +849,23 @@ module HProp where
         isp p p i ≡ p
       ispRefl P isp p i = isp (isp p p i) p
 
+
+
+
+
   -- could be more helpful to prove
   -- Let P0 P1 be hProps (with proofs isp0 isp1), R : P0 → P1 → Type ℓ relation
   -- then
   -- (∀ p0 p1, isProp (R p0 p1)) ≃ isProp{ isp0, isp1 }# R
-  -- the displayed edges of isProp express "being a mere relation"
+  -- the displayed edges function of isProp express "being a mere relation"
+
+  -- we will then have a new displayed NRG with isProp carrier, that may be use to build hSetNRG?
 
   -- isSet X <-> (x : A) → isProp (x ≡ x)
+
+
+
+
 
 
 
@@ -1109,7 +1153,7 @@ module HProp where
 
 
 
-
+  
 
 
 
