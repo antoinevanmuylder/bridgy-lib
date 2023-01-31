@@ -575,9 +575,9 @@ El Γ ℓ = record {
 
   
 
--- open UrulesNRG public
 
 
+-- for now keeping Γ implicit seems to work (leads to no dumb type conversion instead of syn eq)
 module ΣΠrulesNRG {ℓΓ ℓA ℓB} {Γ : NRGraph ℓΓ} (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) where
 
   -- Γ ⊢ A type
@@ -691,7 +691,7 @@ PathForm Γ A a b = record {
 
 
 
-module HContr where
+module HProp where
 
 
   -- the context is explicit in our DSL
@@ -700,19 +700,19 @@ module HContr where
 
   -- 1, A : Type ℓ, c c' : El A ⊢ c ≡ c' type(l)
   -- ------------------------------------------- ...
-  -- . ⊢ hContr ℓ   type(ℓ + 1)
-  hContrNRGFromOpenPath :
+  -- 1, A : Type ℓ ⊢ isProp(A) type(l)
+  isPropNRGFromOpenPath :
     ∀ (ℓ : Level) →
     DispNRG ℓ (topNRG # 
       TypeForm topNRG ℓ #
       El topNRG ℓ #
       wkn-type-by (topNRG # TypeForm topNRG ℓ) (El topNRG ℓ) (El topNRG ℓ)) →
-    DispNRG (ℓ-suc ℓ) topNRG
-  hContrNRGFromOpenPath ℓ  openPath =
-    ΣForm (TypeForm topNRG ℓ) -- Σ  (Type ℓ) $ λ A → 
+    DispNRG (ℓ) (topNRG # TypeForm topNRG ℓ)
+  isPropNRGFromOpenPath ℓ  openPath =
+    -- 1, A : Type ℓ ⊢ isProp A
     (ΠForm (El topNRG ℓ) -- Π A $ λ c → 
-    (ΠForm {ℓB = ℓ} (wkn-type-by (topNRG # TypeForm topNRG ℓ) (El topNRG ℓ) (El topNRG ℓ))
-    openPath ))
+    (ΠForm {ℓB = ℓ} (wkn-type-by (topNRG # TypeForm topNRG ℓ) (El topNRG ℓ) (El topNRG ℓ)) -- Π A $ λ c' → 
+    openPath ))  -- c ≡ c'
 
   -- 1, A : Type ℓ, c c' : El A ⊢ c ≡ c' type(l)
   myOpenPath : ∀ (ℓ : Level) →
@@ -770,14 +770,28 @@ module HContr where
         tm-nativ =  λ { ( ( ( tt , A0 ) , c0 ) , c0' ) ( ( ( tt , A1 ) , c1 ) , c1' ) γbdg →
           sym (transportRefl (λ x → snd (γbdg x))) } }
 
-  hContrNRG0 : ∀ (ℓ : Level) → DispNRG (ℓ-suc ℓ) topNRG
-  hContrNRG0 ℓ = hContrNRGFromOpenPath ℓ (myOpenPath ℓ)
+  -- 1, A : Type ℓ ⊢ isProp(A) type(l)
+  isPropNRG : ∀ {ℓ : Level} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
+  isPropNRG {ℓ = ℓ} = isPropNRGFromOpenPath ℓ (myOpenPath ℓ)
 
-  hContrNRG : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
-  hContrNRG ℓ = rem-top-ctx (hContrNRG0 ℓ)
+  -- there's a simpler characterization of hProp { P0 , P1 }
+  hPropNRG0 : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+  hPropNRG0 ℓ =
+    rem-top-ctx -- DispNRG ℓ+1 topNRG
+      (ΣForm (TypeForm topNRG ℓ) (isPropNRG))
+      
 
-  test : (ℓ : Level) → Bool
-  test ℓ = {!hContrNRG  ℓ .nativ!}
+  -- just rewriting nicely
+  hPropNRG1 : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+  hPropNRG1 ℓ = record {
+    nrg-cr = hProp ℓ ;
+    nedge =  λ { (P0 , isp0) (P1 , isp1) →
+                  Σ (P0 → P1 → (Type ℓ)) (λ PP →
+                  (p0 : P0) (p1 : P1) (pp : PP p0 p1) →
+                  (p0' : P0) (p1' : P1) (pp' : PP p0' p1') →
+                  PathP (λ i → PP (isp0 p0 p0' i) (isp1 p1 p1' i)) pp pp') } ;
+    nativ = hPropNRG0 ℓ .nativ
+    }
 
 
 
