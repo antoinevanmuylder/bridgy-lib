@@ -771,14 +771,14 @@ module HProp where
           sym (transportRefl (λ x → snd (γbdg x))) } }
 
   -- 1, A : Type ℓ ⊢ isProp(A) type(l)
-  isPropNRG : ∀ {ℓ : Level} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
-  isPropNRG {ℓ = ℓ} = isPropNRGFromOpenPath ℓ (myOpenPath ℓ)
+  isPropDispNRG : ∀ {ℓ : Level} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
+  isPropDispNRG {ℓ = ℓ} = isPropNRGFromOpenPath ℓ (myOpenPath ℓ)
 
   -- there's a simpler characterization of hProp { P0 , P1 }
   hPropNRG0 : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
   hPropNRG0 ℓ =
     rem-top-ctx -- DispNRG ℓ+1 topNRG
-      (ΣForm (TypeForm topNRG ℓ) (isPropNRG))
+      (ΣForm (TypeForm topNRG ℓ) (isPropDispNRG))
       
 
   -- just rewriting nicely
@@ -793,6 +793,35 @@ module HProp where
     nativ = hPropNRG0 ℓ .nativ
     }
 
+  hPropEdgeCharac : ∀ {ℓ} (P0 P1 : Type ℓ) (isp0 : isProp P0) (isp1 : isProp P1) →
+    (P0 → P1 → (hProp ℓ))
+    ≃
+    Σ (P0 → P1 → Type ℓ) (λ PP →
+        (p0 : P0) (p1 : P1) (pp : PP p0 p1) →
+        (p0' : P0) (p1' : P1) (pp' : PP p0' p1') →
+        PathP (λ i → PP (isp0 p0 p0' i) (isp1 p1 p1' i)) pp pp')
+  hPropEdgeCharac P0 P1 isp0 isp1 =
+    isoToEquiv (iso
+      (λ mrel →  (  (λ p0 p1 → mrel p0 p1 .fst) ,
+                     λ p0 p1 pp p0' p1' pp' →  toPathP (mrel p0' p1' .snd _ _) ))
+      (λ { (PP , prf) →  λ p0 p1 →
+               (PP p0 p1 ,
+               λ aa aa' → {!congPathEquiv {A = λ i → PP (isp0 p0 p0 i) (isp1 p1 p1 i)} {B = λ i → PP p0 p1}
+                           (λ i → pathToEquiv (λ j → PP (ispRefl P0 isp0 p0 i j) (ispRefl P1 isp1 p1 i j) ) )!} ) }) {!!} {!!}) -- prf p0 p1 aa p0 p1 aa'
+
+    where
+
+      ispRefl : ∀ {ℓ} (P : Type ℓ) (isp : isProp P) (p : P) (i : I) →
+        isp p p i ≡ p
+      ispRefl P isp p i = isp (isp p p i) p
+
+  -- could be more helpful to prove
+  -- Let P0 P1 be hProps (with proofs isp0 isp1), R : P0 → P1 → Type ℓ relation
+  -- then
+  -- (∀ p0 p1, isProp (R p0 p1)) ≃ isProp{ isp0, isp1 }# R
+  -- the displayed edges of isProp express "being a mere relation"
+
+  -- isSet X <-> (x : A) → isProp (x ≡ x)
 
 
 
