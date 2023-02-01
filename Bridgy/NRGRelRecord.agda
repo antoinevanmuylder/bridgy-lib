@@ -292,80 +292,6 @@ module PathpNRG {ℓ : Level} where
 open PathpNRG public
 
 
-
-
--- -- conjecture (kind of proven on paper for hProp):
--- -- for any level n, nType is a native reflexive graph by taking "nType relations" as edges
--- --    ∀ A0 A1 → (A0 → A1 → nType) ≃ BridgeP (λ _ → nType) A0 A1
--- -- For instance a bridge between two hProps is a proof irrelvant relation:)
--- module HSet (ℓ : Level) where
-
---   -- We begin by proving the conjecture for hContr
-
---   hContr : Type (ℓ-suc ℓ)
---   hContr = TypeOfHLevel ℓ 0
-
---   instance
---     hContrHasNRG : HasNRGraph hContr
---     hContrHasNRG = {!!}
-
---                    -- flip compEquiv ΣvsBridgeP
---                    -- (flip compEquiv (Σ-cong-equiv relativity
---                    --   λ R → flip compEquiv ΣvsBridgeP (flip compEquiv (Σ-cong-equiv (pathToEquiv (λ i → retEq relativity R (~ i) (prf0 .fst) (prf1 .fst)))
---                    --   λ rprf → {!ΠvsBridgeP!}) {!!}))
---                    --   {!!})
-
---                    -- flip compEquiv ΣvsBridgeP
---                    -- (flip compEquiv (Σ-cong-equiv-snd  (λ q → ΣvsBridgeP))
---                    -- (flip compEquiv (Σ-cong-equiv-snd {A = (BridgeP (λ x → Type ℓ) A0 A1)}
---                    --    {B = {!Σ-cong-equiv-snd!}}
---                    --    λ q →  flip compEquiv (Σ-cong-equiv-snd {A = (BridgeP (λ x → q x) (fst prf0) (fst prf1))}
---                    --    {B = {!!}} λ q → ΠvsBridgeP ) {!!})
---                    --    {!!}))
-
-
--- {- 
--- need rewriting badly
--- ?0 : l ≡ r0
---     α0 : R0 r1 ≡ r0
--- ?0 := ?1 ∙ α0
---     α1 : R1 r2 ≡ r1
--- ?1 := ?2 ∙ R0 α1
---     α2 : R2 r3 ≡ r2
--- ?2 := ?3 ∙ R0 R1 α2
---     α3 : R3 r4 ≡ r3
--- ?3 := ?4 ∙ R0 R1 R2 α3
-
--- ...
-
--- ?0      
--- ?1 ∙ α0           
--- (?2 ∙ R0 α1) ∙ α0
--- ((?3 ∙ R0 R1 α2) ∙ R0 α1) ∙ α0
--- (((?4 ∙ R0 R1 R2 α3) ∙ R0 R1 α2) ∙ R0 α1) ∙ α0
--- ((((?5 ∙ R0 R1 R2 R3 α4) ∙ R0 R1 R2 α3) ∙ R0 R1 α2) ∙ R0 α1) ∙ α0
--- -}
-
-
--- record NRGraph ℓ : Type (ℓ-suc ℓ) where
---   -- constructor mkNRG
---   field
---     nrg-cr : Type ℓ
---     nedge :  nrg-cr → nrg-cr → Type ℓ
---     nativ : ∀ (a b : nrg-cr) → nedge a b ≃ BridgeP (λ _ → nrg-cr) a b
-
---   reflNedge : ∀ (a : nrg-cr) → nedge a a
---   reflNedge a = invEq (nativ a a) (λ _ → a)
--- open NRGraph public
-
-
-
-
-
-
-
-
-
 {-
 
 ATTEMPT: shallow CwF structure on NRG
@@ -573,8 +499,19 @@ El Γ ℓ = record {
 --       dnativ = λ γ0 γ1 γγ a0 a1 →
 --         pathToEquiv (funExt⁻ (funExt⁻ (left-skew-tm-nativ Γ (UForm ℓ') C γ0 γ1 γγ) a0) a1) }
 
-  
 
+-- Γ ⊢ C type
+-- ---------------------------
+-- Γ → (1, C:Type ℓ) nrelator
+unEl : ∀ {ℓΓ ℓ} (Γ : NRGraph ℓΓ) (C : DispNRG ℓ Γ) →
+         NRelator Γ (topNRG # TypeForm topNRG ℓ)
+unEl Γ C = record {
+  nobjMap = λ γ → ( tt , C .dcr γ ) ;
+  nedgeMap = λ γγ → ( tt , C .dedge _ _ γγ ) ;
+  --needs ua (nativ). interesting
+  nativ-rel = λ γ0 γ1 → funExt λ γbdg → cong₂ _,_ refl
+    (funExt λ c0 → funExt λ c1 → ua (C .dnativ γ0 γ1 γbdg c0 c1))
+  }
 
 
 -- for now keeping Γ implicit seems to work (leads to no dumb type conversion instead of syn eq)
@@ -655,7 +592,20 @@ PathForm Γ A a b = record {
   --                             (congPathEquiv λ i → A .dnativ γ0 γ1 γγ (pa i) (pb i))) }
   
   
+-- -- -- 1, A:Type ℓ, x:ElA, y:ElA
+-- PathMinCtx : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+-- PathMinCtx ℓ =
+--   topNRG #
+--   TypeForm topNRG ℓ #
+--   El topNRG ℓ #
+--   wkn-type-by (topNRG # TypeForm topNRG ℓ) (El topNRG ℓ) (El topNRG ℓ)
+
+-- -- -----------------------------------------
+-- -- 1, A:Type ℓ, x:ElA, y:ElA ⊢ x ≡ y type(ℓ)
+-- Pathtype : ∀ {ℓ} → DispNRG ℓ (PathMinCtx ℓ)
+-- Pathtype = {!!}
   
+
 
 
 -- module PointedTypes where
@@ -887,11 +837,52 @@ module HProp where
   -- hProp with mere relations forms a NRG
   hPropNRG : (ℓ : Level) → NRGraph (ℓ-suc ℓ)
   hPropNRG ℓ = rem-top-ctx (ΣForm (TypeForm topNRG ℓ) isPropDispNRG)
+open HProp public
 
 
 module HSet where
 
-  
+  -- isPropDispNRG .dedge makes use of the  "hProp edges as mere relations" characterisation
+  -- isPropDispNRG0 .dedge has 1 extra path dimension.
+  -- Since we use the first one to define the current type,
+  --   isSetDispNRG0 .dedge mentions 1 path dimension less that if we had used the second one.
+  -- we still have to prove a same kind of lemma.
+  isSetDispNRG0 : ∀ {ℓ} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
+  isSetDispNRG0 {ℓ = ℓ} =
+    ΠForm (El topNRG ℓ)
+    -- goal: 1, A:Typeℓ, x:ElA ⊢ (y : A) → isProp(x≡y)
+    (ΠForm {ℓB = ℓ} {Γ = topNRG # TypeForm topNRG ℓ # El topNRG ℓ}
+      -- 1, A:Typeℓ, x:ElA ⊢ ElA type
+      (wkn-type-by (topNRG # TypeForm topNRG ℓ) (El topNRG ℓ) (El topNRG ℓ))
+    -- 1, A:Typeℓ, x:ElA, y:ElA ⊢ isProp(x ≡ y) type(ℓ)
+    (flip (tySubst bigCtx (topNRG # TypeForm topNRG ℓ))
+      isPropDispNRG
+    -- 1, A:Typeℓ, x:ElA, y:ElA  --x≡y-->  1, C:Type ℓ
+    (unEl bigCtx
+    -- 1, A:Typeℓ, x:ElA, y:ElA ⊢ x≡y type(ℓ)
+    (myOpenPath ℓ) )))
+
+    where
+      -- 1, A:Typeℓ, x:ElA, y:ElA
+      bigCtx = (topNRG #
+               TypeForm topNRG ℓ #
+               El topNRG ℓ #
+               wkn-type-by (topNRG # TypeForm topNRG ℓ) (El topNRG ℓ)
+               (El topNRG ℓ))
+
+  thingy : ∀ (ℓ : Level) → Bool
+  thingy ℓ = {!isSetDispNRG0 {ℓ = ℓ} .dedge!}
+
+  -- isSetDispNRG : ∀ {ℓ} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
+  -- isSetDispNRG {ℓ = ℓ} = record {
+  --   dcr = λ ( _ , A ) → isSet A ;
+  --   dedge = λ ( _ , A0) ( _ , A1) (_ , R) _ _ → ∀ (a0 : A0) (a1 : A1) → isSet (R a0 a1) ;
+  --   dnativ = λ { ( tt , A0) (tt , A1) γbdg ist0 ist1 →
+  --              flip compEquiv (isSetDispNRG0 .dnativ (tt , A0) (tt , A1) γbdg ist0 ist1)
+  --              (isoToEquiv (iso
+  --              {!!} {!!} {!!} {!!})) }
+  --   }
+      
 
 
 {- JUNK 
@@ -932,3 +923,7 @@ module HSet where
 
 
 -}
+
+
+
+
