@@ -827,287 +827,74 @@ module HProp where
     (λ { (R , prf) → refl } )
     λ _ → refl)
 
-  
 
   isPropDedgeCharac : ∀ {ℓ} (P0 P1 : Type ℓ) (isp0 : isProp P0) (isp1 : isProp P1)
                         (R : P0 → P1 → Type ℓ) →
                         (∀ (p0 : P0) (p1 : P1) → isProp (R p0 p1)) ≃ isPropDispNRG0 ⦅ isp0 , isp1 ⦆# ( (tt , R))
   isPropDedgeCharac P0 P1 isp0 isp1 R =
     isoToEquiv (iso
-      (λ RPropFib → λ a0 a1 aa a0' a1' aa' →
-        -- a path along a line of props always exist
-        isProp→isContrPathP (λ i → RPropFib _ _) aa aa' .fst )
-      (λ flr → λ b0 b1 → 
-        λ bb bb' →
-         let myflr = flr _ _ bb _ _ bb' in
-            flip _∙_ (fromPathP {A = (λ i → R (isp0 b0 b0 i) (isp1 b1 b1 i))} myflr)
-            {!transport-filler!} ) {!!} {!!})
+      mereRel→badDedge
+      badDedge→mereRel
+      (λ flr → funExt λ p0 → funExt λ p1 → funExt λ pp → funExt λ p0' → funExt λ p1' → funExt λ pp' →
+      aux p0 p1 pp p0' p1' pp' flr .snd (flr p0 p1 pp p0' p1' pp') )
+      λ ismrl → mereRelIsProp _ ismrl)
+
 
     where
+
+      mereRel→badDedge : (∀ (p0 : P0) (p1 : P1) → isProp (R p0 p1)) → isPropDispNRG0 ⦅ isp0 , isp1 ⦆# ( (tt , R))
+      mereRel→badDedge =
+        (λ RPropFib → λ a0 a1 aa a0' a1' aa' →
+          -- a path along a line of props always exist
+          isProp→isContrPathP (λ i → RPropFib _ _) aa aa' .fst )
 
       ispRefl : ∀ {ℓ} (P : Type ℓ) (isp : isProp P) (p : P) (i : I) →
         isp p p i ≡ p
       ispRefl P isp p i = isp (isp p p i) p
 
+      badDedge→mereRel : isPropDispNRG0 ⦅ isp0 , isp1 ⦆# ( (tt , R)) → (∀ (p0 : P0) (p1 : P1) → isProp (R p0 p1))
+      badDedge→mereRel =
+        (λ flr → λ b0 b1 → 
+          λ bb bb' →
+           let myflr = flr _ _ bb _ _ bb' in
+              flip _∙_ (fromPathP {A = (λ i → R (isp0 b0 b0 i) (isp1 b1 b1 i))} myflr)
+              (sym (fromPathP {A = (λ i → R (isp0 b0 b0 i) (isp1 b1 b1 i))}
+              (invEq (congPathEquiv {A = λ i → R (isp0 b0 b0 i) (isp1 b1 b1 i)} {B = λ i → R b0 b1}
+              (λ i → pathToEquiv (λ k → R (ispRefl P0 isp0 b0 i k) (ispRefl P1 isp1 b1 i k) )) {a₀ = bb} {a₁ = bb})
+              refl))))
+
+      aux : ∀ p0 p1 (pp : R p0 p1) p0' p1' pp' (flr : isPropDispNRG0 ⦅ isp0 , isp1 ⦆# ( (tt , R))) →
+            isContr ( PathP (λ i → R (isp0 p0 p0' i) (isp1 p1 p1' i)) pp pp' )
+      aux p0 p1 pp p0' p1' pp' flr =
+        isProp→isContrPathP {A = λ i → R (isp0 p0 p0' i) (isp1 p1 p1' i)} (λ i → badDedge→mereRel flr _ _) pp pp'
+
+      mereRelIsProp : isProp ( ∀ (p0 : P0) (p1 : P1) → isProp (R p0 p1) )
+      mereRelIsProp =
+        isPropΠ2 {C = λ a0 a1 → isProp (R a0 a1)}
+        λ p0 p1 → isPropIsProp
+
+  -- 1, A:Typeℓ ⊢ isProp(A) type(ℓ)
+  isPropDispNRG : ∀ {ℓ} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
+  isPropDispNRG = record {
+    dcr = isPropDispNRG0 .dcr ;
+    -- we set isProp{ _ , _ }# R := (∀ a0 a1 → isProp (R .snd a0 a1))
+    dedge = λ A0 A1 R → λ _ _ → (∀ a0 a1 → isProp (R .snd a0 a1)) ;
+    dnativ = λ { (tt , A0) (tt , A1) Abdg isp0 isp1 →
+               flip compEquiv (isPropDispNRG0 .dnativ (tt , A0) (tt , A1) Abdg isp0 isp1)
+               (isPropDedgeCharac A0 A1 isp0 isp1 _)  } }
 
 
+  -- hProp with mere relations forms a NRG
+  hPropNRG : (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+  hPropNRG ℓ = rem-top-ctx (ΣForm (TypeForm topNRG ℓ) isPropDispNRG)
 
 
-  -- could be more helpful to prove
-  -- Let P0 P1 be hProps (with proofs isp0 isp1), R : P0 → P1 → Type ℓ relation
-  -- then
-  -- (∀ p0 p1, isProp (R p0 p1)) ≃ isProp{ isp0, isp1 }# R
-  -- the displayed edges function of isProp express "being a mere relation"
+module HSet where
 
-  -- we will then have a new displayed NRG with isProp carrier, that may be use to build hSetNRG?
-
-  -- isSet X <-> (x : A) → isProp (x ≡ x)
+  
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---     ΣForm topNRG
---       {- A type code A-} (UForm topNRG ℓ)
---       {- isContr(El A) -} (ΣForm {ℓA = ℓ} {ℓB = ℓ} (topNRG # UForm topNRG ℓ)
---         {- El A -} (ElApply (topNRG # UForm topNRG ℓ) (var-rule topNRG (UForm topNRG ℓ)))
---         {- isContr -} (ΠForm (topNRG # UForm topNRG ℓ #
---            ElApply (topNRG # UForm topNRG ℓ)
---            (var-rule topNRG (UForm topNRG ℓ)))
---              (ElApply _ (var1-rule topNRG (UForm topNRG ℓ) (ElApply (topNRG # UForm topNRG ℓ) (var-rule topNRG (UForm topNRG ℓ)))))
---              (PathForm _ (ElApply _ (var2-rule topNRG (UForm topNRG ℓ) (ElApply (topNRG # UForm topNRG ℓ) (var-rule topNRG (UForm topNRG ℓ)))
---                        (ElApply
---                         (topNRG # UForm topNRG ℓ #
---                          ElApply (topNRG # UForm topNRG ℓ)
---                          (var-rule topNRG (UForm topNRG ℓ)))
---                         (var1-rule topNRG (UForm topNRG ℓ)
---                          (ElApply (topNRG # UForm topNRG ℓ)
---                           (var-rule topNRG (UForm topNRG ℓ)))))))
---                {!var1over3 topNRG (UForm topNRG ℓ) 
---                   (ElApply (topNRG # UForm topNRG ℓ)
---                   (var-rule topNRG (UForm topNRG ℓ)))
---                     (ElApply
---                      (topNRG # UForm topNRG ℓ #
---                       ElApply (topNRG # UForm topNRG ℓ)
---                       (var-rule topNRG (UForm topNRG ℓ)))
---                      (var1-rule topNRG (UForm topNRG ℓ)
---                       (ElApply (topNRG # UForm topNRG ℓ)
---                        (var-rule topNRG (UForm topNRG ℓ)))))!} {!!})))
-
--- -}
-
--- -- conversion seems to loop. why
--- -- {compareTerm
--- -- and then loop.
--- -- tc.conv.term:30 loops after a comparison at primGel (compareTm')
--- -- (bm' , m') <- reduceWithBlocker m for m equals
-
--- {-
-
--- m in context:
--- (ℓ₁ : Level)
--- (γ0
---  : (topNRG # UForm topNRG ℓ₁ #
---     ElApply (topNRG # UForm topNRG ℓ₁)
---     (var-rule topNRG (UForm topNRG ℓ₁))
---     #
---     ElApply
---     (topNRG # UForm topNRG ℓ₁ #
---      ElApply (topNRG # UForm topNRG ℓ₁)
---      (var-rule topNRG (UForm topNRG ℓ₁)))
---     (var1-rule topNRG (UForm topNRG ℓ₁)
---      (ElApply (topNRG # UForm topNRG ℓ₁)
---       (var-rule topNRG (UForm topNRG ℓ₁)))))
---    .nrg-cr)
--- (γ1
---  : (topNRG # UForm topNRG ℓ₁ #
---     ElApply (topNRG # UForm topNRG ℓ₁)
---     (var-rule topNRG (UForm topNRG ℓ₁))
---     #
---     ElApply
---     (topNRG # UForm topNRG ℓ₁ #
---      ElApply (topNRG # UForm topNRG ℓ₁)
---      (var-rule topNRG (UForm topNRG ℓ₁)))
---     (var1-rule topNRG (UForm topNRG ℓ₁)
---      (ElApply (topNRG # UForm topNRG ℓ₁)
---       (var-rule topNRG (UForm topNRG ℓ₁)))))
---    .nrg-cr)
--- (e
---  : (topNRG # UForm topNRG ℓ₁ #
---     ElApply (topNRG # UForm topNRG ℓ₁)
---     (var-rule topNRG (UForm topNRG ℓ₁))
---     #
---     ElApply
---     (topNRG # UForm topNRG ℓ₁ #
---      ElApply (topNRG # UForm topNRG ℓ₁)
---      (var-rule topNRG (UForm topNRG ℓ₁)))
---     (var1-rule topNRG (UForm topNRG ℓ₁)
---      (ElApply (topNRG # UForm topNRG ℓ₁)
---       (var-rule topNRG (UForm topNRG ℓ₁)))))
---    ⦅ γ0 , γ1 ⦆)
--- (a0
---  : dcr
---    (wkn-type-by
---     (topNRG # UForm topNRG ℓ₁ #
---      ElApply (topNRG # UForm topNRG ℓ₁)
---      (var-rule topNRG (UForm topNRG ℓ₁)))
---     (ElApply
---      (topNRG # UForm topNRG ℓ₁ #
---       ElApply (topNRG # UForm topNRG ℓ₁)
---       (var-rule topNRG (UForm topNRG ℓ₁)))
---      (var1-rule topNRG (UForm topNRG ℓ₁)
---       (ElApply (topNRG # UForm topNRG ℓ₁)
---        (var-rule topNRG (UForm topNRG ℓ₁)))))
---     (wkn-type-by (topNRG # UForm topNRG ℓ₁)
---      (ElApply (topNRG # UForm topNRG ℓ₁)
---       (var-rule topNRG (UForm topNRG ℓ₁)))
---      (ElApply (topNRG # UForm topNRG ℓ₁)
---       (var-rule topNRG (UForm topNRG ℓ₁)))))
---    γ0)
--- (a1
---  : dcr
---    (wkn-type-by
---     (topNRG # UForm topNRG ℓ₁ #
---      ElApply (topNRG # UForm topNRG ℓ₁)
---      (var-rule topNRG (UForm topNRG ℓ₁)))
---     (ElApply
---      (topNRG # UForm topNRG ℓ₁ #
---       ElApply (topNRG # UForm topNRG ℓ₁)
---       (var-rule topNRG (UForm topNRG ℓ₁)))
---      (var1-rule topNRG (UForm topNRG ℓ₁)
---       (ElApply (topNRG # UForm topNRG ℓ₁)
---        (var-rule topNRG (UForm topNRG ℓ₁)))))
---     (wkn-type-by (topNRG # UForm topNRG ℓ₁)
---      (ElApply (topNRG # UForm topNRG ℓ₁)
---       (var-rule topNRG (UForm topNRG ℓ₁)))
---      (ElApply (topNRG # UForm topNRG ℓ₁)
---       (var-rule topNRG (UForm topNRG ℓ₁)))))
---    γ1)
--- (x
---  : dedge
---    (wkn-type-by
---     (topNRG # UForm topNRG ℓ₁ #
---      ElApply (topNRG # UForm topNRG ℓ₁)
---      (var-rule topNRG (UForm topNRG ℓ₁)))
---     (ElApply
---      (topNRG # UForm topNRG ℓ₁ #
---       ElApply (topNRG # UForm topNRG ℓ₁)
---       (var-rule topNRG (UForm topNRG ℓ₁)))
---      (var1-rule topNRG (UForm topNRG ℓ₁)
---       (ElApply (topNRG # UForm topNRG ℓ₁)
---        (var-rule topNRG (UForm topNRG ℓ₁)))))
---     (wkn-type-by (topNRG # UForm topNRG ℓ₁)
---      (ElApply (topNRG # UForm topNRG ℓ₁)
---       (var-rule topNRG (UForm topNRG ℓ₁)))
---      (ElApply (topNRG # UForm topNRG ℓ₁)
---       (var-rule topNRG (UForm topNRG ℓ₁)))))
---    γ0 γ1 e a0 a1)
--- (i : BI)
-
--- (fst
---  (lineToEquiv
---   (λ i →
---      funExt⁻
---      (funExt⁻
---       (left-skew-tm-nativ (topNRG # UForm topNRG ℓ)
---        (UForm (topNRG # UForm topNRG ℓ) ℓ)
---        (var-rule topNRG (UForm topNRG ℓ)) (γ0 .fst .fst) (γ1 .fst .fst)
---        (e .fst .fst))
---       a0)
---      a1 i))
---  x i)
-
--- with tc.reduce:90, we have a loop (?) of prim^gel appearing
-
--- -}
-
-
--- atel : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
--- atel ℓ = (topNRG # UForm topNRG ℓ #
---           ElApply (topNRG # UForm topNRG ℓ)
---           (var-rule topNRG (UForm topNRG ℓ))
---           #
---           ElApply
---           (topNRG # UForm topNRG ℓ #
---            ElApply (topNRG # UForm topNRG ℓ)
---            (var-rule topNRG (UForm topNRG ℓ)))
---           (var1-rule topNRG (UForm topNRG ℓ)
---            (ElApply (topNRG # UForm topNRG ℓ)
---             (var-rule topNRG (UForm topNRG ℓ)))))
-
--- atyp : ∀ (ℓ : Level) → DispNRG _ (atel ℓ)
--- atyp ℓ = (wkn-type-by
---           (topNRG # UForm topNRG ℓ #
---            ElApply (topNRG # UForm topNRG ℓ)
---            (var-rule topNRG (UForm topNRG ℓ)))
---           (ElApply
---            (topNRG # UForm topNRG ℓ #
---             ElApply (topNRG # UForm topNRG ℓ)
---             (var-rule topNRG (UForm topNRG ℓ)))
---            (var1-rule topNRG (UForm topNRG ℓ)
---             (ElApply (topNRG # UForm topNRG ℓ)
---              (var-rule topNRG (UForm topNRG ℓ)))))
---           (wkn-type-by (topNRG # UForm topNRG ℓ)
---            (ElApply (topNRG # UForm topNRG ℓ)
---             (var-rule topNRG (UForm topNRG ℓ)))
---            (ElApply (topNRG # UForm topNRG ℓ)
---             (var-rule topNRG (UForm topNRG ℓ)))))
-
--- module Bug (ℓ : Level) (γ0 γ1 : atel ℓ .nrg-cr) (γγ : atel ℓ ⦅ γ0 , γ1 ⦆)
---               (a0 : atyp ℓ .dcr γ0) (a1 : atyp ℓ .dcr γ1) (aa : atyp ℓ ⦅ a0 , a1 ⦆# γγ)
---               (@tick z : BI) where
-
--- {-
--- (fst
---  (lineToEquiv
---   (λ i →
---      funExt⁻
---      (funExt⁻
---       (left-skew-tm-nativ (topNRG # UForm topNRG ℓ)
---        (UForm (topNRG # UForm topNRG ℓ) ℓ)
---        (var-rule topNRG (UForm topNRG ℓ)) (γ0 .fst .fst) (γ1 .fst .fst)
---        (e .fst .fst))
---       a0)
---      a1 i))
---  x i)
--- -}
---   1,X:Ul⊢Ul:type = (UForm (topNRG # UForm topNRG ℓ) ℓ)
-
---   1,X:Ul⊢X:Ul = (var-rule topNRG (UForm topNRG ℓ))
---   t = 1,X:Ul⊢X:Ul
-
--- -- 
-
---   thing : Bool
---   thing = {! left-skew-tm-nativ (topNRG # UForm topNRG ℓ) (UForm (topNRG # UForm topNRG ℓ) ℓ) t (γ0 .fst .fst) (γ1 .fst .fst) (γγ .fst .fst) !}
--- {-
---  goal : γγ .fst .fst .snd ≡
---                               BridgeP
---                               (λ x →
---                                  primGel (γ0 .fst .fst .snd) (γ1 .fst .fst .snd)
---                                  (snd (γγ .fst .fst)) x)
-
--- leads to impossible when normalised
--- -}
-
+{- JUNK 
 
 
 -- module Bug2 (ℓ : Level) (A0 A1 : Type ℓ) (R : A0 → A1 → Type ℓ) (a0 : A0) (a1 : A1)
@@ -1126,14 +913,6 @@ module HProp where
 
 -- -- λ j → transp (λ _ → BridgeP (λ x → primGel A0 A1 R x) a0 a1) i0 base j
 
-
-
-
-
-{- JUNK 
-
-
-
     -- nativeness (must be stated dependently, and pointwise)
     -- "forall edge" formulation.
     -- mismatch with nativeness formulation for relators
@@ -1150,14 +929,6 @@ module HProp where
 -- left-skew-tm-nativ Γ A a γ0 γ1 γγ =
 --    invEq (equivAdjointEquiv (A .dnativ γ0 γ1 γγ (a .ac0 γ0) (a .ac0 γ1)) {a = a .ac1 γ0 γ1 γγ} {b = λ x → a .ac0 ((equivFun (Γ .nativ γ0 γ1) γγ) x)})
 --      (sym (a .tm-nativ γ0 γ1 γγ))
-
-
-
-  
-
-
-
-
 
 
 -}
