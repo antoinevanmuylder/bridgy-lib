@@ -873,15 +873,22 @@ module HSet where
   thingy : ∀ (ℓ : Level) → Bool
   thingy ℓ = {!isSetDispNRG0 {ℓ = ℓ} .dedge!}
 
-  -- isSetDispNRG : ∀ {ℓ} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
-  -- isSetDispNRG {ℓ = ℓ} = record {
-  --   dcr = λ ( _ , A ) → isSet A ;
-  --   dedge = λ ( _ , A0) ( _ , A1) (_ , R) _ _ → ∀ (a0 : A0) (a1 : A1) → isSet (R a0 a1) ;
-  --   dnativ = λ { ( tt , A0) (tt , A1) γbdg ist0 ist1 →
-  --              flip compEquiv (isSetDispNRG0 .dnativ (tt , A0) (tt , A1) γbdg ist0 ist1)
-  --              (isoToEquiv (iso
-  --              {!!} {!!} {!!} {!!})) }
-  --   }
+  isSetDispNRG : ∀ {ℓ} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
+  isSetDispNRG {ℓ = ℓ} = record {
+    dcr = λ ( _ , A ) → isSet A ;
+    dedge = λ ( _ , A0) ( _ , A1) (_ , R) _ _ → ∀ (a0 : A0) (a1 : A1) → isSet (R a0 a1) ;
+    -- goal 1 mentions bridges (we would expect logical relations in a (diplayed) edge type)
+    -- I think that this is due to
+    -- 1) displayed nativeness is phrased using ∀ bdg
+    -- 2) isSetDispNRG0 uses the unEl rule, which uses univalence (type reflection...)
+    --    somehow this triggers the use of one side of the relativity thm
+    --    which is no other that λ q → BridgeP (λ x → q x)
+    --    this way bridge types come back into proof goals.
+    dnativ = λ { ( tt , A0) (tt , A1) γbdg ist0 ist1 →
+               flip compEquiv (isSetDispNRG0 .dnativ (tt , A0) (tt , A1) γbdg ist0 ist1)
+               (isoToEquiv (iso
+               {!!} {!!} {!!} {!!})) }
+    }
       
 
 
