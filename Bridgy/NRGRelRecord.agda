@@ -829,9 +829,10 @@ module HProp where
     dcr = isPropDispNRG0 .dcr ;
     -- we set isProp{ _ , _ }# R := (∀ a0 a1 → isProp (R .snd a0 a1))
     dedge = λ A0 A1 R → λ _ _ → (∀ a0 a1 → isProp (R .snd a0 a1)) ;
-    dnativ = λ { (tt , A0) (tt , A1) Abdg isp0 isp1 →
+    dnativ = λ { (tt , A0) (tt , A1) Abdg  isp0 isp1 →
                flip compEquiv (isPropDispNRG0 .dnativ (tt , A0) (tt , A1) Abdg isp0 isp1)
-               (isPropDedgeCharac A0 A1 isp0 isp1 _)  } }
+               (isPropDedgeCharac A0 A1 isp0 isp1 _) }
+    }
 
 
   -- hProp with mere relations forms a NRG
@@ -870,26 +871,43 @@ module HSet where
                wkn-type-by (topNRG # TypeForm topNRG ℓ) (El topNRG ℓ)
                (El topNRG ℓ))
 
-  thingy : ∀ (ℓ : Level) → Bool
-  thingy ℓ = {!isSetDispNRG0 {ℓ = ℓ} .dedge!}
+  -- thingy : ∀ (ℓ : Level) → Bool
+  -- thingy ℓ = {!isSetDispNRG0 {ℓ = ℓ} .dedge!}
 
-  isSetDispNRG : ∀ {ℓ} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
-  isSetDispNRG {ℓ = ℓ} = record {
-    dcr = λ ( _ , A ) → isSet A ;
-    dedge = λ ( _ , A0) ( _ , A1) (_ , R) _ _ → ∀ (a0 : A0) (a1 : A1) → isSet (R a0 a1) ;
-    -- goal 1 mentions bridges (we would expect logical relations in a (diplayed) edge type)
-    -- I think that this is due to
-    -- 1) displayed nativeness is phrased using ∀ bdg
-    -- 2) isSetDispNRG0 uses the unEl rule, which uses univalence (type reflection...)
-    --    somehow this triggers the use of one side of the relativity thm
-    --    which is no other that λ q → BridgeP (λ x → q x)
-    --    this way bridge types come back into proof goals.
-    dnativ = λ { ( tt , A0) (tt , A1) γbdg ist0 ist1 →
-               flip compEquiv (isSetDispNRG0 .dnativ (tt , A0) (tt , A1) γbdg ist0 ist1)
-               (isoToEquiv (iso
-               {!!} {!!} {!!} {!!})) }
-    }
-      
+  isSetDedgeCharac : ∀ {ℓ} (A0 A1 : Type ℓ) (ist0 : isSet A0) (ist1 : isSet A1)
+                        (R : A0 → A1 → Type ℓ) →
+                        (∀ (a0 : A0) (a1 : A1) → isSet (R a0 a1)) ≃ isSetDispNRG0 ⦅ ist0 , ist1 ⦆# ( (tt , R))
+  isSetDedgeCharac A0 A1 ist0 ist1 R =
+    isoToEquiv (iso
+      setRel→badDedge
+      badDedge→setRel {!!} {!!})
+
+    where
+
+      setRel→badDedge : (∀ (a0 : A0) (a1 : A1) → isSet (R a0 a1)) → isSetDispNRG0 ⦅ ist0 , ist1 ⦆# ( (tt , R))
+      setRel→badDedge srel a0 a1 aa a0' a1' aa' p0 p1 =
+        isOfHLevelPathP' {A = λ i → R (p0 i) (p1 i)} 1 (srel _ _) aa aa'
+
+      badDedge→setRel : isSetDispNRG0 ⦅ ist0 , ist1 ⦆# ( (tt , R)) → (∀ (a0 : A0) (a1 : A1) → isSet (R a0 a1))
+      badDedge→setRel flr =
+        {!!}
+
+  -- isSetDispNRG : ∀ {ℓ} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
+  -- isSetDispNRG {ℓ = ℓ} = record {
+  --   dcr = λ ( _ , A ) → isSet A ;
+  --   dedge = λ ( _ , A0) ( _ , A1) (_ , R) _ _ → ∀ (a0 : A0) (a1 : A1) → isSet (R a0 a1) ;
+  --   -- goal 1 mentions bridges (we would expect logical relations in a (diplayed) edge type)
+  --   -- I think that this is due to
+  --   -- 1) displayed nativeness is phrased using ∀ bdg
+  --   -- 2) isSetDispNRG0 uses the unEl rule, which uses univalence (type reflection...)
+  --   --    somehow this triggers the use of one side of the relativity thm
+  --   --    which is no other that λ q → BridgeP (λ x → q x)
+  --   --    this way bridge types come back into proof goals.
+  --   dnativ = λ { (tt , A0) (tt , A1) Abdg ist0 ist1 →
+  --              flip compEquiv (isSetDispNRG0 .dnativ (tt , A0) (tt , A1) Abdg ist0 ist1)
+  --              (isSetDedgeCharac A0 A1 ist0 ist1 _) }
+  -- }
+
 
 
 {- JUNK 
@@ -929,7 +947,54 @@ module HSet where
 --      (sym (a .tm-nativ γ0 γ1 γγ))
 
 
+
+
+
+
+{-
+
+CH⁻ is a CwF structure on Type's. We show that not all equations of higher relational OTT are validated in CH⁻
+HROTT features a type Lrel of logical relations at any type. Lrel types are definitionally equal to their "parametricity transl".
+If we directly use BridgeP as the intepretation of Lrel, have somehting ill typed in CH⁻ .
+
 -}
+module CHminus where
+
+  -- ℓ-types in context Γ of CH⁻
+  CH⁻type : ∀ {ℓΓ} (ℓ  : Level) (Γ : Type ℓΓ) →  Type (ℓ-max ℓΓ (ℓ-suc ℓ))
+  CH⁻type ℓ Γ = Γ → Type ℓ
+
+  -- terms in context Γ, of type A (for Γ ⊢ A type)
+  CH⁻term : ∀ {ℓΓ} {ℓA} (Γ : Type ℓΓ) (A : CH⁻type ℓA Γ) → Type (ℓ-max ℓΓ ℓA)
+  CH⁻term Γ A = ∀ γ → A γ
+
+
+  -- Γ ⊢ Uℓ type(ℓ + 1)
+  CH⁻UForm : ∀ {ℓΓ} (Γ : Type ℓΓ) (ℓ : Level) → CH⁻type (ℓ-suc ℓ) Γ
+  CH⁻UForm Γ ℓ = λ _ → Type ℓ
+
+  -- Γ ⊢ A typeℓ  is exactly the same as Γ ⊢ A : U ℓ ?
+  bigOrSmall : ∀ {ℓΓ} (Γ : Type ℓΓ) (ℓ : Level) →
+    CH⁻type ℓ Γ ≡ CH⁻term Γ (CH⁻UForm Γ ℓ)
+  bigOrSmall Γ ℓ = refl
+
+  -- Γ ⊢ A type   Γ ⊢ a0 : A  Γ ⊢ a1 : A
+  -- -----------------------------------------
+  -- Γ ⊢ Lrel A a0 a1 type
+  Lrel-form-CH⁻ : ∀ {ℓ ℓA} (Γ : Type ℓ) (A : CH⁻type ℓA Γ) (a0 a1  : CH⁻term Γ A) →
+                    CH⁻type ℓA Γ
+  Lrel-form-CH⁻ Γ A a0 a1 γ = BridgeP (λ _ → A γ) (a0 γ) (a1 γ)
+
+
+
+  PiFm : ∀ {ℓΓ} (Γ : Type ℓΓ) 
+
+
+-}
+
+
+
+
 
 
 
