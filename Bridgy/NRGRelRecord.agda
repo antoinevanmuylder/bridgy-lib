@@ -234,6 +234,8 @@ compNRelator {G = G} {H = H} {K = K} E F = record
                           sym (∘-assoc (F .nedgeMap) (invEq (H .nativ (E .nobjMap g0) (E .nobjMap g1))) (bdg-action (E .nobjMap))) ∙
                           cong (λ blank → blank ∘ (bdg-action (E .nobjMap))) (F .nativ-rel (E .nobjMap g0) (E .nobjMap g1) ) ∙
                           funExt λ q →  refl}
+
+
   
 -- example: X ↦ X → X relator
 churchUnitNRelator : ∀ {ℓ} → NRelator (TypeNRG ℓ) (TypeNRG ℓ)
@@ -259,6 +261,9 @@ module SigmaNRG {ℓ ℓ' : Level} where
 open SigmaNRG public
 
 
+
+
+
 -- Type*NRG0 : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
 -- Type*NRG0 ℓ = ΣNRG (TypeNRG ℓ) (idNRelator)
 
@@ -272,6 +277,8 @@ module PiNRG {ℓ ℓ' : Level} where
         (equivΠCod λ g0 → equivΠCod λ g1 →
         equivΠ (G .nativ g0 g1) λ e →
         pathToEquiv (flip funExt⁻ (f1 g1) (flip funExt⁻ (f0 g0) (funExt⁻ (nedgeMap≡ByNativ G (TypeNRG ℓ') g0 g1 F) e)))) }
+
+  
 
 open PiNRG public
 
@@ -384,6 +391,10 @@ _#_ Γ A =
                 (Σ-cong-equiv (invEquiv (Γ .nativ γ0 γ1)) λ γbdg → invEquiv (A .dnativ γ0 γ1 γbdg a0 a1)))   }}
 
 infixl 40 _#_
+
+-- to spec explicit levels
+_-_#_-_ : ∀ (ℓ : Level) (Γ : NRGraph ℓ) (ℓ' : Level) (A : DispNRG ℓ' Γ) → NRGraph (ℓ-max ℓ ℓ')
+_-_#_-_ ℓ Γ ℓ' A = _#_ {ℓ = ℓ} {ℓ' = ℓ'} Γ A
 
 
 -- Γ ⊢ A type
@@ -515,7 +526,7 @@ unEl Γ C = record {
 
 
 -- for now keeping Γ implicit seems to work (leads to no dumb type conversion instead of syn eq)
-module ΣΠrulesNRG {ℓΓ ℓA ℓB} {Γ : NRGraph ℓΓ} (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) where
+module ΣΠrulesDispNRG {ℓΓ ℓA ℓB} {Γ : NRGraph ℓΓ} (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) where
 
   -- Γ ⊢ A type
   -- Γ . A ⊢ B type
@@ -547,7 +558,7 @@ module ΣΠrulesNRG {ℓΓ ℓA ℓB} {Γ : NRGraph ℓΓ} (A : DispNRG ℓA Γ)
       (equivΠ (invEquiv (A .dnativ _ _ γbdg a0 a1)) λ abdg →
       (invEquiv (B .dnativ (γ0 , a0) (γ1 , a1) (λ x → (γbdg x , abdg x)) (f0 a0) (f1 a1))) ) )
     }
-open ΣΠrulesNRG public
+open ΣΠrulesDispNRG public
 
 
 adjustPathPEnds : ∀ {ℓ : Level} {A : I → Type ℓ} {a0' a0 : A i0} {a1' a1 : A i1} (prf0 : a0' ≡ a0) (prf1 : a1' ≡ a1)  →
