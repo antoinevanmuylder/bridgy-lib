@@ -871,8 +871,6 @@ module HSet where
                wkn-type-by (topNRG # TypeForm topNRG ℓ) (El topNRG ℓ)
                (El topNRG ℓ))
 
-  -- thingy : ∀ (ℓ : Level) → Bool
-  -- thingy ℓ = {!isSetDispNRG0 {ℓ = ℓ} .dedge!}
 
   isSetDedgeCharac : ∀ {ℓ} (A0 A1 : Type ℓ) (ist0 : isSet A0) (ist1 : isSet A1)
                         (R : A0 → A1 → Type ℓ) →
@@ -880,7 +878,15 @@ module HSet where
   isSetDedgeCharac A0 A1 ist0 ist1 R =
     isoToEquiv (iso
       setRel→badDedge
-      badDedge→setRel {!!} {!!})
+      badDedge→setRel
+      (λ flr → funExt λ a0 → funExt λ a1 → funExt λ aa →
+       funExt λ a0' → funExt λ a1' → funExt λ aa' →
+       funExt λ p0 → funExt λ p1 → funExt λ u0 → funExt λ u1 →
+         -- look at the goal (higher path) on paper, remember that R is a set relation
+         let bar = isProp→isContrPathP {A = λ _ → u0 ≡ u1} (λ _ → tmp flr a0 a1 aa a0' a1' aa' p0 p1 u0 u1)
+         in bar _ (flr a0 a1 aa a0' a1' aa' p0 p1 u0 u1) .fst )
+      λ srel →
+        isPropisSrel _ srel)
 
     where
 
@@ -889,24 +895,30 @@ module HSet where
         isOfHLevelPathP' {A = λ i → R (p0 i) (p1 i)} 1 (srel _ _) aa aa'
 
       badDedge→setRel : isSetDispNRG0 ⦅ ist0 , ist1 ⦆# ( (tt , R)) → (∀ (a0 : A0) (a1 : A1) → isSet (R a0 a1))
-      badDedge→setRel flr =
-        {!!}
+      badDedge→setRel flr a0 a1 aa aa' =
+        flr a0 a1 aa a0 a1 aa' refl refl
 
-  -- isSetDispNRG : ∀ {ℓ} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
-  -- isSetDispNRG {ℓ = ℓ} = record {
-  --   dcr = λ ( _ , A ) → isSet A ;
-  --   dedge = λ ( _ , A0) ( _ , A1) (_ , R) _ _ → ∀ (a0 : A0) (a1 : A1) → isSet (R a0 a1) ;
-  --   -- goal 1 mentions bridges (we would expect logical relations in a (diplayed) edge type)
-  --   -- I think that this is due to
-  --   -- 1) displayed nativeness is phrased using ∀ bdg
-  --   -- 2) isSetDispNRG0 uses the unEl rule, which uses univalence (type reflection...)
-  --   --    somehow this triggers the use of one side of the relativity thm
-  --   --    which is no other that λ q → BridgeP (λ x → q x)
-  --   --    this way bridge types come back into proof goals.
-  --   dnativ = λ { (tt , A0) (tt , A1) Abdg ist0 ist1 →
-  --              flip compEquiv (isSetDispNRG0 .dnativ (tt , A0) (tt , A1) Abdg ist0 ist1)
-  --              (isSetDedgeCharac A0 A1 ist0 ist1 _) }
-  -- }
+      tmp : ∀ (flr : isSetDispNRG0 ⦅ ist0 , ist1 ⦆# ( (tt , R)))
+              a0 a1 (aa : R a0 a1) a0' a1' (aa' : R a0' a1') (p0 : a0 ≡ a0') (p1 : a1 ≡ a1')
+              (u0 u1 : PathP (λ i → R (p0 i) (p1 i)) aa aa') →
+              isProp (u0 ≡ u1)
+      tmp flr a0 a1 aa a0' a1' aa' p0 p1 u0 u1 =
+        let foo = isOfHLevelPathP {A = λ _ → PathP (λ i → R (p0 i) (p1 i)) aa aa'} 1
+        in flip (flip foo u0) u1
+           (isOfHLevelPathP' {A = λ i → R (p0 i) (p1 i)} 1 (badDedge→setRel flr a0' a1') aa aa')
+
+      isPropisSrel : isProp (∀ a0 a1 → isSet (R a0 a1))
+      isPropisSrel = isPropΠ2 λ a0 a1 → isPropIsSet
+
+
+  isSetDispNRG : ∀ {ℓ} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
+  isSetDispNRG {ℓ = ℓ} = record {
+    dcr = λ ( _ , A ) → isSet A ;
+    dedge = λ ( _ , A0) ( _ , A1) (_ , R) _ _ → ∀ (a0 : A0) (a1 : A1) → isSet (R a0 a1) ;
+    dnativ = λ { (tt , A0) (tt , A1) Abdg ist0 ist1 →
+               flip compEquiv (isSetDispNRG0 .dnativ (tt , A0) (tt , A1) Abdg ist0 ist1)
+               (isSetDedgeCharac A0 A1 ist0 ist1 _) }
+    }
 
 
 
