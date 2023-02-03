@@ -835,9 +835,19 @@ module HProp where
     }
 
 
+
+  hPropNRG1 : (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+  hPropNRG1 ℓ = rem-top-ctx (ΣForm (TypeForm topNRG ℓ) isPropDispNRG)
+
   -- hProp with mere relations forms a NRG
-  hPropNRG : (ℓ : Level) → NRGraph (ℓ-suc ℓ)
-  hPropNRG ℓ = rem-top-ctx (ΣForm (TypeForm topNRG ℓ) isPropDispNRG)
+  hPropNRG : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+  hPropNRG ℓ = record {
+    nrg-cr = hProp ℓ ;
+    nedge = λ hP0 hP1 → hP0 .fst → hP1 .fst → hProp ℓ ;
+    nativ = λ hP0 hP1 → flip compEquiv (hPropNRG1 ℓ .nativ hP0 hP1)
+              (mereRelRew (hP0 .fst) (hP1 .fst))
+    }
+
 open HProp public
 
 
@@ -920,7 +930,24 @@ module HSet where
                (isSetDedgeCharac A0 A1 ist0 ist1 _) }
     }
 
+  
+  hSetNRG1 : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+  hSetNRG1 ℓ = rem-top-ctx (ΣForm (TypeForm topNRG ℓ) isSetDispNRG)
 
+  hSetNRG : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+  hSetNRG ℓ = record {
+    nrg-cr = hSet ℓ ;
+    nedge = λ hA0 hA1 → (hA0 .fst → hA1 .fst → hSet ℓ) ;
+    nativ = λ hA0 hA1 → flip compEquiv (hSetNRG1 ℓ .nativ hA0 hA1)
+              (isoToEquiv (iso
+              (λ R →  (λ a0 a1 → R a0 a1 .fst) , λ a0 a1 → R a0 a1 .snd)
+              (λ { (R , Rprf) → λ a0 a1 → (R a0 a1 , Rprf a0 a1) })
+              (λ _ → refl)
+              λ _ → refl)) }
+
+open HSet
+
+-- rem-top-ctx (ΣForm (TypeForm topNRG ℓ) isPropDispNRG)
 
 {- JUNK 
 
