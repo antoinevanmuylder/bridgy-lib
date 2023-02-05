@@ -68,7 +68,29 @@ open HSetEndo public
 
 
 -- F : hSet → hSet , A :hset  ⊢ F A type
-applyHSet : ∀ {ℓ
+applyHSetF : ∀ {ℓ} → DispNRG ℓ (hSetEndoNRG ℓ #  HSetForm {ℓ-suc ℓ} (hSetEndoNRG ℓ) ℓ)
+applyHSetF {ℓ} = record {
+  dcr = λ hFhA → hFhA .fst (hFhA .snd) .fst ;
+  dedge = λ hFhA0 hFhA1 hFhAA → λ b0 b1 → (hFhAA .fst) (hFhA0 .snd) (hFhA1 .snd) (hFhAA .snd) b0 b1 .fst ;
+  dnativ = λ { (hF0 , hA0) (hF1 , hA1) hFhABdg b0 b1 →
+    let hAA = invEq (hSetNRG ℓ .nativ hA0 hA1) (λ x → hFhABdg x .snd)
+        hFF = invEq (hSetEndoNRG ℓ .nativ hF0 hF1) (λ x → hFhABdg x .fst)
+    in {!!} } -- 
+
+
+  }
+  -- dedge = λ { (hF0 , hA0) (hF1 , hA1) (hFF , hAA ) →
+  --             λ b0 b1 → hFF hA0 hA1 hAA b0 b1 .fst } ;
+  -- dnativ = λ { (hF0 , hA0) (hF1 , hA1) hFbdg b0 b1 → {!!} } }
+
+  --   dnativ = λ hFhA0 hFhA1 hFhAA b0 b1 →
+
+-- hSetNRG ℓ .nativ hA0 hA1 : (hA0 .fst → hA1 .fst → hSet ℓ) ≃ BridgeP (λ _ → hSet ℓ) hA0 hA1
+-- hSetEndoNRG ℓ .nativ hF0 hF1 :
+  -- ((hA2 hA3 : hSet ℓ) →
+  --  (hA2 .fst → hA3 .fst → hSet ℓ) →
+  --  hF0 hA2 .fst → hF1 hA3 .fst → hSet ℓ)
+  -- ≃ BridgeP (λ _ → hSet ℓ → hSet ℓ) hF0 hF1 
 
 -- F : hSet → hSet  ⊢ ∀ A. A → F A  dnrg
 hasRet : ∀ {ℓ} → DispNRG (ℓ-suc ℓ) (hSetEndoNRG ℓ)

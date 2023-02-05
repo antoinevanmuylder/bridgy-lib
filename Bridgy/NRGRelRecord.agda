@@ -25,7 +25,7 @@ open import Cubical.Foundations.Equiv.Properties
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.GroupoidLaws
-open import Cubical.Data.Sigma using (_×_ ; ≃-× ; ≡-× ; Σ-cong-equiv ; Σ-cong-equiv-snd)
+open import Cubical.Data.Sigma using (_×_ ; ≃-× ; ≡-× ; Σ-cong-equiv ; Σ-cong-equiv-snd ; ΣPath≃PathΣ)
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Path -- using (congPathEquiv ; PathP≃Path ; compPathrEquiv ; compPathlEquiv)
@@ -360,6 +360,10 @@ tySubst {ℓΔ = ℓΔ} Γ Δ σ A = record {
                                    (pathToEquiv (cong (λ blank → A .dedge (σ .nobjMap γ0) (σ .nobjMap γ1) blank a0 a1)
                                    (funExt⁻ (σ .nativ-rel γ0 γ1) γbdg))) }
 
+
+
+
+
 -- + equations... behaves as a functor
 
 -- this cwf would be wonderful if we had cwf equations by refl.
@@ -436,6 +440,10 @@ var-rule Γ A =
 
 
 -- open AuxRules public
+
+
+
+
 
 
 -- -- Γ ⊢ A type   Γ.A ⊢ B type
@@ -610,6 +618,59 @@ PathForm Γ A a b = record {
   --                              (flip compEquiv (adjustPathPEnds (sym (a .tm-nativ γ0 γ1 γγ)) (sym (b .tm-nativ γ0 γ1 γγ)))
   --                             (congPathEquiv λ i → A .dnativ γ0 γ1 γγ (pa i) (pb i))) }
   
+-- Γ ⊢ B [a/x] type
+-- auxapp : ∀ {ℓΓ ℓA ℓB} (Γ : NRGraph ℓΓ)
+--       (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) →
+--       (a : SectNRG Γ A) →
+--       DispNRG ℓB Γ
+-- auxapp Γ A B a = flip (tySubst Γ (Γ # A)) B (record {
+--   nobjMap = λ γ → ( γ , a .ac0 γ ) ;
+--   nedgeMap = λ {g0} {g1} gg →  ( gg , a .ac1 g0 g1 gg ) ;
+--   nativ-rel = λ g0 g1 → funExt λ gbdg →
+--     equivFun ΣPath≃PathΣ
+--     (( refl , a .tm-nativ g0 g1 gbdg )) }) 
+
+-- -- term application..
+-- app : ∀ {ℓΓ ℓA ℓB} (Γ : NRGraph ℓΓ)
+--       (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) →
+--       (a : SectNRG Γ A) (f : SectNRG Γ (ΠForm A B)) →
+--       SectNRG Γ (auxapp Γ A B a)
+-- app Γ A B a f = record {
+--   ac0 = λ g → f .ac0 g (a .ac0 g) ;
+--   ac1 = λ g0 g1 gg → f .ac1 g0 g1 gg (a .ac0 g0) (a .ac0 g1) (a .ac1 g0 g1 gg) ;
+--   tm-nativ = λ g0 g1 gg →
+--                _∙_ (funExt⁻ (funExt⁻ (funExt⁻ (f .tm-nativ g0 g1 gg) (a .ac0 g0)) (a .ac0 g1)) (a .ac1 g0 g1 (invEq (Γ .nativ g0 g1) gg)))
+--                {!!} }
+
+
+
+-- Γ ⊢ A type   Γ, A:Type ⊢ F type
+-- --------------------------------
+-- Γ ⊢ F[A] type
+
+tySubst' : ∀ {ℓΓ ℓ} (Γ : NRGraph ℓΓ) (A : DispNRG ℓ Γ) (F : DispNRG ℓ (Γ # TypeForm Γ ℓ)) →
+             DispNRG ℓ Γ
+tySubst' {ℓ = ℓ} Γ A F = flip (tySubst Γ (Γ # TypeForm Γ ℓ)) F
+  (record {
+    nobjMap = λ g → ( g , A .dcr g) ;
+    nedgeMap = λ {g0} {g1} gg → ( gg , A .dedge g0 g1 gg ) ;
+    nativ-rel = λ g0 g1 → funExt λ gbdg → equivFun ΣPath≃PathΣ
+      (refl ,
+      funExt λ a0 → funExt λ a1 → ua (A .dnativ g0 g1 gbdg a0 a1)) --TODO: might introduce trouble to compute here
+    })
+
+
+-- record {
+  -- dcr = λ g → F .dcr (g , A .dcr g) ;
+  -- dedge = {!λ g0 g1 gg b0 b1 → !} ; dnativ = {!!} }
+
+
+
+
+-- f .tm-nativ g0 g1 gg :
+--   ac1 f g0 g1 (invEq (Γ .nativ g0 g1) gg) ≡
+--   invEq (ΠForm A B .dnativ g0 g1 gg (ac0 f g0) (ac0 f g1))
+--   (λ x → ac0 f (gg x))
   
 -- -- -- 1, A:Type ℓ, x:ElA, y:ElA
 -- PathMinCtx : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
