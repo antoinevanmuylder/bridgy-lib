@@ -67,6 +67,17 @@ module HSetEndo where
 open HSetEndo public
 
 
+
+typeEndoNRG : ∀ (ℓ : Level) → NRGraph (ℓ-suc ℓ)
+typeEndoNRG ℓ = rem-top-ctx (→Form {Γ = topNRG} (TypeForm topNRG ℓ) (TypeForm topNRG ℓ))
+
+
+-- (F : hSet → hSet, A :hSet) → (F : Type → Type, A : Type) nrelator
+forgHSet : ∀ {ℓ} → NRelator (hSetEndoNRG ℓ # HSetForm (hSetEndoNRG ℓ) ℓ) (typeEndoNRG ℓ # TypeForm (typeEndoNRG ℓ) ℓ)
+forgHSet = record {
+  nobjMap = λ hFhA → {!λ A → ?!} , {!!}   ; nedgeMap = {!!} ; nativ-rel = {!!} }
+
+
 -- F : hSet → hSet , A :hset  ⊢ F A type
 applyHSetF : ∀ {ℓ} → DispNRG ℓ (hSetEndoNRG ℓ #  HSetForm {ℓ-suc ℓ} (hSetEndoNRG ℓ) ℓ)
 applyHSetF {ℓ} = record {

@@ -343,3 +343,7 @@ HSetEl Γ ℓ = record {
 --   dcr = λ γA → γA .snd
 --   ; dedge = λ γA0 γA1 γγAA → γγAA .snd 
 --   ; dnativ = λ { (γ0 , A0) (γ1 , A1) γbdg a0 a1 → idEquiv _ } }
+
+
+
+

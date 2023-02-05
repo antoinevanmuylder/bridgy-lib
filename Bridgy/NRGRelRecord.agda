@@ -643,6 +643,28 @@ PathForm Γ A a b = record {
 --                {!!} }
 
 
+-- non dependent term application
+-- the 0-action 0f induces a 1-action ~0f  on bridges by the usual formula
+-- but ~0f is a bridge at a pi type. pbly want to convert this to a pi of bdg for the proof to go through.
+-- in other words naive f .tm-nativ does not give the proper thing.
+app : ∀ {ℓΓ ℓA ℓB} (Γ : NRGraph ℓΓ)
+      (A : DispNRG ℓA Γ) (B : DispNRG ℓB Γ) →
+      (a : SectNRG Γ A) (f : SectNRG Γ (→Form A B)) →
+      SectNRG Γ B
+app Γ A B a f = record {
+  ac0 = λ g → f .ac0 g (a .ac0 g) ;
+  ac1 = λ g0 g1 gg → f .ac1 g0 g1 gg (a .ac0 g0) (a .ac0 g1) (a .ac1 g0 g1 gg) ;
+  tm-nativ = λ g0 g1 gbdg →
+    _∙_ (funExt⁻ (funExt⁻ (funExt⁻ (f .tm-nativ g0 g1 gbdg) (a .ac0 g0)) (a .ac0 g1)) (a .ac1 g0 g1 (invEq (Γ .nativ g0 g1) gbdg)))
+    let auxf = invEq (→Form A B .dnativ g0 g1 gbdg (ac0 f g0) (ac0 f g1)) (λ x → ac0 f (gbdg x)) (a .ac0 g0) (a .ac0 g1)
+    in _∙_ (cong auxf (a .tm-nativ g0 g1 gbdg))
+    {!!}   } -- (cong (λ blank → invEq _ _ (a .ac0 g0) (a .ac0 g0) blank) (a .tm-nativ g0 g1 gbdg))
+  -- ac0 = λ g → f .ac0 g (a .ac0 g) ;
+  -- ac1 = λ g0 g1 gg → f .ac1 g0 g1 gg (a .ac0 g0) (a .ac0 g1) (a .ac1 g0 g1 gg) ;
+  -- tm-nativ = λ g0 g1 gg →
+  --              _∙_ (funExt⁻ (funExt⁻ (funExt⁻ (f .tm-nativ g0 g1 gg) (a .ac0 g0)) (a .ac0 g1)) (a .ac1 g0 g1 (invEq (Γ .nativ g0 g1) gg)))
+  --              {!!} }
+
 
 -- Γ ⊢ A type   Γ, A:Type ⊢ F type
 -- --------------------------------
