@@ -67,18 +67,22 @@ module HSetEndo where
 open HSetEndo public
 
 
+-- F : hSet → hSet , A :hset  ⊢ F A type
+applyHSet : ∀ {ℓ
+
 -- F : hSet → hSet  ⊢ ∀ A. A → F A  dnrg
 hasRet : ∀ {ℓ} → DispNRG (ℓ-suc ℓ) (hSetEndoNRG ℓ)
 hasRet {ℓ} = ΠForm {ℓ-suc ℓ} {ℓ-suc ℓ} {ℓ} {hSetEndoNRG ℓ}
                  -- F : .. ⊢ Type type
-                 (TypeForm {ℓ-suc ℓ} (hSetEndoNRG ℓ) ℓ)
+                 (HSetForm {ℓ-suc ℓ} (hSetEndoNRG ℓ) ℓ)
              -- F, A:Type ⊢ A → F A  dnrg
-             {!→Form !}
-             -- (→Form {ℓ-suc ℓ} {ℓ-suc ℓ} {ℓ}
-             --     -- F, A:Type ⊢ Type type
-             --     {!TypeForm {ℓ-suc ℓ} F,A ℓ !} {!!}) -- TypeForm (hSetEndoNRG ℓ # TypeForm (hSetEndoNRG ℓ) ℓ) ℓ
+             (→Form {ℓ-suc ℓ} {ℓ} {ℓ} {F,A}
+                 -- F, A:hset ⊢ A type
+                 (HSetEl (hSetEndoNRG ℓ) ℓ )
+             -- F,A:hset ⊢ F A type
+             {!!})
 
   where
 
     F,A : NRGraph (ℓ-suc ℓ)
-    F,A = (ℓ-suc ℓ - hSetEndoNRG ℓ # ℓ-suc ℓ - TypeForm {ℓ-suc ℓ} (hSetEndoNRG ℓ) ℓ)
+    F,A = (ℓ-suc ℓ - hSetEndoNRG ℓ # ℓ-suc ℓ - HSetForm {ℓ-suc ℓ} (hSetEndoNRG ℓ) ℓ)

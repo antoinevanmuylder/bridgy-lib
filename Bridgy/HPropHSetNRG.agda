@@ -323,3 +323,23 @@ module HSet where
 
 open HSet public
 
+-- Γ  ⊢ hSet type(ℓ+1)
+HSetForm : ∀ {ℓΓ}  (Γ : NRGraph ℓΓ) (ℓ : Level) → DispNRG (ℓ-suc ℓ) Γ
+HSetForm Γ ℓ = record {
+  dcr = λ _ → hSetNRG ℓ .nrg-cr ;
+  dedge = λ _ _ _ → hSetNRG ℓ .nedge ;
+  dnativ = λ _ _ _ → hSetNRG ℓ .nativ }
+
+
+-- ----------------------------
+-- Γ, A : HSet ℓ ⊢ El A.fst type(ℓ)
+HSetEl : ∀ {ℓΓ} (Γ : NRGraph ℓΓ) (ℓ : Level) →
+       DispNRG ℓ (Γ # HSetForm Γ ℓ)
+HSetEl Γ ℓ = record {
+  dcr = λ ghA → ghA .snd .fst ;
+  dedge = λ ghA0 ghA1 → λ ghAA → λ a0 a1 → ghAA .snd a0 a1 .fst ;
+  dnativ = λ { ( g0 , ( A0 , ist0 ) ) ( g1 , ( A1 , ist1 ) ) gbdg a0 a1 → idEquiv _  } }
+-- record {
+--   dcr = λ γA → γA .snd
+--   ; dedge = λ γA0 γA1 γγAA → γγAA .snd 
+--   ; dnativ = λ { (γ0 , A0) (γ1 , A1) γbdg a0 a1 → idEquiv _ } }
