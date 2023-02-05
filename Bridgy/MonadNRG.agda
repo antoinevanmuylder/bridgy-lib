@@ -75,7 +75,7 @@ typeEndoNRG ℓ = rem-top-ctx (→Form {Γ = topNRG} (TypeForm topNRG ℓ) (Type
 -- (F : hSet → hSet, A :hSet) → (F : Type → Type, A : Type) nrelator
 forgHSet : ∀ {ℓ} → NRelator (hSetEndoNRG ℓ # HSetForm (hSetEndoNRG ℓ) ℓ) (typeEndoNRG ℓ # TypeForm (typeEndoNRG ℓ) ℓ)
 forgHSet = record {
-  nobjMap = λ hFhA → {!λ A → ?!} , {!!}   ; nedgeMap = {!!} ; nativ-rel = {!!} }
+  nobjMap = λ hFhA → (λ A → {!hFhA .fst!}) , {!!}   ; nedgeMap = {!!} ; nativ-rel = {!!} }
 
 
 -- F : hSet → hSet , A :hset  ⊢ F A type
