@@ -63,3 +63,22 @@ module HSetEndo where
                                 ( hA0 .fst → hA1 .fst → hSet ℓ )
       fromCompositeHrel hA0 hA1 RR = λ a0 a1 →
         RR .fst a0 a1 , RR .snd a0 a1
+
+open HSetEndo public
+
+
+-- F : hSet → hSet  ⊢ ∀ A. A → F A  dnrg
+hasRet : ∀ {ℓ} → DispNRG (ℓ-suc ℓ) (hSetEndoNRG ℓ)
+hasRet {ℓ} = ΠForm {ℓ-suc ℓ} {ℓ-suc ℓ} {ℓ} {hSetEndoNRG ℓ}
+                 -- F : .. ⊢ Type type
+                 (TypeForm {ℓ-suc ℓ} (hSetEndoNRG ℓ) ℓ)
+             -- F, A:Type ⊢ A → F A  dnrg
+             {!→Form !}
+             -- (→Form {ℓ-suc ℓ} {ℓ-suc ℓ} {ℓ}
+             --     -- F, A:Type ⊢ Type type
+             --     {!TypeForm {ℓ-suc ℓ} F,A ℓ !} {!!}) -- TypeForm (hSetEndoNRG ℓ # TypeForm (hSetEndoNRG ℓ) ℓ) ℓ
+
+  where
+
+    F,A : NRGraph (ℓ-suc ℓ)
+    F,A = (ℓ-suc ℓ - hSetEndoNRG ℓ # ℓ-suc ℓ - TypeForm {ℓ-suc ℓ} (hSetEndoNRG ℓ) ℓ)

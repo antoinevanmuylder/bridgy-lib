@@ -13,6 +13,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
+open import Cubical.Data.List
 
 
 churchUnit : ∀ {ℓ} → ( (X : Type ℓ) → X → X )  ≃  ⊤
@@ -39,4 +40,30 @@ churchBool = isoToEquiv (iso
   bool→church = (λ where
                    true → λ X xtrue xfalse → xtrue
                    false → λ X xtrue xfalse → xfalse)
+
+
+
+-- churchList : ∀ {ℓ} (A : Type ℓ) → ( (X : Type ℓ) → X → (A → X → X) → X ) ≃ List A
+-- churchList {ℓ} A = isoToEquiv (iso
+--                  churchToList
+--                  listToChurch
+--                  sameList
+--                  -- this retract proof must use param.
+--                  λ chl → funExt λ X → funExt λ d → funExt λ f → {!!})
+
+--   where
+
+--     churchToList : ( (X : Type ℓ) → X → (A → X → X) → X ) → List A
+--     churchToList = (λ f → f (List A) [] _∷_)
+
+--     listToChurch : List A → ( (X : Type ℓ) → X → (A → X → X) → X )
+--     listToChurch [] = λ X d f → d
+--     listToChurch (a ∷ as) = λ X d f → f a (listToChurch as X d f)
+
+--     sameList : ∀ as → churchToList (listToChurch as) ≡ as
+--     sameList [] = refl
+--     sameList (a ∷ as) = ListPath.decode _ _
+--       (refl ,
+--       ListPath.encode (churchToList (listToChurch as)) as
+--       (sameList as))
    

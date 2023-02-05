@@ -560,6 +560,14 @@ module ΣΠrulesDispNRG {ℓΓ ℓA ℓB} {Γ : NRGraph ℓΓ} (A : DispNRG ℓA
     }
 open ΣΠrulesDispNRG public
 
+  -- Γ ⊢ A type
+  -- Γ ⊢ B type
+  -- --------------
+  -- Γ ⊢ A → B type
+→Form : ∀ {ℓΓ ℓA ℓB} {Γ : NRGraph ℓΓ} (A : DispNRG ℓA Γ) (B : DispNRG ℓB Γ) → DispNRG (ℓ-max ℓA ℓB) Γ
+→Form {ℓΓ} {ℓA} {ℓB} {Γ} A B = ΠForm {ℓΓ} {ℓA} {ℓB} {Γ} A
+                               (wkn-type-by {ℓΓ} {ℓA} {ℓB} Γ A B)
+
 
 adjustPathPEnds : ∀ {ℓ : Level} {A : I → Type ℓ} {a0' a0 : A i0} {a1' a1 : A i1} (prf0 : a0' ≡ a0) (prf1 : a1' ≡ a1)  →
                     PathP A a0' a1' ≃ PathP A a0 a1
