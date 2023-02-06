@@ -231,3 +231,7 @@ PreMndNRG0 ℓ = rem-top-ctx (PreMndDispNRG1 ℓ)
 
 thing : (ℓ : Level) → Unit
 thing ℓ = {!PreMndNRG0 ℓ .nrg-cr!}
+
+
+-- next step: M:PreMnd ⊢ [M nat] → M nat
+-- param of M :PreMnd ⊢ f : [M nat] → M nat will give use what we want.
