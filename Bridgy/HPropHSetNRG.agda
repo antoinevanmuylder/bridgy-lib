@@ -321,6 +321,18 @@ module HSet where
               (λ _ → refl)
               λ _ → refl)) }
 
+  setRelRew : ∀ {ℓ} (A0 A1 : Type ℓ) →
+    (A0 → A1 → hSet ℓ)
+    ≃ 
+    Σ (A0 → A1 → Type ℓ) (λ R →
+      ∀ a0 a1 → isSet (R a0 a1)) 
+  setRelRew A0 A1 = isoToEquiv (iso
+    (λ R → (λ a0 a1 → R a0 a1 .fst) ,
+            λ a0 a1 → R a0 a1 .snd)
+    (λ { (R , Rprf) → λ a0 a1 → (R a0 a1 , Rprf a0 a1) } )
+    (λ { (R , prf) → refl } )
+    λ _ → refl)
+
 open HSet public
 
 -- Γ  ⊢ hSet type(ℓ+1)

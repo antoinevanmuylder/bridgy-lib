@@ -301,7 +301,8 @@ open PathpNRG public
 
 {-
 
-ATTEMPT: shallow CwF structure on NRG
+shallow CwF structure on NRG
+When proving things in this DSL, its preferable to work in context topNRG # ...
 
 -}
 
@@ -439,6 +440,7 @@ var-rule Γ A =
     tm-nativ = λ γa0 γa1 γγaa → refl }
 
 
+
 -- open AuxRules public
 
 
@@ -506,17 +508,20 @@ El Γ ℓ = record {
   ; dedge = λ γA0 γA1 γγAA → γγAA .snd 
   ; dnativ = λ { (γ0 , A0) (γ1 , A1) γbdg a0 a1 → idEquiv _ } }
 
---   -- applied version of the El universal family
---   -- Γ ⊢ C : U(l')
---   -- -----------------
---   -- Γ ⊢ El C : type(l')
---   ElApply : ∀ {ℓ' : Level} → (SectNRG Γ (UForm ℓ')) → DispNRG ℓ' Γ
---   ElApply {ℓ'} C {- codes over Γ -} =
---     record {
---       dcr = C .ac0 ;
---       dedge = λ γ0 γ1 γγ → C .ac1 γ0 γ1 γγ ;
---       dnativ = λ γ0 γ1 γγ a0 a1 →
---         pathToEquiv (funExt⁻ (funExt⁻ (left-skew-tm-nativ Γ (UForm ℓ') C γ0 γ1 γγ) a0) a1) }
+-- applied version of the El universal family
+-- Γ ⊢ C : U(l)
+-- -----------------
+-- Γ ⊢ El C : type(l)
+ElApply : ∀ {ℓΓ ℓ} (Γ : NRGraph ℓΓ) → (SectNRG Γ (TypeForm Γ ℓ)) → DispNRG ℓ Γ
+ElApply Γ C = record {
+  dcr = λ g → C .ac0 g ;
+  dedge = λ g0 g1 gg → C .ac1 g0 g1 gg ;
+  dnativ = λ g0 g1 gg a0 a1 →
+    pathToEquiv λ i → C .tm-nativ g0 g1 gg i a0 a1  }
+
+-- pathToEquiv: codes to types
+-- univalence: types to codes
+
 
 
 -- Γ ⊢ C type
@@ -676,6 +681,19 @@ tySubst' {ℓ = ℓ} Γ A F = flip (tySubst Γ (Γ # TypeForm Γ ℓ)) F
       (refl ,
       funExt λ a0 → funExt λ a1 → ua (A .dnativ g0 g1 gbdg a0 a1)) --TODO: might introduce trouble to compute here
     })
+
+
+
+-- Γ ⊢ A type  Γ ⊢ B type
+-------------------------
+-- Γ ⊢ A × B type
+×Form : ∀ {ℓΓ ℓA ℓB} (Γ : NRGraph ℓΓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB Γ) →
+          DispNRG (ℓ-max ℓA ℓB) Γ
+×Form Γ A B = ΣForm A (wkn-type-by Γ A B)
+
+
+
+
 
 
 -- record {
