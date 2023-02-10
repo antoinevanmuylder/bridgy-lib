@@ -236,6 +236,8 @@ compNRelator {G = G} {H = H} {K = K} E F = record
                           funExt λ q →  refl}
 
 
+
+
   
 -- example: X ↦ X → X relator
 churchUnitNRelator : ∀ {ℓ} → NRelator (TypeNRG ℓ) (TypeNRG ℓ)
@@ -841,10 +843,6 @@ module CHminus where
 
 
 -}
-
-
-
-
 
 
 
