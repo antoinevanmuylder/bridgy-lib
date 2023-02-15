@@ -38,6 +38,7 @@ module PlayExtent {ℓA ℓB : Level} {A : (@tick x : BI) → Type ℓA} {B : (@
   -- uses "casing by extent" proof technique.
   -- when proving that a fully applied bridge equals extent `q x ≡ primExtent ...`
   -- one can use extent itself!
+  -- More generally, extent .. x arg allows you to replace the goal with a goal where arg depends explicitely on x:BI.
   related-retract : (q : related) -> q ≡ bf-hard ( bf-easy q )
   related-retract q = bridgePPath λ x → funExt λ a → primExtent {B = λ x a → q x a ≡ primExtent N0 N1 (λ c0 c1 cc y → q y (cc y)) x a}
                                                        (λ a0 → refl) (λ a1 → refl) (λ a0 a1 aa y → refl) x a
