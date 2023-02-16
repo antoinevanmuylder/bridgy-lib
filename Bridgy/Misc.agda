@@ -158,17 +158,45 @@ ListRCover' A0 A1 R (a0 ∷ as0) (a1 ∷ as1) = R a0 a1 × ListRCover' A0 A1 R a
 
 module ListvsBridge {ℓ} {A : Type ℓ} where
 
+  -- STEP1: bisimilarity of lists.
   -- as0 [ListRCover A] as1 iff as0, as1 have similar structure and
   -- we have bdgs between each entries of the list
   _~List_ : List A → List A → Type ℓ
   _~List_ = ListRCover' A A (BridgeP (λ _ → A))
 
+  -- STEP2: bisim → Bridge by induction
   loosenList : ∀ as0 as1 → as0 ~List as1 → BridgeP (λ _ → List A) as0 as1
   loosenList [] [] = λ _ → (λ _ → [])
   loosenList [] (_ ∷ _) = λ ctr → rec (ctr .lower)
   loosenList (_ ∷ _) [] = λ ctr → rec (ctr .lower)
   loosenList (hd0 ∷ tl0) (hd1 ∷ tl1) = λ hd-tll → λ x → (hd-tll .fst x) ∷  loosenList _ _ (hd-tll .snd) x
 
+
+  -- STEP3: For I inductive, x:BI, equip (primGel I I bisim x) with an I algebra structure.
+  --        This is ≈equivalent to building bridges btw constructors
+  nilx : (@tick x : BI) → primGel _ _ (_~List_) x
+  nilx x = prim^gel [] [] _ x
+
+  consx : BridgeP (λ x → A → primGel _ _ (_~List_) x → primGel _ _ (_~List_) x) _∷_ _∷_
+  consx x hd =
+    primExtent {A = λ _ → A} {B = λ x _ → primGel _ _ (_~List_) x → primGel _ _ (_~List_) x}
+      _∷_ _∷_
+      (λ hd0 hd1 hdd y →
+        primExtent {A = λ x → primGel _ _ (_~List_) x} {B = λ x _ → primGel _ _ (_~List_) x}
+        (λ atl → hd0 ∷ atl) (λ atl → hd1 ∷ atl)
+        (λ tl0 tl1 tll → {!!}  ) -- λ z → prim^gel {R = _~List_} (hd0 ∷ tl0) (hd1 ∷ tl1) ( hdd , {!!}) z
+        y)
+      x hd
+
+--     (λ a0 a1 aa y → prim^gel {R = (_~Wrap_)} (gv a0) (gv a1) aa y)
+
+  -- consx : (@tick x : BI) → A → primGel _ _ (_~List_) x → primGel _ _ (_~List_) x
+  -- consx x hd gtl =
+  --   {!primExtent {A = !}
+  -- consx x hd tl =
+  --   primExtent {A = λ _ → List A} {B = λ x _ → primGel _ _ (_~List_) x} {!!} {!!}
+  --     (λ a0 a1 aa → {!!})
+  --     x 
 
   -- naiveTightenList : ∀ as0 as1 → BridgeP (λ _ → List A) as0 as1 → (as0 ~List as1)
   -- naiveTightenList [] [] = λ _ → lift tt
