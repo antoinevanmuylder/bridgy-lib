@@ -70,18 +70,21 @@ gv-proj (gv a) = refl
 
 module WrapvsBridge {ℓ} (A : Type ℓ) where
 
+  -- STEP1: define observational similarity for the inductive of interest, by induction.
   _~Wrap_ : Wrap A → Wrap A → Type ℓ
   _~Wrap_ (gv a0) (gv a1) = BridgeP (λ _ → A) a0 a1
 
+  -- STEP2: define loosen : bisim → Bridge by induction
   -- ~Wrap → Bridge
   loosenWrap : ∀ w0 w1 → (w0 ~Wrap w1) → BridgeP (λ _ → Wrap A) w0 w1
   loosenWrap (gv a0) (gv a1) = λ aa x → gv (aa x)
 
-  -- the following section/section proofs work only for this simple Wrap inductive
+  -- this section works only for this simple Wrap inductive
   naiveTightenWrap : ∀ w0 w1 → BridgeP (λ _ → Wrap A) w0 w1 → (w0 ~Wrap w1)
   naiveTightenWrap (gv a0) (gv a1) ww =
     λ x → proj (ww x)
 
+  -- this section proofs works only for this simple Wrap inductive
   naiveWrapvsBridge : ∀ w0 w1 → (w0 ~Wrap w1) ≃ (BridgeP (λ _ → Wrap A) w0 w1)
   naiveWrapvsBridge (gv a0) (gv a1) = isoToEquiv (iso
     (loosenWrap _ _)
@@ -90,13 +93,10 @@ module WrapvsBridge {ℓ} (A : Type ℓ) where
       λ x → gv-proj (ww x))
       λ prf → refl)
 
-  -- tightenWrap would be
-  -- (BridgeP (λ _ → Wrap A) w0 w1) → (w0 ~Wrap w1)
-  -- instead we define this at Gel'ed domain/codmain
-  -- x:BI → (primGel _ _ (BridgeP (λ _ → Wrap A)) x) → (primGel _ _ (_~Wrap_) x)
-  -- By 1 relativity retract proof, the domain is Wrap A.
-  -- hence we must build tightenWrap0 : x:BI → Wrap A → (primGel _ _ (_~Wrap_) x) by induction
-  -- hence we want a Wrap algebra for (primGel _ _ (_~Wrap_) x) 
+  -- STEP3: For I inductive, x:BI, equip (primGel I I bisim x) with an I algebra structure.
+  --        This is ≈equivalent to building bridges btw constructors
+  -- In our case, a wrap algebra.
+  -- alternate phrasing for the type is BridgeP (λ x → A → (primGel _ _ (_~Wrap_) x)) gv gv
   gvx : (@tick x : BI) → A → (primGel _ _ (_~Wrap_) x)
   gvx x a =
     -- the naive thing does not work because of freshness. → use extent
@@ -107,25 +107,20 @@ module WrapvsBridge {ℓ} (A : Type ℓ) where
     x
     a
 
-  -- simply speaking gvx is a bridge btw the gv and gv constructors.
-  gvx' : BridgeP (λ x → A → (primGel _ _ (_~Wrap_) x)) gv gv
-  gvx' x a =
-    -- the naive thing does not work because of freshness. → use extent
-    -- prim^gel {R = (_~Wrap_)} (gv a) (gv a) (λ _ → a) x
-    primExtent {A = λ _ → A} {B = λ x _ → (primGel _ _ (_~Wrap_) x)}
-    gv gv
-    (λ a0 a1 aa y → prim^gel {R = (_~Wrap_)} (gv a0) (gv a1) aa y)
-    x
-    a 
 
-
-  -- those two are defined by induction
+  -- STEP4: define I → (Gel_x bisim_I) by induction
+  -- using the above I algebra structure on (Gel_x bisim_I)
   tightenWrap0 : (@tick x : BI) → Wrap A → (primGel _ _ (_~Wrap_) x)
-  tightenWrap0 x (gv a) = gvx' x a
+  tightenWrap0 x (gv a) = gvx x a
 
+  -- STEP5: apply the ""Bridge functor"" to the above arrow to get
+  --        BridgeP (λ _ → I) i0 i1 → i0 bisim_I i1
+    --      the codomain is path equal to BridgeP (λ x → Gel_x bisim_I) i0 i1 by relativity.
+  -- tighten is defined by induction as well.
   tightenWrap : ∀ w0 w1 → (BridgeP (λ _ → Wrap A) w0 w1) → (w0 ~Wrap w1)
   tightenWrap (gv a0) (gv a1) ww = prim^ungel {R = _~Wrap_} (λ x → tightenWrap0 x (ww x))
 
+  -- STEP 6: some extent magic... part of final retract proof
   -- bdgRetAux : (@tick x : BI) → (w : Wrap A) → extent (loosen ∘ tighten) x w ≡ w
   bdgRetAux : (@tick x : BI) → (w : Wrap A) →
     (primExtent {A = λ _ → Wrap A} {B = λ _ _ → Wrap A} _ _
@@ -144,6 +139,7 @@ module WrapvsBridge {ℓ} (A : Type ℓ) where
       (λ a0 a1 aa y → refl)
       x a
 
+  -- STEP7: the other retract proof goes by refl.
   WrapvsBridge : ∀ w0 w1 → (w0 ~Wrap w1) ≃ (BridgeP (λ _ → Wrap A) w0 w1)
   WrapvsBridge (gv a0) (gv a1) = isoToEquiv (iso
     (loosenWrap (gv a0) (gv a1))
@@ -160,7 +156,7 @@ ListRCover' A0 A1 R [] (_ ∷ _) = Lift ⊥
 ListRCover' A0 A1 R (_ ∷ _) [] = Lift ⊥
 ListRCover' A0 A1 R (a0 ∷ as0) (a1 ∷ as1) = R a0 a1 × ListRCover' A0 A1 R as0 as1
 
-module BridgeAtList {ℓ} {A : Type ℓ} where
+module ListvsBridge {ℓ} {A : Type ℓ} where
 
   -- as0 [ListRCover A] as1 iff as0, as1 have similar structure and
   -- we have bdgs between each entries of the list
