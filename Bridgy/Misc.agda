@@ -77,11 +77,11 @@ module WrapvsBridge {ℓ} (A : Type ℓ) where
   loosenWrap : ∀ w0 w1 → (w0 ~Wrap w1) → BridgeP (λ _ → Wrap A) w0 w1
   loosenWrap (gv a0) (gv a1) = λ aa x → gv (aa x)
 
+  -- the following section/section proofs work only for this simple Wrap inductive
   naiveTightenWrap : ∀ w0 w1 → BridgeP (λ _ → Wrap A) w0 w1 → (w0 ~Wrap w1)
   naiveTightenWrap (gv a0) (gv a1) ww =
     λ x → proj (ww x)
 
-  -- not sure the proof goes through for more complex inductives
   naiveWrapvsBridge : ∀ w0 w1 → (w0 ~Wrap w1) ≃ (BridgeP (λ _ → Wrap A) w0 w1)
   naiveWrapvsBridge (gv a0) (gv a1) = isoToEquiv (iso
     (loosenWrap _ _)
@@ -97,7 +97,6 @@ module WrapvsBridge {ℓ} (A : Type ℓ) where
   -- By 1 relativity retract proof, the domain is Wrap A.
   -- hence we must build tightenWrap0 : x:BI → Wrap A → (primGel _ _ (_~Wrap_) x) by induction
   -- hence we want a Wrap algebra for (primGel _ _ (_~Wrap_) x) 
-
   gvx : (@tick x : BI) → A → (primGel _ _ (_~Wrap_) x)
   gvx x a =
     -- the naive thing does not work because of freshness. → use extent
@@ -127,14 +126,31 @@ module WrapvsBridge {ℓ} (A : Type ℓ) where
   tightenWrap : ∀ w0 w1 → (BridgeP (λ _ → Wrap A) w0 w1) → (w0 ~Wrap w1)
   tightenWrap (gv a0) (gv a1) ww = prim^ungel {R = _~Wrap_} (λ x → tightenWrap0 x (ww x))
 
-  -- bdgRetAux : (@tick x : BI) → (w : Wrap A) → 
+  -- bdgRetAux : (@tick x : BI) → (w : Wrap A) → extent (loosen ∘ tighten) x w ≡ w
+  bdgRetAux : (@tick x : BI) → (w : Wrap A) →
+    (primExtent {A = λ _ → Wrap A} {B = λ _ _ → Wrap A} _ _
+        (λ w0 w1 ww → loosenWrap w0 w1 (tightenWrap w0 w1 ww))
+        x
+        w)
+    ≡
+        w
+  bdgRetAux x (gv a) =
+    -- casing by extent to show that a fully applied bdg is extent
+    primExtent
+      {B = λ x a → (primExtent (λ a0 → a0) (λ a1 → a1)
+                    (λ w0 w1 ww → loosenWrap w0 w1 (tightenWrap w0 w1 ww)) x (gv a))
+                    ≡ gv a}
+      (λ _ → refl) (λ _ → refl)
+      (λ a0 a1 aa y → refl)
+      x a
 
-  -- WrapvsBridge : ∀ w0 w1 → (w0 ~Wrap w1) ≃ (BridgeP (λ _ → Wrap A) w0 w1)
-  -- WrapvsBridge (gv a0) (gv a1) = isoToEquiv (iso
-  --   (loosenWrap (gv a0) (gv a1))
-  --   (tightenWrap (gv a0) (gv a1))
-  --   (λ ww → {!!})
-  --   {!!})
+  WrapvsBridge : ∀ w0 w1 → (w0 ~Wrap w1) ≃ (BridgeP (λ _ → Wrap A) w0 w1)
+  WrapvsBridge (gv a0) (gv a1) = isoToEquiv (iso
+    (loosenWrap (gv a0) (gv a1))
+    (tightenWrap (gv a0) (gv a1))
+    (λ ww → invEq (PathPvsBridgeP _ {a00 = gv a0} {a10 = gv a1} {a01 = gv a0} {a11 = gv a1}) λ x →
+      (bdgRetAux x (ww x)))
+    λ sim → refl)
 
 
 
@@ -158,10 +174,10 @@ module BridgeAtList {ℓ} {A : Type ℓ} where
   loosenList (hd0 ∷ tl0) (hd1 ∷ tl1) = λ hd-tll → λ x → (hd-tll .fst x) ∷  loosenList _ _ (hd-tll .snd) x
 
 
-  naiveTightenList : ∀ as0 as1 → BridgeP (λ _ → List A) as0 as1 → (as0 ~List as1)
-  naiveTightenList [] [] = λ _ → lift tt
-  naiveTightenList [] (hd ∷ tl) q = {!!}
-  naiveTightenList _ _ = {!!}
+  -- naiveTightenList : ∀ as0 as1 → BridgeP (λ _ → List A) as0 as1 → (as0 ~List as1)
+  -- naiveTightenList [] [] = λ _ → lift tt
+  -- naiveTightenList [] (hd ∷ tl) q = {!!}
+  -- naiveTightenList _ _ = {!!}
 
 
 --   -- The bridge at Type corresponding to the above relation λ as0 as1 → as0 [_~List_ A] as1
