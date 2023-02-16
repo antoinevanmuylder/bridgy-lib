@@ -5,6 +5,7 @@ module Misc where
 
 open import Bridgy.BridgePrims
 open import Bridgy.BridgeExamples
+open import Bridgy.ExtentExamples
 open import Bridgy.GelExamples
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
@@ -178,79 +179,43 @@ module ListvsBridge {ℓ} {A : Type ℓ} where
   nilx x = prim^gel [] [] _ x
 
   consx : BridgeP (λ x → A → primGel _ _ (_~List_) x → primGel _ _ (_~List_) x) _∷_ _∷_
-  consx x hd =
-    primExtent {A = λ _ → A} {B = λ x _ → primGel _ _ (_~List_) x → primGel _ _ (_~List_) x}
-      _∷_ _∷_
-      (λ hd0 hd1 hdd y →
-        primExtent {A = λ x → primGel _ _ (_~List_) x} {B = λ x _ → primGel _ _ (_~List_) x}
-        (λ atl → hd0 ∷ atl) (λ atl → hd1 ∷ atl)
-        (λ tl0 tl1 tll → {!!}  ) -- λ z → prim^gel {R = _~List_} (hd0 ∷ tl0) (hd1 ∷ tl1) ( hdd , {!!}) z
-        y)
-      x hd
-
---     (λ a0 a1 aa y → prim^gel {R = (_~Wrap_)} (gv a0) (gv a1) aa y)
-
-  -- consx : (@tick x : BI) → A → primGel _ _ (_~List_) x → primGel _ _ (_~List_) x
-  -- consx x hd gtl =
-  --   {!primExtent {A = !}
-  -- consx x hd tl =
-  --   primExtent {A = λ _ → List A} {B = λ x _ → primGel _ _ (_~List_) x} {!!} {!!}
-  --     (λ a0 a1 aa → {!!})
-  --     x 
-
-  -- naiveTightenList : ∀ as0 as1 → BridgeP (λ _ → List A) as0 as1 → (as0 ~List as1)
-  -- naiveTightenList [] [] = λ _ → lift tt
-  -- naiveTightenList [] (hd ∷ tl) q = {!!}
-  -- naiveTightenList _ _ = {!!}
+  consx =
+    equivFun (ΠvsBridgeP) λ hd0 hd1 hdd →
+    equivFun (ΠvsBridgeP) λ tl0 tl1 tll →
+    λ y → prim^gel {R = _~List_} (hd0 ∷ tl0) (hd1 ∷ tl1) (hdd , prim^ungel {R = _~List_} (λ z → tll z)) y
 
 
---   -- The bridge at Type corresponding to the above relation λ as0 as1 → as0 [_~List_ A] as1
---   -- asBdg : BridgeP (λ _ → Type ℓ) (List A) (List A)
---   -- asBdg = λ x → primGel (List A) (List A) (_~List_) x
+  -- STEP4: define I → (Gel_x bisim_I) by induction
+  tightenList0 : (@tick x : BI) → List A → primGel _ _ (_~List_) x
+  tightenList0 x [] = nilx x
+  tightenList0 x (hd ∷ tl) = consx x hd (tightenList0 x tl) 
 
---   -- nil "constructor" for primGel _ _ _~List_ x
---   nilx : (@tick x : BI) → primGel _ _ (_~List_) x
---   nilx x = prim^gel [] [] _ x
+  -- STEP5: ungel step 4
+  tightenList : ∀ as0 as1 → BridgeP (λ _ → List A) as0 as1 → (as0 ~List as1)
+  tightenList as0 as1 aas = {!prim^ungel (λ x → tightenList0 x (aas x))!}
+  -- tightenList [] [] aas = prim^ungel (λ x → tightenList0 x (aas x))
+  -- tightenList [] (_ ∷ _) aas = prim^ungel (λ x → tightenList0 x (aas x))
+  -- tightenList (_ ∷ _) [] aas = prim^ungel (λ x → tightenList0 x (aas x))
+  -- tightenList (hd0 ∷ tl0) (hd1 ∷ tl1) aas =
+  --   prim^ungel {R = _~List_} (λ x → {!aas x!}) -- 
+  
+-- prim^ungel (λ x → tightenList0 x (aas x))
+-- tightenList tl0 tl1
 
---   -- cons "constructor" for primGel _ _ (_~List_) x
---   consx : (@tick x : BI) →
---           (primGel A A (BridgeP (λ _ → A)) x) → -- "hd"
---           (primGel (List A) (List A) (_~List_) x) → -- "tl"
---           (primGel (List A) (List A) (_~List_) x)
---   consx x ghd gtl =  -- ghd, gtl implicitly depend on x
---     {!!}
-
---     -- primExtent
---     -- {A = λ x → primGel A A (BridgeP (λ _ → A)) x}
---     -- {B = λ x a → primGel (List A) (List A) (_~List_) x} {!!} {!!}
---     --     -- goal is now reduced to (hd:A) (gtl: Gel_x _~List_) → Gel_x _~List_
---     --     (λ hd0 hd1 ghdd y →
---     --     {!primExtent
---     --     {A = λ y → primGel _ _ _~List_ y}
---     --     {B = λ y t → primGel _ _ _~List_ y} ? ?
---     --     ?
---     --     x
---     --     gtl!})
---     -- x
---     -- ghd
-
-
-
-
---   -- -- we obtain a function Bridge_ListA ? ? → _~List_ ? ?
--- --   -- by ungelling tighten0
--- --   tighten0 :  List A → (@tick x : BI) → primGel (List A) (List A) _~List_ x
--- --   tighten0 [] x = prim^gel [] [] _ x
--- --   -- the encoding of the (hd ∷ _) function on (primGel _ _ (_~List_) x)    (for hd, x fixed).
--- --   -- ie we seek a "hd-consing" function (primGel _ _ (_~List_) x) → (primGel _ _ (_~List_) x)
--- --   -- It is obtained by first building a bdg btw hd‌∷_ and hd∷ _ (with extent) and second x to this bdg.
--- --   tighten0 (hd ∷ tl) x =
--- --     primExtent {A = λ x → primGel (List A) (List A) _~List_ x} {B = λ x a → primGel (List A) (List A) _~List_ x}
--- --      (λ atl → hd ∷ atl)
--- --      (λ atl → hd ∷ atl)
--- --      (λ ts0 ts1 tss → λ y → prim^gel {R = _~List_} (hd ∷ ts0) (hd ∷ ts1) ( (λ _ → hd) , prim^ungel {R = _~List_} (λ z → tss z) ) y )
--- --      x
--- --      (tighten0 tl x)
+  -- -- we obtain a function Bridge_ListA ? ? → _~List_ ? ?
+  -- -- by ungelling tighten0
+  -- tighten0 :  (@tick x : BI) → List A →  primGel (List A) (List A) _~List_ x
+  -- tighten0 [] x = prim^gel [] [] _ x
+  -- -- the encoding of the (hd ∷ _) function on (primGel _ _ (_~List_) x)    (for hd, x fixed).
+  -- -- ie we seek a "hd-consing" function (primGel _ _ (_~List_) x) → (primGel _ _ (_~List_) x)
+  -- -- It is obtained by first building a bdg btw hd‌∷_ and hd∷ _ (with extent) and second x to this bdg.
+  -- tighten0 (hd ∷ tl) x =
+  --   primExtent {A = λ x → primGel (List A) (List A) _~List_ x} {B = λ x a → primGel (List A) (List A) _~List_ x}
+  --    (λ atl → hd ∷ atl)
+  --    (λ atl → hd ∷ atl)
+  --    (λ ts0 ts1 tss → λ y → prim^gel {R = _~List_} (hd ∷ ts0) (hd ∷ ts1) ( (λ _ → hd) , prim^ungel {R = _~List_} (λ z → tss z) ) y )
+  --    x
+  --    (tighten0 tl x)
 
 -- --   ListvsBridge0 : ∀ as0 as1 → _~List_ as0 as1 ≃ BridgeP (λ _ → List A) as0 as1
 -- --   ListvsBridge0 as0 as1 = isoToEquiv (iso
