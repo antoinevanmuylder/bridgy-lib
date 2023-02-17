@@ -14,6 +14,7 @@ open import Cubical.Data.Empty as ⊥
 open import Cubical.Data.Unit
 open import Cubical.Data.Sigma using ( ΣPath≃PathΣ ; _×_ )
 open import Cubical.Data.List
+open import Cubical.Foundations.Function
 
 
 -- yay : ∀ {ℓ} (A  B : Type ℓ) (e : A ≃ B) (a : A) (b : B) →
@@ -188,16 +189,21 @@ module ListvsBridge {ℓ} {A : Type ℓ} where
   -- STEP4: define I → (Gel_x bisim_I) by induction
   tightenList0 : (@tick x : BI) → List A → primGel _ _ (_~List_) x
   tightenList0 x [] = nilx x
-  tightenList0 x (hd ∷ tl) = consx x hd (tightenList0 x tl) 
+  tightenList0 x (hd ∷ tl) = consx x hd (tightenList0 x tl)
+
+  tightenList0' : BridgeP (λ x → List A → primGel _ _ (_~List_) x) (idfun _) (idfun _)
+  tightenList0' x [] = nilx x
+  -- tightenList0' x (hd ∷ tl) = consx x hd (tightenList0 x tl)
 
   -- STEP5: ungel step 4
   tightenList : ∀ as0 as1 → BridgeP (λ _ → List A) as0 as1 → (as0 ~List as1)
-  tightenList as0 as1 aas = {!prim^ungel (λ x → tightenList0 x (aas x))!}
-  -- tightenList [] [] aas = prim^ungel (λ x → tightenList0 x (aas x))
-  -- tightenList [] (_ ∷ _) aas = prim^ungel (λ x → tightenList0 x (aas x))
-  -- tightenList (_ ∷ _) [] aas = prim^ungel (λ x → tightenList0 x (aas x))
-  -- tightenList (hd0 ∷ tl0) (hd1 ∷ tl1) aas =
-  --   prim^ungel {R = _~List_} (λ x → {!aas x!}) -- 
+  -- tightenList as0 as1 aas = {!prim^ungel (λ x → tightenList0 x (aas x))!}
+  tightenList [] [] aas = prim^ungel (λ x → tightenList0 x (aas x))
+  tightenList [] (_ ∷ _) aas = prim^ungel (λ x → tightenList0 x (aas x))
+  tightenList (_ ∷ _) [] aas = prim^ungel (λ x → tightenList0 x (aas x))
+  tightenList (hd0 ∷ tl0) (hd1 ∷ tl1) aas =
+    prim^ungel {R = _~List_} λ x →
+      primExtent {B = λ x _ → primGel _ _ (_~List_) x} {!!} {!!} {!!} x tl0
   
 -- prim^ungel (λ x → tightenList0 x (aas x))
 -- tightenList tl0 tl1
