@@ -99,6 +99,8 @@ module WrapvsBridge {ℓ} (A : Type ℓ) where
   --        This is ≈equivalent to building bridges btw constructors
   -- In our case, a wrap algebra.
   -- alternate phrasing for the type is BridgeP (λ x → A → (primGel _ _ (_~Wrap_) x)) gv gv
+  -- for more complex inductive, it may be necessary to rewrite such terms : (@tick x : BI) → ...
+  -- as bridges, in order to specify the endpoints and gain the bridge boundary equations.
   gvx : (@tick x : BI) → A → (primGel _ _ (_~Wrap_) x)
   gvx x a =
     -- the naive thing does not work because of freshness. → use extent
@@ -118,7 +120,6 @@ module WrapvsBridge {ℓ} (A : Type ℓ) where
   -- STEP5: apply the ""Bridge functor"" to the above arrow to get
   --        BridgeP (λ _ → I) i0 i1 → i0 bisim_I i1
     --      the codomain is path equal to BridgeP (λ x → Gel_x bisim_I) i0 i1 by relativity.
-  -- tighten is defined by induction as well.
   tightenWrap : ∀ w0 w1 → (BridgeP (λ _ → Wrap A) w0 w1) → (w0 ~Wrap w1)
   tightenWrap (gv a0) (gv a1) ww = prim^ungel {R = _~Wrap_} (λ x → tightenWrap0 x (ww x))
 
@@ -176,7 +177,7 @@ module ListvsBridge {ℓ} {A : Type ℓ} where
 
   -- STEP3: For I inductive, x:BI, equip (primGel I I bisim x) with an I algebra structure.
   --        This is ≈equivalent to building bridges btw constructors
-  nilx : (@tick x : BI) → primGel _ _ (_~List_) x
+  nilx : BridgeP (λ x → primGel _ _ (_~List_) x) [] []
   nilx x = prim^gel [] [] _ x
 
   consx : BridgeP (λ x → A → primGel _ _ (_~List_) x → primGel _ _ (_~List_) x) _∷_ _∷_
@@ -187,46 +188,29 @@ module ListvsBridge {ℓ} {A : Type ℓ} where
 
 
   -- STEP4: define I → (Gel_x bisim_I) by induction
-  tightenList0 : (@tick x : BI) → List A → primGel _ _ (_~List_) x
+  tightenList0 : BridgeP (λ x → List A → primGel _ _ (_~List_) x) (idfun (List A)) (idfun (List A))
   tightenList0 x [] = nilx x
   tightenList0 x (hd ∷ tl) = consx x hd (tightenList0 x tl)
 
-  tightenList0' : BridgeP (λ x → List A → primGel _ _ (_~List_) x) (idfun _) (idfun _)
-  tightenList0' x [] = nilx x
-  -- tightenList0' x (hd ∷ tl) = consx x hd (tightenList0 x tl)
-
   -- STEP5: ungel step 4
   tightenList : ∀ as0 as1 → BridgeP (λ _ → List A) as0 as1 → (as0 ~List as1)
-  -- tightenList as0 as1 aas = {!prim^ungel (λ x → tightenList0 x (aas x))!}
-  tightenList [] [] aas = prim^ungel (λ x → tightenList0 x (aas x))
-  tightenList [] (_ ∷ _) aas = prim^ungel (λ x → tightenList0 x (aas x))
-  tightenList (_ ∷ _) [] aas = prim^ungel (λ x → tightenList0 x (aas x))
-  tightenList (hd0 ∷ tl0) (hd1 ∷ tl1) aas =
-    prim^ungel {R = _~List_} λ x →
-      primExtent {B = λ x _ → primGel _ _ (_~List_) x} {!!} {!!} {!!} x tl0
-  
--- prim^ungel (λ x → tightenList0 x (aas x))
--- tightenList tl0 tl1
+  tightenList as0 as1 aas = prim^ungel (λ x → tightenList0 x (aas x))
 
-  -- -- we obtain a function Bridge_ListA ? ? → _~List_ ? ?
-  -- -- by ungelling tighten0
-  -- tighten0 :  (@tick x : BI) → List A →  primGel (List A) (List A) _~List_ x
-  -- tighten0 [] x = prim^gel [] [] _ x
-  -- -- the encoding of the (hd ∷ _) function on (primGel _ _ (_~List_) x)    (for hd, x fixed).
-  -- -- ie we seek a "hd-consing" function (primGel _ _ (_~List_) x) → (primGel _ _ (_~List_) x)
-  -- -- It is obtained by first building a bdg btw hd‌∷_ and hd∷ _ (with extent) and second x to this bdg.
-  -- tighten0 (hd ∷ tl) x =
-  --   primExtent {A = λ x → primGel (List A) (List A) _~List_ x} {B = λ x a → primGel (List A) (List A) _~List_ x}
-  --    (λ atl → hd ∷ atl)
-  --    (λ atl → hd ∷ atl)
-  --    (λ ts0 ts1 tss → λ y → prim^gel {R = _~List_} (hd ∷ ts0) (hd ∷ ts1) ( (λ _ → hd) , prim^ungel {R = _~List_} (λ z → tss z) ) y )
-  --    x
-  --    (tighten0 tl x)
+  auxlisteq : (@tick x : BI) → (as : List A) →
+    (equivFun ΠvsBridgeP) (λ as0 as1 → loosenList as0 as1 ∘ tightenList as0 as1) x as
+    ≡
+    as
+  auxlisteq x [] = refl
+  auxlisteq x (hd ∷ tl) =
+    {!primExtent !}
 
--- --   ListvsBridge0 : ∀ as0 as1 → _~List_ as0 as1 ≃ BridgeP (λ _ → List A) as0 as1
--- --   ListvsBridge0 as0 as1 = isoToEquiv (iso
--- --     (loosen as0 as1)
--- --     (λ q → {!prim^ungel {R = _~List_} (λ x → tighten0 (q x) x)!}) {!!} {!!})
+  ListvsBridge0 : ∀ as0 as1 → (as0 ~List as1) ≃ (BridgeP (λ _ → List A) as0 as1)
+  ListvsBridge0 as0 as1 = isoToEquiv (iso
+    (loosenList as0 as1)
+    (tightenList as0 as1)
+    (λ aas → invEq (PathPvsBridgeP _) λ x →
+      {!!})
+    {!!})
 
 -- -- --  y → prim^gel {R = _~List_} (hd ∷ tl) (hd ∷ tl) ( (λ _ → hd) , {!prim^ungel {R = _~List_} (λ z → tss z)!} ) y
 -- -- -- prim^ungel {R = _~List_} (λ z → tss z)
