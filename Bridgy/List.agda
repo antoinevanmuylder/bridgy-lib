@@ -140,10 +140,6 @@ module ListvsBridgeP {ℓ} {A0 A1 : Type ℓ} (AA : BridgeP (λ _ → Type ℓ) 
   -- STEP1: define heterogeneous bisimilarity for lists
   _~List_ : List A0 → List A1 → Type ℓ
   _~List_ = [List (BridgeP (λ x → AA x)) ]
-  -- _~List_ [] [] = Lift Unit
-  -- _~List_ [] (_ ∷ _) = Lift ⊥
-  -- _~List_ (_ ∷ _) [] = Lift ⊥
-  -- _~List_ (hd0 ∷ tl0) (hd1 ∷ tl1) = (BridgeP (λ x → AA x) hd0 hd1) × (tl0 ~List tl1)
 
   -- STEP2: define loosen : bisim → Bridge by induction
   loosenList : ∀ as0 as1 → (as0 ~List as1) → BridgeP (λ x → List (AA x)) as0 as1
@@ -229,7 +225,6 @@ ListvsBridge {A = A} {as0 = as0} {as1 = as1} =
 {-
 
 we define the displayed NRG  A:Type ⊢ List A dnrg
-we first need a (displayed ) commutation principle Bridge vs Lists
 
 -}
 
