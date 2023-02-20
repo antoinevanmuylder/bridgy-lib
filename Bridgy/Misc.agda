@@ -196,17 +196,27 @@ module ListvsBridge {ℓ} {A : Type ℓ} where
   tightenList : ∀ as0 as1 → BridgeP (λ _ → List A) as0 as1 → (as0 ~List as1)
   tightenList as0 as1 aas = prim^ungel (λ x → tightenList0 x (aas x))
 
-  -- STEP6: aux proof for retract proof
+  -- STEP6: auxiliary  proof for retract proof (see auxlisteq)
+  -- we define a "dependent algebra" structure for `apred x` (x :BI fixed).
+  -- then auxlisteq is defined by induction.
+  apred : (@tick x : BI) (as : List A) → Type ℓ
+  apred x as = (primExtent (idfun _) (idfun _) (λ as0 as1 → loosenList as0 as1 ∘ tightenList as0 as1) x as) ≡ as
+
+  
+  apred-nilx : (@tick x : BI) → apred x []
+  apred-nilx x = refl
+
+  apred-consx : BridgeP (λ x → (hd : A) (tl : List A) → (apred x tl) → apred x (hd ∷ tl)) (λ hd tl → (cong (_∷_ hd))) (λ hd tl → (cong (_∷_ hd)))
+  apred-consx =
+    equivFun (ΠvsBridgeP) (λ hd0 hd1 hdd →
+    equivFun (ΠvsBridgeP) (λ tl0 tl1 tll x →
+    (cong (_∷_ (hdd x)))))
+
   auxlisteq : BridgeP ((λ x → (as : List A) →
                         (primExtent (idfun _) (idfun _) (λ as0 as1 → loosenList as0 as1 ∘ tightenList as0 as1) x as) ≡ as))
               (λ _ → refl) (λ _ → refl)
-  auxlisteq = {!!}
-
-  eqextent-line : (@tick x : BI) (as : List A) → Type ℓ
-  eqextent-line x as = (primExtent (idfun _) (idfun _) (λ as0 as1 → loosenList as0 as1 ∘ tightenList as0 as1) x as) ≡ as
-
-  
-
+  auxlisteq x [] = apred-nilx x
+  auxlisteq x (hd ∷ tl) = apred-consx x hd tl (auxlisteq x tl)
 
   ListvsBridge0 : ∀ as0 as1 → (as0 ~List as1) ≃ (BridgeP (λ _ → List A) as0 as1)
   ListvsBridge0 as0 as1 = isoToEquiv (iso
@@ -223,44 +233,3 @@ module ListvsBridge {ℓ} {A : Type ℓ} where
       secprf [] (hd ∷ tl) (lift ctr) = rec ctr
       secprf (hd ∷ tl) [] (lift ctr) = rec ctr
       secprf (hd0 ∷ tl0) (hd1 ∷ tl1) (hdd , tll) = ΣPathP (refl , secprf tl0 tl1 tll)
-
-
--- junk
-
-  -- auxlisteq x [] = refl
-  -- auxlisteq x (hd ∷ tl) =
-  --   {!primExtent {B = λ x a → primExtent (λ atl → a ∷ atl) (λ atl → a ∷ atl) ? x (a ∷ tl)}!}
-
-     -- where
-
-       -- rest : (a0 a1 : List A) (aa : BridgeP (λ x → List A) a0 a1) →
-       --  BridgeP (λ x →
-       --          primExtent (λ a2 → a2) (λ a2 → a2)
-       --          (λ as0 as1 → loosenList as0 as1 ∘ tightenList as0 as1) x (aa x)
-       --          ≡ aa x)
-       --  refl refl
-       -- rest [] [] aa = λ x → {!!}
-
-
-  -- auxlisteq x [] = refl
-  -- auxlisteq x (hd ∷ tl) =
-  --   primExtent {B = λ x a →  } {!!} {!!} (λ hd0 hd1 hdd → {!!}) x hd
-
-
-  -- auxlisteq : (@tick x : BI) → (as : List A) →
-  --   (equivFun ΠvsBridgeP) (λ as0 as1 → loosenList as0 as1 ∘ tightenList as0 as1) x as
-  --   ≡
-  --   as
-  -- auxlisteq x [] = refl
-  -- auxlisteq x (hd ∷ tl) = {!!}
-    -- flip _∙_ (λ i → (hd ∷ (auxlisteq x tl i)))
-    -- {!primExtent {B = λ x a → primExtent (λ a0 → a0) (λ a1 → a1)!}
-    -- primExtent
-    --   {B = λ x as →
-    --     primExtent (λ a0 → a0) (λ a1 → a1)
-    --     (λ as0 as1 aas →
-    --     loosenList as0 as1 (prim^ungel (λ z → tightenList0 z (aas z)))) x as
-    --     ≡ as}
-    --   (λ as0 → refl) (λ as1 → refl)
-    --   (λ as0 as1 aas y → {!!})
-    --   x (hd ∷ tl)
