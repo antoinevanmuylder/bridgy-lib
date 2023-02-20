@@ -133,54 +133,57 @@ ListRCover R (a0 ∷ as0) (a1 ∷ as1) = R a0 a1 × ListRCover R as0 as1
 
 
 
-module ListvsBridge {ℓ} {A : Type ℓ} where
+-- dependent bdg commutation pcpl for the List type former
+-- see ListvsBridgeP theorem
+module ListvsBridgeP {ℓ} {A0 A1 : Type ℓ} (AA : BridgeP (λ _ → Type ℓ) A0 A1) where
 
-  -- STEP1: bisimilarity of lists.
-  -- as0 [ListRCover A] as1 iff as0, as1 have similar structure and
-  -- we have bdgs between each entries of the list
-  _~List_ : List A → List A → Type ℓ
-  _~List_ = [List BridgeP (λ _ → A) ]
+  -- STEP1: define heterogeneous bisimilarity for lists
+  _~List_ : List A0 → List A1 → Type ℓ
+  _~List_ = [List (BridgeP (λ x → AA x)) ]
+  -- _~List_ [] [] = Lift Unit
+  -- _~List_ [] (_ ∷ _) = Lift ⊥
+  -- _~List_ (_ ∷ _) [] = Lift ⊥
+  -- _~List_ (hd0 ∷ tl0) (hd1 ∷ tl1) = (BridgeP (λ x → AA x) hd0 hd1) × (tl0 ~List tl1)
 
-  -- STEP2: bisim → Bridge by induction
-  loosenList : ∀ as0 as1 → as0 ~List as1 → BridgeP (λ _ → List A) as0 as1
+  -- STEP2: define loosen : bisim → Bridge by induction
+  loosenList : ∀ as0 as1 → (as0 ~List as1) → BridgeP (λ x → List (AA x)) as0 as1
   loosenList [] [] = λ _ → (λ _ → [])
   loosenList [] (_ ∷ _) = λ ctr → rec (ctr .lower)
   loosenList (_ ∷ _) [] = λ ctr → rec (ctr .lower)
   loosenList (hd0 ∷ tl0) (hd1 ∷ tl1) = λ hd-tll → λ x → (hd-tll .fst x) ∷  loosenList _ _ (hd-tll .snd) x
 
-
   -- STEP3: For I inductive, x:BI, equip (primGel I I bisim x) with an I algebra structure.
   --        This is ≈equivalent to building bridges btw constructors
-  nilx : BridgeP (λ x → primGel _ _ (_~List_) x) [] []
+  nilx : BridgeP (λ x → primGel (List A0) (List A1) (_~List_) x) [] []
   nilx x = prim^gel [] [] _ x
 
-  consx : BridgeP (λ x → A → primGel _ _ (_~List_) x → primGel _ _ (_~List_) x) _∷_ _∷_
+  consx : BridgeP (λ x → (AA x) → primGel _ _ (_~List_) x → primGel _ _ (_~List_) x) _∷_ _∷_
   consx =
     equivFun (ΠvsBridgeP) λ hd0 hd1 hdd →
     equivFun (ΠvsBridgeP) λ tl0 tl1 tll →
-    λ y → prim^gel {R = _~List_} (hd0 ∷ tl0) (hd1 ∷ tl1) (hdd , prim^ungel {R = _~List_} (λ z → tll z)) y
+    λ x → prim^gel {R = _~List_} (hd0 ∷ tl0) (hd1 ∷ tl1) (hdd , prim^ungel {R = _~List_} (λ y → tll y)) x
 
 
   -- STEP4: define I → (Gel_x bisim_I), for x fixed, by induction
-  tightenList0 : BridgeP (λ x → List A → primGel _ _ (_~List_) x) (idfun (List A)) (idfun (List A))
+  tightenList0 : BridgeP (λ x → (List (AA x)) → primGel _ _ (_~List_) x) (idfun (List A0)) (idfun (List A1))
   tightenList0 x [] = nilx x
   tightenList0 x (hd ∷ tl) = consx x hd (tightenList0 x tl)
 
   -- STEP5: ungel step 4
-  tightenList : ∀ as0 as1 → BridgeP (λ _ → List A) as0 as1 → (as0 ~List as1)
+  tightenList : ∀ as0 as1 → BridgeP (λ x → List (AA x)) as0 as1 → (as0 ~List as1)
   tightenList as0 as1 aas = prim^ungel (λ x → tightenList0 x (aas x))
 
   -- STEP6: auxiliary  proof for retract proof (see auxlisteq)
   -- we define a "dependent algebra" structure for `apred x` (x :BI fixed).
   -- then `auxlisteq : ∀ x as, apred x as` is defined by induction.
-  apred : (@tick x : BI) (as : List A) → Type ℓ
+  apred : (@tick x : BI) (as : List (AA x)) → Type ℓ
   apred x as = (primExtent (idfun _) (idfun _) (λ as0 as1 → loosenList as0 as1 ∘ tightenList as0 as1) x as) ≡ as
 
   apred-nilx : BridgeP (λ x → apred x []) (refl) (refl)
   apred-nilx x = refl
 
   apred-consx : BridgeP
-    (λ x → (hd : A) (tl : List A) → (apred x tl) → apred x (hd ∷ tl))
+    (λ x → (hd : (AA x)) (tl : List (AA x)) → (apred x tl) → apred x (hd ∷ tl))
     (λ hd tl → (cong (_∷_ hd))) (λ hd tl → (cong (_∷_ hd)))
   apred-consx =
     equivFun (ΠvsBridgeP) (λ hd0 hd1 hdd →
@@ -188,29 +191,32 @@ module ListvsBridge {ℓ} {A : Type ℓ} where
     (cong (_∷_ (hdd x)))))
 
   auxlisteq : BridgeP
-    ((λ x → (as : List A) →
+    ((λ x → (as : List (AA x)) →
       (primExtent (idfun _) (idfun _) (λ as0 as1 → loosenList as0 as1 ∘ tightenList as0 as1) x as) ≡ as))
     (λ _ → refl) (λ _ → refl)
   auxlisteq x [] = apred-nilx x
   auxlisteq x (hd ∷ tl) = apred-consx x hd tl (auxlisteq x tl)
 
-  ListvsBridge0 : ∀ as0 as1 → (as0 ~List as1) ≃ (BridgeP (λ _ → List A) as0 as1)
-  ListvsBridge0 as0 as1 = isoToEquiv (iso
+  auxsec : ∀ as0 as1 (sim : as0 ~List as1) → tightenList as0 as1 (loosenList as0 as1 sim) ≡ sim
+  auxsec [] [] (lift tt) = refl
+  auxsec [] (_ ∷ _) ctr = rec (ctr .lower)
+  auxsec (_ ∷ _) [] ctr = rec (ctr .lower)
+  auxsec (hd0 ∷ tl0) (hd1 ∷ tl1) (hdd , simtl) = ΣPathP (refl , auxsec tl0 tl1 simtl)
+
+  ListvsBridgeP : ∀ {as0 : List A0} {as1 : List A1} → (as0 ~List as1) ≃ (BridgeP (λ x → List (AA x)) as0 as1)
+  ListvsBridgeP {as0} {as1} = isoToEquiv (iso
     (loosenList as0 as1)
     (tightenList as0 as1)
-    (λ aas → invEq (PathPvsBridgeP _ {a00 = as0} {a10 = as1} {a01 = as0} {a11 = as1})
-      λ x → auxlisteq x (aas x))
-    λ sim → secprf as0 as1 sim)
+    (λ aas → λ i x → auxlisteq x (aas x) i)
+    (auxsec as0 as1))
 
-    where
+open ListvsBridgeP public using ( ListvsBridgeP )
 
-      -- STEP 7: section proof goes by simple induction
-      secprf : ∀ as0 as1 (sim : as0 ~List as1) → tightenList as0 as1 (loosenList as0 as1 sim) ≡ sim
-      secprf [] [] (lift tt) = refl
-      secprf [] (hd ∷ tl) (lift ctr) = rec ctr
-      secprf (hd ∷ tl) [] (lift ctr) = rec ctr
-      secprf (hd0 ∷ tl0) (hd1 ∷ tl1) (hdd , tll) = ΣPathP (refl , secprf tl0 tl1 tll)
-
+ListvsBridge : ∀ {ℓ} {A : Type ℓ} {as0 as1 : List A} →
+  ( [List (BridgeP (λ _ → A)) ] as0 as1 ) ≃ (BridgeP (λ _ → List A) as0 as1)
+ListvsBridge {A = A} {as0 = as0} {as1 = as1} =
+  (ListvsBridgeP {A0 = A} {A1 = A} (λ x → A) {as0 = as0} {as1 = as1})
+    
 
 
 
