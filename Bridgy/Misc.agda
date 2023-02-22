@@ -10,8 +10,10 @@ open import Bridgy.GelExamples
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Univalence
 open import Cubical.Data.Empty as ⊥
 open import Cubical.Data.Unit
+open import Cubical.Data.Bool
 open import Cubical.Data.Sigma using ( ΣPath≃PathΣ ; _×_ ; ΣPathP )
 open import Cubical.Data.List
 open import Cubical.Foundations.Function
@@ -59,4 +61,34 @@ open import Cubical.Foundations.Function
 --   {!!}
 
 
+Type⋆ : ∀ ℓ → Type (ℓ-suc ℓ)
+Type⋆ ℓ = Σ (Type ℓ) (λ A → A)
 
+Boolf : (Type⋆ ℓ-zero)
+Boolf = (Bool , false)
+
+Boolt : (Type⋆ ℓ-zero)
+Boolt = (Bool , true)
+
+IdType⋆ : ∀ {ℓ : Level} (A0 A1 : Type⋆ ℓ) → Type ℓ
+IdType⋆ A0 A1 = Σ (A0 .fst ≃ A1 .fst) (λ e → (equivFun e (A0 .snd) ≡ A1 .snd))
+
+myrev : IdType⋆ Boolf Boolt
+myrev =
+  notEquiv , refl
+
+myrevPth : Boolf ≡ Boolt
+myrevPth =
+  ΣPathP
+  (ua (myrev .fst) , toPathP refl)
+
+
+hasPtList : ∀ {ℓ} (A : Type⋆ ℓ) → Type ℓ
+hasPtList A = List (A .fst)
+
+-- hasPtList acts on structured isos
+hasPtList1 : List (Boolf .fst) ≃ List (Boolt .fst)
+hasPtList1 = pathToEquiv λ i → hasPtList (myrevPth i)
+
+thing : Unit
+thing = {!equivFun hasPtList1  (false ∷ true ∷ []) !}
