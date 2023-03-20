@@ -11,3 +11,4 @@ open import Bridgy.ParamNativeRelator
 open import Bridgy.SimpleParam
 open import Bridgy.SystemF
 open import Bridgy.ChurchCircle
+open import Bridgy.KAry
