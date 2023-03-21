@@ -694,8 +694,21 @@ tySubst' {ℓ = ℓ} Γ A F = flip (tySubst Γ (Γ # TypeForm Γ ℓ)) F
 ×Form Γ A B = ΣForm A (wkn-type-by Γ A B)
 
 
+mylrel : ∀ {ℓΓ ℓA} (Γ : NRGraph ℓΓ) (A : DispNRG ℓA Γ)
+         (a0 a1 : SectNRG Γ A) → DispNRG ℓA Γ
+mylrel {ℓΓ} {ℓA} Γ A a0 a1 =
+  record {
+    dcr = λ g → A ⦅ a0 . ac0 g , a1 .ac0 g ⦆# invEq (Γ .nativ g g) (λ _ → g) ;
+    dedge = λ g0 g1 gg b0 b1 → {!!} ;
+    dnativ = {!!} }
 
 
+
+module Thing {ℓΓ ℓA ℓB} {Γ : NRGraph ℓΓ} (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A))
+             (f0 f1 : SectNRG Γ (ΠForm A B)) where
+
+  thing : ⊤
+  thing = {!mylrel {ℓΓ} {ℓ-max ℓA ℓB} Γ (ΠForm A B) f0 f1 .dcr!}
 
 
 -- record {
