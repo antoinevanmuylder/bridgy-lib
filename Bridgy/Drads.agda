@@ -8,6 +8,7 @@ open import Bridgy.GelExamples
 open import Bridgy.NRGRelRecord
 open import Bridgy.Param
 open import Bridgy.List using ( churchListNRelator )
+open import Bridgy.BDisc
 open import Agda.Builtin.Bool
 open import Agda.Builtin.Unit
 open import Cubical.Foundations.Prelude
@@ -44,16 +45,26 @@ churchBool = isoToEquiv (iso
                    false → λ X xtrue xfalse → xfalse)
 
 
-
-churchList : ∀ {ℓ} (A : Type ℓ) → ( (X : Type ℓ) → X → (A → X → X) → X ) ≃ List A
-churchList {ℓ} A = isoToEquiv (iso
-                 churchToList
-                 listToChurch
-                 sameList
-                 -- this retract proof must use param.
-                 λ chl → funExt λ X → funExt λ niil → funExt λ coons →
-                 param (churchListNRelator A) chl (List A) X
-                 (λ as x → listToChurch as X niil coons ≡ x ) [] niil refl _∷_ coons λ a0 a1 aa as x → {!!} ) -- ...
+-- we need A to be bdg discr.
+-- for instance List Type₀ does not have an encoding
+-- because there are too many encodings compared to lists in List Type₀
+-- consider foo : ( (X : Type ℓ) → X → (Type₀ → X → X) → X )
+--          foo = λ X niil coons → (coons X niil)
+-- this encoding uses a type var X in a comp. relevant position.
+churchList : ∀ {ℓ} (A : Type ℓ) → (isBDisc A) → ( (X : Type ℓ) → X → (A → X → X) → X ) ≃ List A
+churchList {ℓ} A bd =
+  isoToEquiv (iso
+  churchToList
+  listToChurch
+  sameList
+  -- this retract proof must use param.
+  λ chl → funExt λ X → funExt λ niil → funExt λ coons →
+  param (churchListNRelator A) chl (List A) X
+  (λ as x → listToChurch as X niil coons ≡ x)
+  [] niil refl _∷_ coons
+    λ a0 a1 abdg as x hyp →
+    cong (coons a0) (hyp) ∙
+    funExt⁻ (cong coons (invEq (isBDisc→equiv A bd a0 a1) abdg)) x )
 
   where
 
@@ -73,70 +84,70 @@ churchList {ℓ} A = isoToEquiv (iso
 
     -- inpRel : (X : Type ℓ) → X → (A → X → X)
 
-module Thing (A : Type) where
+-- module Thing (A : Type) where
 
-  f : ∀ (X : Type) → X → X
+--   f : ∀ (X : Type) → X → X
 
-  g : ∀ (X : Type) → X → X → X -- g ℕ :  ℕ → ℕ → ℕ
+--   g : ∀ (X : Type) → X → X → X -- g ℕ :  ℕ → ℕ → ℕ
 
-  h : ∀ (X : Type) → X → (A → X → X) → X
-
-
-
-  -- "Church encodings" of inductive data types
-
-  ChurchUnit : ( (X : Type ) → X → X )  ≃  ⊤
-
-  ChurchBool : ( (X : Type ) → X → X → X ) ≃ Bool
-
-  ChurchList : {A : Type} →
-    ( (X : Type ) → X → (A → X → X) → X ) ≃ List A
-
-  -- In agda --bridges, those bijections can be
-  -- proved from first principles (via parametricity theorem).
+--   h : ∀ (X : Type) → X → (A → X → X) → X
 
 
 
-  Bridge : ∀ {ℓ} (A : Type ℓ) → A → A → Type ℓ  
-  Bridge A a0 a1 = BridgeP (λ _ → A) a0 a1
+--   -- "Church encodings" of inductive data types
+
+--   ChurchUnit : ( (X : Type ) → X → X )  ≃  ⊤
+
+--   ChurchBool : ( (X : Type ) → X → X → X ) ≃ Bool
+
+--   ChurchList : {A : Type} →
+--     ( (X : Type ) → X → (A → X → X) → X ) ≃ List A
+
+--   -- In agda --bridges, those bijections can be
+--   -- proved from first principles (via parametricity theorem).
 
 
 
-  -- two functions are related
-  -- iff
-  -- related inputs map to related outputs.
-  BridgeVsFun : (A B : Type) (f0 f1 : A → B) →
-    Bridge (A → B) f0 f1
-    ≃
-    ( (a0 a1 : A) → Bridge A a0 a1 → Bridge B (f0 a0) (f1 a1) )
+--   Bridge : ∀ {ℓ} (A : Type ℓ) → A → A → Type ℓ  
+--   Bridge A a0 a1 = BridgeP (λ _ → A) a0 a1
 
-  BridgeVsType : (A0 A1 : Type) →  
-    Bridge Type A0 A1
-    ≃
-    A0 → A1 → Type -- recover "just relations" in the Type case.
 
-  -- A bridge btw pairs is a pair of bridges.
-  BridgeVsProd : (A B : Type) (a0 a1 : A) (b0 b1 : B) →
-    Bridge (A × B) (a0 , b0) (a1 , b1)
-    ≃
-    (Bridge A a0 a1) × (Bridge B b0 b1)
+
+--   -- two functions are related
+--   -- iff
+--   -- related inputs map to related outputs.
+--   BridgeVsFun : (A B : Type) (f0 f1 : A → B) →
+--     Bridge (A → B) f0 f1
+--     ≃
+--     ( (a0 a1 : A) → Bridge A a0 a1 → Bridge B (f0 a0) (f1 a1) )
+
+--   BridgeVsType : (A0 A1 : Type) →  
+--     Bridge Type A0 A1
+--     ≃
+--     A0 → A1 → Type -- recover "just relations" in the Type case.
+
+--   -- A bridge btw pairs is a pair of bridges.
+--   BridgeVsProd : (A B : Type) (a0 a1 : A) (b0 b1 : B) →
+--     Bridge (A × B) (a0 , b0) (a1 , b1)
+--     ≃
+--     (Bridge A a0 a1) × (Bridge B b0 b1)
     
 
 
 
 
 
-  BridgeVsFun = {!!}
-  BridgeVsType = {!!}
-  BridgeVsProd = {!!}
+--   BridgeVsFun = {!!}
+--   BridgeVsType = {!!}
+--   BridgeVsProd = {!!}
 
 
-  f = {!!}
-  g = {!!}
-  h = {!!}
+--   f = {!!}
+--   g = {!!}
+--   h = {!!}
 
 
 
-  ChurchUnit = {!!}
-  ChurchBool = {!!}
-  ChurchList = {!!}
+--   ChurchUnit = {!!}
+--   ChurchBool = {!!}
+--   ChurchList = {!!}
