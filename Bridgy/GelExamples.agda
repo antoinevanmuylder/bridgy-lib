@@ -6,7 +6,7 @@ open import Bridgy.BridgeExamples
 open import Bridgy.ExtentExamples
 open import Agda.Builtin.Bool
 open import Agda.Builtin.Unit
-open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Prelude hiding ( subst2-filler )
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Equiv.Base using (idEquiv)
@@ -100,20 +100,21 @@ some-reordering f g h hyp = sym (sym (invEquiv-is-linv f) ∙
                                 hyp) ∙
                                 (sym (compEquiv-assoc g (invEquiv h) f)))
 
-transpVSpathToEquiv : ∀ {ℓ} {X Y : Type ℓ} (f : X ≡ Y) →
-                      transportEquiv f ≡ pathToEquiv f
-transpVSpathToEquiv f = λ i → (
-                        transport f ,
-                        isPropIsEquiv (transport f) (transportEquiv f .snd) (pathToEquiv f .snd) i  )
+-- transpVSpathToEquiv : ∀ {ℓ} {X Y : Type ℓ} (f : X ≡ Y) →
+--                       transportEquiv f ≡ pathToEquiv f
+-- transpVSpathToEquiv f = λ i → (
+--                         transport f ,
+--                         isPropIsEquiv (transport f) (transportEquiv f .snd) (pathToEquiv f .snd) i  )
 
 switchMixedCommutingTriangle : ∀ {ℓ} {X Y Z : Type ℓ} (f : X ≡ Y) (g : Y ≃ Z) (h : X ≃ Z) →
                                compEquiv (pathToEquiv (sym f)) h ≡ g →
                                (y : Y) → PathP (λ i → f i) (invEq h (g .fst y)) y
-switchMixedCommutingTriangle f g h hyp = λ y → toPathP (cong (λ blank → blank .fst y) (some-reordering (transportEquiv f) g h
+switchMixedCommutingTriangle f g h hyp = λ y → toPathP (cong (λ blank → blank .fst y) (some-reordering (pathToEquiv f) g h
                                                   (cong (λ blank → compEquiv blank h)
-                                                    (cong invEquiv
-                                                    (transpVSpathToEquiv f) ∙
-                                                    invEquiv-pathToEquiv f)
+                                                  (invEquiv-pathToEquiv f)
+                                                    -- (cong invEquiv
+                                                    -- (transpVSpathToEquiv f) ∙
+                                                    -- invEquiv-pathToEquiv f)
                                                   ∙ hyp)))
 
 
@@ -268,15 +269,15 @@ https://q.uiver.app/?q=WzAsMTAsWzAsMSwiXFxtYXRocm17QmRnfV9BIFxcOyBJXzBeey0xfUlfM
                     sym (rUnit (ua (H a0 a1)))  )) )
 
 
-  -- useless lemma kept for the sake of symmetry
-  HforB-Bx-retract : (H : (a0 : A bi0) (a1 : A bi1) → BridgeP A a0 a1 ≃ BridgeP B (I0 .fst a0) (I1 .fst a1))
-                     (b0 : B bi0) (b1 : B bi1) (bb : BridgeP B b0 b1) →
-                     PathP (λ i → BridgeP B (secEq I0 b0 i) (secEq I1 b1 i))
-                           ( H (invEq I0 b0) (invEq I1 b1) .fst (invEq (HforB H b0 b1) bb) )
-                           bb
-  HforB-Bx-retract H b0 b1 bb =  (_◁_)
-                                 (secEq (H (invEq I0 b0) (invEq I1 b1)) (invEq (bSubst b0 b1) bb))
-                                 (symP {A = λ i → BridgeP B (secEq I0 b0 (~ i)) (secEq I1 b1 (~ i))} (toPathP refl))
+  -- -- useless lemma kept for the sake of symmetry
+  -- HforB-Bx-retract : (H : (a0 : A bi0) (a1 : A bi1) → BridgeP A a0 a1 ≃ BridgeP B (I0 .fst a0) (I1 .fst a1))
+  --                    (b0 : B bi0) (b1 : B bi1) (bb : BridgeP B b0 b1) →
+  --                    PathP (λ i → BridgeP B (secEq I0 b0 i) (secEq I1 b1 i))
+  --                          ( H (invEq I0 b0) (invEq I1 b1) .fst (invEq (HforB H b0 b1) bb) )
+  --                          bb
+  -- HforB-Bx-retract H b0 b1 bb =  (_◁_)
+  --                                (secEq (H (invEq I0 b0) (invEq I1 b1)) (invEq (bSubst b0 b1) bb))
+  --                                (symP {A = λ i → BridgeP B (secEq I0 b0 (~ i)) (secEq I1 b1 (~ i))} (toPathP refl))
 
   -- the following lemma links the symmetry lemma to the proof obligation appearing in the equiv vs bdg princple
   HforB-Ax-retract : (H : (a0 : A bi0) (a1 : A bi1) → BridgeP A a0 a1 ≃ BridgeP B (I0 .fst a0) (I1 .fst a1))
@@ -301,67 +302,108 @@ https://q.uiver.app/?q=WzAsMTAsWzAsMSwiXFxtYXRocm17QmRnfV9BIFxcOyBJXzBeey0xfUlfM
   -- boundaries and it wont complain: extent _ _ [specify H here] ... ...
   pequivBridgeP : ∀ (H : (a0 : A bi0) (a1 : A bi1) → BridgeP A a0 a1 ≃ BridgeP B (I0 .fst a0) (I1 .fst a1)) →
                   BridgeP (λ x → A x ≃ B x) I0 I1
-  pequivBridgeP H = ΣBridgeP ((λ x → primExtent (I0 .fst) (I1 .fst) (λ a0 a1 → H a0 a1 .fst) x) ,
-                              affineToBridgeP (λ x → isPropIsEquiv _) λ x →
-                              isoToIsEquiv (iso
-                                (primExtent (I0 .fst) (I1 .fst) (λ a0 a1 → H a0 a1 .fst) x)
-                                (primExtent (invEq I0) (invEq I1) (λ (b0 : B bi0) (b1 : B bi1) (bb : BridgeP B b0 b1) →
-                                   invEq (H (invEq I0 b0) (invEq I1 b1)) (subst2 (BridgeP B) (sym (secEq I0 b0)) (sym (secEq I1 b1)) bb) ) x)
-                                (λ b → primExtent {B = λ xxxx bbbb → primExtent (I0 .fst) (I1 .fst) (λ a0 a1 → H a0 a1 .fst) xxxx
+  pequivBridgeP H =
+    ΣBridgeP ((λ x → primExtent (I0 .fst) (I1 .fst) (λ a0 a1 → H a0 a1 .fst) x) ,
+              affineToBridgeP (λ x → isPropIsEquiv _) λ x →
+              isoToIsEquiv (iso
+                ((primExtent (I0 .fst) (I1 .fst) (λ a0 a1 → H a0 a1 .fst) x))
+                ((primExtent (invEq I0) (invEq I1) (λ (b0 : B bi0) (b1 : B bi1) (bb : BridgeP B b0 b1) →
+                     invEq (H (invEq I0 b0) (invEq I1 b1)) (subst2 (BridgeP B) (sym (secEq I0 b0)) (sym (secEq I1 b1)) bb) ) x))
+                (λ b → primExtent {B = λ xxxx bbbb → primExtent (I0 .fst) (I1 .fst) (λ a0 a1 → H a0 a1 .fst) xxxx
                                                                    (primExtent (invEq I0) (invEq I1) (λ b0 b1 bb →
                                                                    invEq (H (invEq I0 b0) (invEq I1 b1))
                                                                    (subst2 (BridgeP B) (λ i → secEq I0 b0 (~ i))
                                                                    (λ i → secEq I1 b1 (~ i)) bb)) xxxx
                                                                      bbbb) ≡ bbbb} -- xxxx, bbbb: shadowing works but who knows
-                                        _ _ (λ b0 b1 bb → λ y → {- FST ∙ SND -} -- (λ b0 → refl ∙ (secEq I0 b0)) (λ b1 → refl ∙ (secEq I1 b1))
-                                           (λ i → secEq (H (invEq I0 b0) (invEq I1 b1)) (λ r → subst2 (BridgeP B) (λ i → secEq I0 b0 (~ i)) (λ i → secEq I1 b1 (~ i)) bb r) i y) ∙
-                                            (λ i →  subst2-filler (BridgeP B) (λ i → secEq I0 b0 (~ i)) (λ i → secEq I1 b1 (~ i)) bb  (~ i) y)
+                                   _ _ (λ b0 b1 bb → λ y → {- FST ∙ SND -} -- (λ b0 → refl ∙ (secEq I0 b0)) (λ b1 → refl ∙ (secEq I1 b1))
+                                         (λ i → secEq (H (invEq I0 b0) (invEq I1 b1)) (λ r → subst2 (BridgeP B) (λ i → secEq I0 b0 (~ i)) (λ i → secEq I1 b1 (~ i)) bb r) i y) ∙
+                                         (λ i →  subst2-filler (BridgeP B) (λ i → secEq I0 b0 (~ i)) (λ i → secEq I1 b1 (~ i)) bb  (~ i) y)
                                        ) x b)
-                                λ a → primExtent {B = λ xxxx aaaa → primExtent (λ a0 → invEq I0 a0) (λ a1 → invEq I1 a1)
+                λ a → primExtent {B = λ xxxx aaaa → primExtent (λ a0 → invEq I0 a0) (λ a1 → invEq I1 a1)
                                                                       (λ b0 b1 bb →
                                                                       invEq (H (invEq I0 b0) (invEq I1 b1))
                                                                       (subst2 (BridgeP B) (λ i → secEq I0 b0 (~ i))
                                                                       (λ i → secEq I1 b1 (~ i)) bb))  xxxx
                                                                         (primExtent (λ a0 → I0 .fst a0) (λ a1 → I1 .fst a1)
                                                                         (λ a0 a1 → H a0 a1 .fst) xxxx aaaa) ≡ aaaa}
-                                       _ _ (λ a0 a1 aa y i → HforB-Ax-retract H a0 a1 aa i y ) x a))
+                                       (retEq I0 ) (retEq I1) (λ a0 a1 aa → λ y i →
+                                        {! HforB-Ax-retract H a0 a1 aa i0 y!}) x a ))
+
+-- normed expectation at i0 y
+-- snd
+-- (H (snd I0 .equiv-proof (I0 .fst a0) .fst .fst)
+--  (snd I1 .equiv-proof (I1 .fst a1) .fst .fst))
+-- .equiv-proof
+-- (transp
+--  (λ i₁ →
+--     BridgeP B (snd I0 .equiv-proof (I0 .fst a0) .fst .snd (~ i₁))
+--     (snd I1 .equiv-proof (I1 .fst a1) .fst .snd (~ i₁)))
+--  i0 (λ r → H a0 a1 .fst (λ r₁ → aa r₁) r))
+-- .fst .fst y
+
+
+-- _ _ (λ a0 a1 aa y i → HforB-Ax-retract H a0 a1 aa i y ) x a
+--   pequivBridgeP H = ΣBridgeP ((λ x → primExtent (I0 .fst) (I1 .fst) (λ a0 a1 → H a0 a1 .fst) x) ,
+--                               affineToBridgeP (λ x → isPropIsEquiv _) λ x →
+--                               isoToIsEquiv (iso
+--                                 (primExtent (I0 .fst) (I1 .fst) (λ a0 a1 → H a0 a1 .fst) x)
+--                                 (primExtent (invEq I0) (invEq I1) (λ (b0 : B bi0) (b1 : B bi1) (bb : BridgeP B b0 b1) →
+--                                    invEq (H (invEq I0 b0) (invEq I1 b1)) (subst2 (BridgeP B) (sym (secEq I0 b0)) (sym (secEq I1 b1)) bb) ) x)
+                                -- (λ b → primExtent {B = λ xxxx bbbb → primExtent (I0 .fst) (I1 .fst) (λ a0 a1 → H a0 a1 .fst) xxxx
+                                --                                    (primExtent (invEq I0) (invEq I1) (λ b0 b1 bb →
+                                --                                    invEq (H (invEq I0 b0) (invEq I1 b1))
+                                --                                    (subst2 (BridgeP B) (λ i → secEq I0 b0 (~ i))
+                                --                                    (λ i → secEq I1 b1 (~ i)) bb)) xxxx
+                                --                                      bbbb) ≡ bbbb} -- xxxx, bbbb: shadowing works but who knows
+                                --         _ _ (λ b0 b1 bb → λ y → {- FST ∙ SND -} -- (λ b0 → refl ∙ (secEq I0 b0)) (λ b1 → refl ∙ (secEq I1 b1))
+                                --            (λ i → secEq (H (invEq I0 b0) (invEq I1 b1)) (λ r → subst2 (BridgeP B) (λ i → secEq I0 b0 (~ i)) (λ i → secEq I1 b1 (~ i)) bb r) i y) ∙
+                                --             (λ i →  subst2-filler (BridgeP B) (λ i → secEq I0 b0 (~ i)) (λ i → secEq I1 b1 (~ i)) bb  (~ i) y)
+                                --        ) x b)
+                                -- λ a → primExtent {B = λ xxxx aaaa → primExtent (λ a0 → invEq I0 a0) (λ a1 → invEq I1 a1)
+                                --                                       (λ b0 b1 bb →
+                                --                                       invEq (H (invEq I0 b0) (invEq I1 b1))
+                                --                                       (subst2 (BridgeP B) (λ i → secEq I0 b0 (~ i))
+                                --                                       (λ i → secEq I1 b1 (~ i)) bb))  xxxx
+                                --                                         (primExtent (λ a0 → I0 .fst a0) (λ a1 → I1 .fst a1)
+                                --                                         (λ a0 a1 → H a0 a1 .fst) xxxx aaaa) ≡ aaaa}
+                                --        _ _ (λ a0 a1 aa y i → HforB-Ax-retract H a0 a1 aa i y ) x a))
 
 
 
-module Relativity {ℓ} {A0 A1 : Type ℓ} where
+-- module Relativity {ℓ} {A0 A1 : Type ℓ} where
 
-  open PequivBridgeP using (pequivBridgeP)
+--   open PequivBridgeP using (pequivBridgeP)
 
-  to-rel : BridgeP (λ x → Type ℓ) A0 A1    →    (A0 → A1 → Type ℓ)
-  to-rel C = λ a0 a1 → BridgeP (λ x → C x) a0 a1
+--   to-rel : BridgeP (λ x → Type ℓ) A0 A1    →    (A0 → A1 → Type ℓ)
+--   to-rel C = λ a0 a1 → BridgeP (λ x → C x) a0 a1
 
-  to-bridge : (A0 → A1 → Type ℓ)    →    BridgeP (λ x → Type ℓ) A0 A1
-  to-bridge R = λ x → primGel A0 A1 R x
+--   to-bridge : (A0 → A1 → Type ℓ)    →    BridgeP (λ x → Type ℓ) A0 A1
+--   to-bridge R = λ x → primGel A0 A1 R x
 
-  rel-retract : ∀ (R : A0 → A1 → Type ℓ) → to-rel (to-bridge R) ≡ R
-  rel-retract R = funExt λ a0 →
-                  funExt λ a1 → isoToPath (iso
-                    (λ q → prim^ungel (λ j → q j))
-                    (λ p x → prim^gel {R = R} a0 a1 p x)
-                    (λ p →  refl)
-                    (λ q → refl))
+--   rel-retract : ∀ (R : A0 → A1 → Type ℓ) → to-rel (to-bridge R) ≡ R
+--   rel-retract R = funExt λ a0 →
+--                   funExt λ a1 → isoToPath (iso
+--                     (λ q → prim^ungel (λ j → q j))
+--                     (λ p x → prim^gel {R = R} a0 a1 p x)
+--                     (λ p →  refl)
+--                     (λ q → refl))
 
-  -- bridges over a (gel-ed) relation are proofs of this relation
-  -- this is a pointwise reformulation of the retract proof above
-  bdg-over-gel : ∀ (R : A0 → A1 → Type ℓ) (a0 : A0) (a1 : A1) →
-                 BridgeP (λ x → primGel A0 A1 R x) a0 a1 ≃ R a0 a1
-  bdg-over-gel R a0 a1 = pathToEquiv λ i → (rel-retract R) i a0 a1
+--   -- bridges over a (gel-ed) relation are proofs of this relation
+--   -- this is a pointwise reformulation of the retract proof above
+--   bdg-over-gel : ∀ (R : A0 → A1 → Type ℓ) (a0 : A0) (a1 : A1) →
+--                  BridgeP (λ x → primGel A0 A1 R x) a0 a1 ≃ R a0 a1
+--   bdg-over-gel R a0 a1 = pathToEquiv λ i → (rel-retract R) i a0 a1
 
 
-  bdg-retract : ∀ (Q : BridgeP (λ x → Type ℓ) A0 A1) → to-bridge (to-rel Q) ≡ Q
-  bdg-retract Q = bridgePPath (
-                  change-endpoints (uaIdEquiv) (uaIdEquiv)
-                  (change-line (λ x → to-bridge (to-rel Q) x ≃ Q x) (λ x → to-bridge (to-rel Q) x ≡ Q x) (idEquiv A0) (idEquiv A1)
-                    (λ x → ua)
-                  (pequivBridgeP
-                  λ a0 a1 → bdg-over-gel (to-rel Q) a0 a1))) --interestingly we use the other retract proof for this one
+--   bdg-retract : ∀ (Q : BridgeP (λ x → Type ℓ) A0 A1) → to-bridge (to-rel Q) ≡ Q
+--   bdg-retract Q = bridgePPath (
+--                   change-endpoints (uaIdEquiv) (uaIdEquiv)
+--                   (change-line (λ x → to-bridge (to-rel Q) x ≃ Q x) (λ x → to-bridge (to-rel Q) x ≡ Q x) (idEquiv A0) (idEquiv A1)
+--                     (λ x → ua)
+--                   (pequivBridgeP
+--                   λ a0 a1 → bdg-over-gel (to-rel Q) a0 a1))) --interestingly we use the other retract proof for this one
 
-  relativity :  (A0 → A1 → Type ℓ) ≃ BridgeP (λ x → Type ℓ) A0 A1
-  relativity = isoToEquiv (iso to-bridge to-rel bdg-retract rel-retract)
+--   relativity :  (A0 → A1 → Type ℓ) ≃ BridgeP (λ x → Type ℓ) A0 A1
+--   relativity = isoToEquiv (iso to-bridge to-rel bdg-retract rel-retract)
 
-open Relativity public
+-- open Relativity public
