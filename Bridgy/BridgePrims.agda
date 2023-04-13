@@ -105,7 +105,7 @@ open MCstrPrims public
 postulate
   MitHolds : MHolds myes
 {-# BUILTIN MITHOLDS MitHolds #-}
-{-# BUILTIN MPARTIAL MPartial #-} -- MPartial : ∀{ℓ} (ζ : MCstr) (A : Set ℓ) → SSet ℓ ;
+{-# BUILTIN MPARTIAL MPartial #-} -- MPartial : ∀{ℓ} (ζ : MCstr) (A : Set ℓ) → SSet ℓ ; MPartial ζ A = MHolds ζ → A ; and reduces to .(MHolds ζ) → A
 -- auxiliary builtins/prims for mixed hocom
 -- builtinEmbd, builtinMixedOr, builtinMPartialP, builtinMHoldsEmpty, builtinMHolds1, builtinMHolds2, builtinMPOr
 module AuxMhocom0 where
@@ -146,7 +146,4 @@ open AllMCstr public
            ; primAllMCstrCounit to ∀-mcstr-ε )
 primitive
   primRefoldMhocom : ∀ {ℓ} {T : Type ℓ} → T → T
-
-
-
 
