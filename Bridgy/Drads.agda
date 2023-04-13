@@ -19,6 +19,46 @@ open import Cubical.Data.List
 open import Cubical.Data.Sigma using ( _×_ )
 
 
+somethm : ∀ (A C : Type) →
+            (A × Bool → C) ≃ (A → Bool → C)
+somethm A C = isoToEquiv (iso
+  (λ k → λ a → λ b → k ((a , b )))
+  (λ h → λ p → let (a , b) = p in h a b)
+  (λ h → refl)
+  λ k → refl)
+
+-- Pi, Sigma, ×, →, Type, inductives, S1, nat
+
+
+-- "data" lets us define the smallest type with a z and s function.
+data N : Type where
+  z : N
+  s : N → N
+
+
+data S1 : Type where
+  base : S1
+  loop : base ≡ base
+
+threeElement : N
+threeElement = s (s (s z))
+
+
+-- + 2 function defined by recursion
+plus2 : N → N
+plus2 = λ n → s (s n)
+
+plus2' : N → N
+plus2' z = s (s z)
+plus2' (s n) = s (s (s n))
+
+-- the ≡ type
+
+
+
+
+-- agda --bridges allows the following
+
 churchUnit : ∀ {ℓ} → ( (X : Type ℓ) → X → X )  ≃  ⊤
 churchUnit = isoToEquiv (iso
                         (λ _ → tt)
