@@ -21,13 +21,20 @@ open import Cubical.Data.Sigma using ( _×_ )
 
 somethm : ∀ (A C : Type) →
             (A × Bool → C) ≃ (A → Bool → C)
-somethm A C = isoToEquiv (iso
-  (λ k → λ a → λ b → k ((a , b )))
-  (λ h → λ p → let (a , b) = p in h a b)
-  (λ h → refl)
-  λ k → refl)
+somethm = λ A C → isoToEquiv (iso
+            (λ k → λ a → λ b → k (a , b))
+            (λ h → λ p → let ( a , b ) = p in h a b)
+            (λ h → refl)
+            λ k → refl)
 
--- Pi, Sigma, ×, →, Type, inductives, S1, nat
+-- Pi,
+-- Sigma, ×, →, Type, inductives, nat, ≡, S1
+
+-- (Bool , true)
+-- (Nat , 36)
+
+TypeOfPointedSets : Type₁
+TypeOfPointedSets = Σ Type λ X → X
 
 
 -- "data" lets us define the smallest type with a z and s function.
@@ -36,25 +43,23 @@ data N : Type where
   s : N → N
 
 
-data S1 : Type where
-  base : S1
-  loop : base ≡ base
-
 threeElement : N
 threeElement = s (s (s z))
 
+-- addition
+add : N → N → N
+add n1 z = n1
+add n1 (s n2) = s (add n1 n2)
 
--- + 2 function defined by recursion
-plus2 : N → N
-plus2 = λ n → s (s n)
-
-plus2' : N → N
-plus2' z = s (s z)
-plus2' (s n) = s (s (s n))
+zleft : ∀ n → add z n ≡ n
+zleft z = refl -- refl
+zleft (s n') = cong s (zleft n') -- cong s (zleft n')
 
 -- the ≡ type
 
-
+data S1 : Type where
+  base : S1
+  loop : base ≡ base
 
 
 -- agda --bridges allows the following
