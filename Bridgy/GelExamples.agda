@@ -24,6 +24,12 @@ open import Agda.Builtin.Cubical.Glue renaming (pathToEquiv to lineToEquiv)
 
 -- The 4 following lemmas concern a function formerly known as pathToEquiv
 -- and defined using lineToEquiv (from Agda.Builtin.Cubical.Glue)
+-- 
+-- old name        new name       more equations
+-- ----------      ------------   -------------------------------------
+-- transpEquiv     pathToEquiv    no (defined using transported isEquiv)
+-- pathToEquiv     mypathToEquiv  yes (defined directly)
+--
 mypathToEquiv : ∀ {l : Level} {A B : Type l} → A ≡ B → A ≃ B
 mypathToEquiv p = lineToEquiv (λ i → p i)
 
