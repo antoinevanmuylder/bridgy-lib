@@ -10,11 +10,12 @@ open import Bridgy.NativeReflGraphRelator
 open import Bridgy.ParamNativeRelator
 open import Bridgy.NRGRelRecord
 open import Bridgy.Param
-open import Bridgy.HPropHSetNRG
 open import Bridgy.List
-open import Bridgy.MonadNRG
 open import Bridgy.SimpleParam
 open import Bridgy.SystemF
+open import Bridgy.BDisc
+
 open import Bridgy.ChurchCircle
 open import Bridgy.KAry
-open import Bridgy.BDisc
+open import Bridgy.HPropHSetNRG
+open import Bridgy.MonadNRG
