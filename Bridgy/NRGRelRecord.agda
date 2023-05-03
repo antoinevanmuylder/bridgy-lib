@@ -29,7 +29,7 @@ open import Cubical.Data.Sigma using (_×_ ; ≃-× ; ≡-× ; Σ-cong-equiv ; �
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Path -- using (congPathEquiv ; PathP≃Path ; compPathrEquiv ; compPathlEquiv)
-open import Cubical.Foundations.Transport using (transportEquiv)
+-- open import Cubical.Foundations.Transport using (transportEquiv)
 
 -- cubical lemmas
 module _ where
@@ -648,6 +648,7 @@ PathForm Γ A a b = record {
 --   tm-nativ = λ g0 g1 gg →
 --                _∙_ (funExt⁻ (funExt⁻ (funExt⁻ (f .tm-nativ g0 g1 gg) (a .ac0 g0)) (a .ac0 g1)) (a .ac1 g0 g1 (invEq (Γ .nativ g0 g1) gg)))
 --                {!!} }
+
 
 
 -- nativeness not trivial
