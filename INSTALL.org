@@ -38,26 +38,5 @@ M-x customize-group RET agda2 RET
 #+end_src
 Then insert the following line (corresponding to the unwanted warning) in the ~Agda2 Program Args~ list:
 #+begin_src bash
---warning=no<mywarning> #may not exist in future version
-#+end_src
-*** (No longer applicable, from 3 May 2023) Mixed Kan operations
-- The ~bridges~ branch of the mentioned [[https://github.com/antoinevanmuylder/agda/][fork]] does not implement mixed Kan operations.
-- The ~bridges-mcstr-nomrg~ branch implements Kan operations and has to use a reverted cubical library.
-- The ~bridges-mixed-constraints~ branch implements Kan operations, and extends agda 2.6.3.
-  It is currently broken as some changes introduced by 2.6.3 remain to be correctly integrated.
-*** (No longer applicable, from 3 May 2023) Revert cubical
-The cubical library is normally compatible with the latest release of agda. On the other hand, ~agda --bridges~ is developped on top of agda/master. We explain how to modify cubical to make it compatible with master.
-Note: in the future, ~agda --bridges~ will be developped on top of the latest agda release as well. We will have the following chain of dependencies:
-~bridgy lib < cubical lib < agda --bridges (extends latest agda release)~.
-For now we stick to the hack explained here.
-
-Go to the root of the cubical library.
-#+begin_src shell
-git checkout d29db7f5e6cfe5d # while in cubical/
-cd Cubical/
-# replace old flag by new flag
-find . -iname '*.agda*' -exec sed -i 's/--experimental-lossy-unification/--lossy-unification/g' {} \;
-# replace old primitive names by appropriate names
-sed -i 's/hiding ( primIdJ )/-- hiding ( primIdJ )/g' Cubical/Core/Id.agda
-sed -i 's/inc to inS/inS to inS/g' Cubical/Core/Primitives.agda
+--warning=no<mywarning>
 #+end_src
