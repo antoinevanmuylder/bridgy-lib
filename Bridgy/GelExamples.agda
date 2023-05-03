@@ -14,33 +14,14 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.HalfAdjoint
 open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.Path
-open import Cubical.Foundations.Transport
+open import Bridgy.MyPathToEquiv
 
-open import Agda.Builtin.Cubical.Glue renaming (pathToEquiv to lineToEquiv)
 
 -- ------------------------------------------------------------------------
 -- -- some cubical lemmas
 -- ------------------------------------------------------------------------
 
--- The 4 following lemmas concern a function formerly known as pathToEquiv
--- and defined using lineToEquiv (from Agda.Builtin.Cubical.Glue)
--- 
--- old name        new name       more equations
--- ----------      ------------   -------------------------------------
--- transpEquiv     pathToEquiv    no (defined using transported isEquiv)
--- pathToEquiv     mypathToEquiv  yes (defined directly)
---
-mypathToEquiv : ∀ {l : Level} {A B : Type l} → A ≡ B → A ≃ B
-mypathToEquiv p = lineToEquiv (λ i → p i)
 
-mypathToEquivRefl : {ℓ : Level} {A : Type ℓ} → mypathToEquiv refl ≡ idEquiv A
-mypathToEquivRefl {ℓ = ℓ} {A = A} = equivEq (λ i x → transp (λ _ → A) i x)
-
-mypathToEquiv-ua : {ℓ : Level} {A B : Type ℓ} (e : A ≃ B) → mypathToEquiv (ua e) ≡ e
-mypathToEquiv-ua = Univalence.au-ua mypathToEquiv mypathToEquivRefl
-
-ua-mypathToEquiv : {ℓ : Level} {A B : Type ℓ} (p : A ≡ B) → ua (mypathToEquiv p) ≡ p
-ua-mypathToEquiv = Univalence.ua-au mypathToEquiv mypathToEquivRefl
 
 transit : ∀ {ℓ} {A : Type ℓ} {x z : A} (y : A) → x ≡ y → y ≡ z → x ≡ z
 transit y p q = p ∙ q
