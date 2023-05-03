@@ -14,6 +14,7 @@ open import Bridgy.List
 open import Bridgy.SimpleParam
 open import Bridgy.SystemF
 open import Bridgy.BDisc
+open import Bridgy.Drads
 
 open import Bridgy.ChurchCircle
 open import Bridgy.KAry
