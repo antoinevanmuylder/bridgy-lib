@@ -22,8 +22,19 @@ open import Agda.Builtin.Cubical.Glue renaming (pathToEquiv to lineToEquiv)
 -- -- some cubical lemmas
 -- ------------------------------------------------------------------------
 
+-- The 4 following lemmas concern a function formerly known as pathToEquiv
+-- and defined using lineToEquiv (from Agda.Builtin.Cubical.Glue)
 mypathToEquiv : ∀ {l : Level} {A B : Type l} → A ≡ B → A ≃ B
 mypathToEquiv p = lineToEquiv (λ i → p i)
+
+mypathToEquivRefl : {ℓ : Level} {A : Type ℓ} → mypathToEquiv refl ≡ idEquiv A
+mypathToEquivRefl {ℓ = ℓ} {A = A} = equivEq (λ i x → transp (λ _ → A) i x)
+
+mypathToEquiv-ua : {ℓ : Level} {A B : Type ℓ} (e : A ≃ B) → mypathToEquiv (ua e) ≡ e
+mypathToEquiv-ua = Univalence.au-ua mypathToEquiv mypathToEquivRefl
+
+ua-mypathToEquiv : {ℓ : Level} {A B : Type ℓ} (p : A ≡ B) → ua (mypathToEquiv p) ≡ p
+ua-mypathToEquiv = Univalence.ua-au mypathToEquiv mypathToEquivRefl
 
 transit : ∀ {ℓ} {A : Type ℓ} {x z : A} (y : A) → x ≡ y → y ≡ z → x ≡ z
 transit y p q = p ∙ q
@@ -36,9 +47,9 @@ mysubst2-filler C p q thing = transport-filler (λ i → C (p i) (q i)) thing
 
 ua-inj : ∀ {ℓ} {A B  : Type ℓ} (f g : A ≃ B) →
          ua f ≡ ua g → f ≡ g
-ua-inj f g p = sym (pathToEquiv-ua f) ∙
-               cong pathToEquiv p ∙
-               (pathToEquiv-ua g)
+ua-inj f g p = sym (mypathToEquiv-ua f) ∙
+               cong mypathToEquiv p ∙
+               (mypathToEquiv-ua g)
 
 cancelInitPath : ∀ {ℓ} {A : Type ℓ} {x y z : A} (p q : y ≡ z) (iPath : x ≡ y) →
                  iPath ∙ p ≡ iPath ∙ q → p ≡ q
@@ -83,16 +94,16 @@ revPathP≡doubleCompPathˡ p q r s = PathP≡doubleCompPathˡ (p ⁻¹) q r s �
 PathPgivesCompEq : ∀ {ℓ} {A : Type ℓ} {x y z w : A} (top : x ≡ y) (bot : z ≡ w) (left : x ≡ z) (right : y ≡ w) →
                    PathP (λ i → left i ≡ right i) top bot → top ∙ right ≡ left ∙ bot
 PathPgivesCompEq top bot left right hyp = switchInitPath right (left ∙ bot) top
-                                          (sym (pathToEquiv (PathP≡doubleCompPathˡ top left right bot) .fst
+                                          (sym (mypathToEquiv (PathP≡doubleCompPathˡ top left right bot) .fst
                                           (λ j i → hyp i j))   ∙ 
                                           doubleCompPath≡compPath (top ⁻¹) left bot)
 
-invEquiv-pathToEquiv : ∀ {ℓ} {X Y : Type ℓ} (f : X ≡ Y) → 
-                       invEquiv (pathToEquiv f) ≡ pathToEquiv (sym f)
-invEquiv-pathToEquiv f = ua-inj _ _ (
-                         (uaInvEquiv (pathToEquiv f) ∙
-                         cong sym (ua-pathToEquiv f)) ∙
-                         sym ( ua-pathToEquiv (sym f) ))
+invEquiv-mypathToEquiv : ∀ {ℓ} {X Y : Type ℓ} (f : X ≡ Y) → 
+                       invEquiv (mypathToEquiv f) ≡ mypathToEquiv (sym f)
+invEquiv-mypathToEquiv f = ua-inj _ _ (
+                         (uaInvEquiv (mypathToEquiv f) ∙
+                         cong sym (ua-mypathToEquiv f)) ∙
+                         sym ( ua-mypathToEquiv (sym f) ))
 
 some-reordering : ∀ {ℓ} {X Y Z : Type ℓ} (f : X ≃ Y) (g : Y ≃ Z) (h : X ≃ Z) →
                   compEquiv (invEquiv f) h ≡ g → compEquiv g (compEquiv (invEquiv h) f) ≡ idEquiv Y
@@ -106,21 +117,21 @@ some-reordering f g h hyp = sym (sym (invEquiv-is-linv f) ∙
                                 (sym (compEquiv-assoc g (invEquiv h) f)))
 
 transpVSpathToEquiv : ∀ {ℓ} {X Y : Type ℓ} (f : X ≡ Y) →
-                      transportEquiv f ≡ pathToEquiv f
+                      pathToEquiv f ≡ mypathToEquiv f -- prev transportEquiv f ≡ pathToEquiv f
 transpVSpathToEquiv f = λ i → (
                         transport f ,
-                        isPropIsEquiv (transport f) (transportEquiv f .snd) (pathToEquiv f .snd) i  )
+                        isPropIsEquiv (transport f) (pathToEquiv f .snd) (mypathToEquiv f .snd) i  )
 
 switchMixedCommutingTriangle : ∀ {ℓ} {X Y Z : Type ℓ} (f : X ≡ Y) (g : Y ≃ Z) (h : X ≃ Z) →
-                               compEquiv (pathToEquiv (sym f)) h ≡ g →
+                               compEquiv (mypathToEquiv (sym f)) h ≡ g →
                                (y : Y) → PathP (λ i → f i) (invEq h (g .fst y)) y
-switchMixedCommutingTriangle f g h hyp = λ y → toPathP (cong (λ blank → blank .fst y) (some-reordering (transportEquiv f) g h
+switchMixedCommutingTriangle f g h hyp = λ y → toPathP (cong (λ blank → blank .fst y) (some-reordering (pathToEquiv f) g h
                                                   (cong (λ blank → compEquiv blank h)
                                                     (cong invEquiv
                                                     (transpVSpathToEquiv f) ∙
-                                                    invEquiv-pathToEquiv f)
+                                                    invEquiv-mypathToEquiv f)
                                                   ∙ hyp)))
-
+-- MARK
 
 -- ------------------------------------------------------------------------
 -- -- Gel Types
@@ -211,16 +222,16 @@ https://q.uiver.app/?q=WzAsMTAsWzAsMSwiXFxtYXRocm17QmRnfV9BIFxcOyBJXzBeey0xfUlfM
   -}
 
   bSubst : (b0 : B bi0) (b1 : B bi1) → BridgeP B (I0 .fst (invEq I0 b0)) (I1 .fst (invEq I1 b1)) ≃ BridgeP B b0 b1 
-  bSubst b0 b1 = pathToEquiv λ i → BridgeP B (secEq I0 b0 i) (secEq I1 b1 i)
+  bSubst b0 b1 = mypathToEquiv λ i → BridgeP B (secEq I0 b0 i) (secEq I1 b1 i)
 
   aSubst : (a0 : A bi0) (a1 : A bi1) → BridgeP A (invEq I0 (I0 .fst a0)) (invEq I1 (I1 .fst a1)) ≃ BridgeP A a0 a1
-  aSubst a0 a1 = pathToEquiv λ i → BridgeP A (retEq I0 a0 i) (retEq I1 a1 i)
+  aSubst a0 a1 = mypathToEquiv λ i → BridgeP A (retEq I0 a0 i) (retEq I1 a1 i)
 
   -- bSubst rewritten. under the hood: Iε half adjointness.
   hAdj-bSubst : (a0 : A bi0) (a1 : A bi1) →
     bSubst (I0 .fst a0) (I1 .fst a1) ≡
-    pathToEquiv λ i → BridgeP B (I0 .fst (retEq I0 a0 i)) (I1 .fst (retEq I1 a1 i))
-  hAdj-bSubst = λ a0 a1 → cong pathToEquiv λ j → cong₂ (BridgeP B) -- when j is zero we want secEq like prf. when j is 1 we want I(retEq) like prf
+    mypathToEquiv λ i → BridgeP B (I0 .fst (retEq I0 a0 i)) (I1 .fst (retEq I1 a1 i))
+  hAdj-bSubst = λ a0 a1 → cong mypathToEquiv λ j → cong₂ (BridgeP B) -- when j is zero we want secEq like prf. when j is 1 we want I(retEq) like prf
                 (λ i → sym (isHAEquiv.com ((equiv→HAEquiv I0) .snd) a0) j i) 
                 λ i → sym (isHAEquiv.com ((equiv→HAEquiv I1) .snd) a1) j i
 
@@ -239,7 +250,7 @@ https://q.uiver.app/?q=WzAsMTAsWzAsMSwiXFxtYXRocm17QmRnfV9BIFxcOyBJXzBeey0xfUlfM
   halfA-pointwiseAorB = λ H → funExt λ a0 → funExt λ a1 →
                   let aSubstinv = invEquiv (aSubst a0 a1)
                       HIIa = H (invEq I0 (I0 .fst a0)) (invEq I1 (I1 .fst a1))
-                      bSubst' = pathToEquiv (λ i → BridgeP B (I0 .fst (retEq I0 a0 i)) (I1 .fst (retEq I1 a1 i)))
+                      bSubst' = mypathToEquiv (λ i → BridgeP B (I0 .fst (retEq I0 a0 i)) (I1 .fst (retEq I1 a1 i)))
                       bSubst'path : BridgeP B (I0 .fst (invEq I0 (I0 .fst a0))) (I1 .fst (invEq I1 (I1 .fst a1))) ≡ BridgeP B (I0 .fst a0) (I1 .fst a1)
                       bSubst'path = λ i → BridgeP B (I0 .fst (retEq I0 a0 i)) (I1 .fst (retEq I1 a1 i))
                       bSubstIa = bSubst (I0 .fst a0) (I1 .fst a1)
@@ -254,34 +265,34 @@ https://q.uiver.app/?q=WzAsMTAsWzAsMSwiXFxtYXRocm17QmRnfV9BIFxcOyBJXzBeey0xfUlfM
                     cong (λ blank → compEquiv blank bSubst') (sym (compEquivIdEquiv HIIa)) ∙
                     cong (λ blank → compEquiv blank bSubst')
                       -- top part of the rectangle = square...
-                      (ua-inj (compEquiv (idEquiv _) HIIa) (compEquiv (aSubst a0 a1) (pathToEquiv (λ j → ua (H (retEq I0 a0 (~ j)) (retEq I1 a1 (~ j))) j))) (uaCompEquiv (idEquiv _) HIIa ∙
+                      (ua-inj (compEquiv (idEquiv _) HIIa) (compEquiv (aSubst a0 a1) (mypathToEquiv (λ j → ua (H (retEq I0 a0 (~ j)) (retEq I1 a1 (~ j))) j))) (uaCompEquiv (idEquiv _) HIIa ∙
                       cong (λ blank → blank ∙ (ua HIIa)) uaIdEquiv ∙
                       ((PathPgivesCompEq refl intermPath aPath (ua HIIa)
                         (λ i j → ua (H (retEq I0 a0 (~ j ∧ i)) (retEq I1 a1 (~ j ∧ i)) ) (j ∧ i))  ∙ -- core def of top square
-                      cong (λ blank → blank ∙ intermPath) (sym (ua-pathToEquiv aPath ))) ∙
-                      cong (λ blank → ua (aSubst a0 a1) ∙ blank) (sym (ua-pathToEquiv intermPath))) ∙
-                      sym (uaCompEquiv (aSubst a0 a1) (pathToEquiv λ j → ua (H (retEq I0 a0 (~ j)) (retEq I1 a1 (~ j))) j)))) ∙
+                      cong (λ blank → blank ∙ intermPath) (sym (ua-mypathToEquiv aPath ))) ∙
+                      cong (λ blank → ua (aSubst a0 a1) ∙ blank) (sym (ua-mypathToEquiv intermPath))) ∙
+                      sym (uaCompEquiv (aSubst a0 a1) (mypathToEquiv λ j → ua (H (retEq I0 a0 (~ j)) (retEq I1 a1 (~ j))) j)))) ∙
                     -- bottom part of the rectangle = 2nd square
-                    sym (compEquiv-assoc (aSubst a0 a1) (pathToEquiv intermPath) bSubst') ∙
+                    sym (compEquiv-assoc (aSubst a0 a1) (mypathToEquiv intermPath) bSubst') ∙
                     cong (compEquiv (aSubst a0 a1) )
-                    (ua-inj (compEquiv (pathToEquiv intermPath) (bSubst')) (H a0 a1)
-                    (uaCompEquiv (pathToEquiv intermPath) bSubst' ∙
-                    cong (λ blank → blank ∙ (ua bSubst')) (ua-pathToEquiv intermPath) ∙
-                    cong (λ blank → intermPath ∙ blank) (ua-pathToEquiv bSubst'path) ∙
+                    (ua-inj (compEquiv (mypathToEquiv intermPath) (bSubst')) (H a0 a1)
+                    (uaCompEquiv (mypathToEquiv intermPath) bSubst' ∙
+                    cong (λ blank → blank ∙ (ua bSubst')) (ua-mypathToEquiv intermPath) ∙
+                    cong (λ blank → intermPath ∙ blank) (ua-mypathToEquiv bSubst'path) ∙
                     PathPgivesCompEq intermPath refl (ua (H a0 a1)) bSubst'path
                       (λ i j → ua (H (retEq I0 a0 (~ j ∨ i)) (retEq I1 a1 (~ j ∨ i)) ) (j ∨ i))  ∙  -- core def of bottom square
                     sym (rUnit (ua (H a0 a1)))  )) )
 
 
-  -- useless lemma kept for the sake of symmetry
-  HforB-Bx-retract : (H : (a0 : A bi0) (a1 : A bi1) → BridgeP A a0 a1 ≃ BridgeP B (I0 .fst a0) (I1 .fst a1))
-                     (b0 : B bi0) (b1 : B bi1) (bb : BridgeP B b0 b1) →
-                     PathP (λ i → BridgeP B (secEq I0 b0 i) (secEq I1 b1 i))
-                           ( H (invEq I0 b0) (invEq I1 b1) .fst (invEq (HforB H b0 b1) bb) )
-                           bb
-  HforB-Bx-retract H b0 b1 bb =  (_◁_)
-                                 (secEq (H (invEq I0 b0) (invEq I1 b1)) (invEq (bSubst b0 b1) bb))
-                                 (symP {A = λ i → BridgeP B (secEq I0 b0 (~ i)) (secEq I1 b1 (~ i))} (toPathP refl))
+  -- -- useless lemma kept for the sake of symmetry
+  -- HforB-Bx-retract : (H : (a0 : A bi0) (a1 : A bi1) → BridgeP A a0 a1 ≃ BridgeP B (I0 .fst a0) (I1 .fst a1))
+  --                    (b0 : B bi0) (b1 : B bi1) (bb : BridgeP B b0 b1) →
+  --                    PathP (λ i → BridgeP B (secEq I0 b0 i) (secEq I1 b1 i))
+  --                          ( H (invEq I0 b0) (invEq I1 b1) .fst (invEq (HforB H b0 b1) bb) )
+  --                          bb
+  -- HforB-Bx-retract H b0 b1 bb =  (_◁_)
+  --                                (secEq (H (invEq I0 b0) (invEq I1 b1)) (invEq (bSubst b0 b1) bb))
+  --                                (symP {A = λ i → BridgeP B (secEq I0 b0 (~ i)) (secEq I1 b1 (~ i))} (toPathP refl))
 
   -- the following lemma links the symmetry lemma to the proof obligation appearing in the equiv vs bdg princple
   HforB-Ax-retract : (H : (a0 : A bi0) (a1 : A bi1) → BridgeP A a0 a1 ≃ BridgeP B (I0 .fst a0) (I1 .fst a1))
@@ -296,7 +307,7 @@ https://q.uiver.app/?q=WzAsMTAsWzAsMSwiXFxtYXRocm17QmRnfV9BIFxcOyBJXzBeey0xfUlfM
             switchMixedCommutingTriangle (λ i → BridgeP A (retEq I0 a0 i) (retEq I1 a1 i)) (H a0 a1) (HforB H (I0 .fst a0) (I1 .fst a1))
             (cong (λ blank → compEquiv blank (HforB H (I0 .fst a0) (I1 .fst a1)))
             (ua-inj _ _
-            (ua-pathToEquiv (sym aPath) ∙ cong sym (sym (ua-pathToEquiv aPath)) ∙ sym (  uaInvEquiv (aSubst a0 a1) ))) 
+            (ua-mypathToEquiv (sym aPath) ∙ cong sym (sym (ua-mypathToEquiv aPath)) ∙ sym (  uaInvEquiv (aSubst a0 a1) ))) 
             ∙ cong (λ blank → blank a0 a1) (halfA-pointwiseAorB H)) -- cong (λ blank → blank a0 a1) (halfA-pointwiseAorB H)
 
   -- PROOF of the Equiv Vs Bdg principle. The proof could be cleaner. For an overall idea see beginning of this module.
@@ -355,7 +366,7 @@ module Relativity {ℓ} {A0 A1 : Type ℓ} where
   -- this is a pointwise reformulation of the retract proof above
   bdg-over-gel : ∀ (R : A0 → A1 → Type ℓ) (a0 : A0) (a1 : A1) →
                  BridgeP (λ x → primGel A0 A1 R x) a0 a1 ≃ R a0 a1
-  bdg-over-gel R a0 a1 = pathToEquiv λ i → (rel-retract R) i a0 a1
+  bdg-over-gel R a0 a1 = mypathToEquiv λ i → (rel-retract R) i a0 a1
 
 
   bdg-retract : ∀ (Q : BridgeP (λ x → Type ℓ) A0 A1) → to-bridge (to-rel Q) ≡ Q
