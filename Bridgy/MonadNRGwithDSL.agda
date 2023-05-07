@@ -1,6 +1,6 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-} -- -v tc.conv.term:15  -v tc.conv.atom.synrec:40
 
-module Bridgy.MonadNRG where
+module Bridgy.MonadNRGwithDSL where
 
   
 open import Bridgy.BridgePrims
