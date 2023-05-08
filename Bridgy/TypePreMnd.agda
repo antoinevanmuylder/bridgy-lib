@@ -95,15 +95,67 @@ retTy l = record {
       (λ x → cong (Mbdg x) (λ i → hyp i x))
       (transportRefl _) (transportRefl _)) )) }
 
+-- (M : Type l → Type l) ⊧ ∀ A B . MA → (A → MB) → MB
+bindTy : (l : Level) → DispNRG (ℓ-suc l) (TypeEndoNRG l)
+bindTy l = record {
+  dcr = λ M → ∀ A B → (M A) → (A → M B) → M B ;
+  dedge = λ M0 M1 MM bnd0 bnd1 →
+    ∀ A0 A1 AA B0 B1 BB →
+    ∀ ma0 ma1 (maa : MM A0 A1 AA ma0 ma1) →
+    ∀ k0 k1 (kk : ∀ a0 a1 (aa : AA a0 a1) → (MM B0 B1 BB) (k0 a0) (k1 a1)) →
+     MM B0 B1 BB (bnd0 A0 B0 ma0 k0) (bnd1 A1 B1 ma1 k1) ;
+  dnativ = λ M0 M1 Mbdg bnd0 bnd1 →
+    flip compEquiv ΠvsBridgeP
+    (equivΠCod λ A0 → equivΠCod λ A1 →
+    equivΠ' relativity λ {AA Abdg} hypA →
+    flip compEquiv ΠvsBridgeP
+    (equivΠCod λ B0 → equivΠCod λ B1 →
+    equivΠ' relativity λ {BB Bbdg} hypB →
+    flip compEquiv ΠvsBridgeP
+    (equivΠCod λ ma0 → equivΠCod λ ma1 →
+    equivΠ'
+      (mypathToEquiv (change-line-path (λ x → (Mbdg x) (primGel A0 A1 AA x)) (λ x → (Mbdg x) (Abdg x))
+      ma0 ma1 ma0 ma1
+      (λ x → cong (Mbdg x) (λ i → hypA i x)) (transportRefl _) (transportRefl _) ))
+    λ {maa-bad maa} hyp-ma →
+    flip compEquiv ΠvsBridgeP
+    (equivΠCod λ k0 → equivΠCod λ k1 →
+    equivΠ'
+      (flip compEquiv ΠvsBridgeP
+      (equivΠCod λ a0 → equivΠCod λ a1 →
+      equivΠ' {!!} {!!})) {!!}))))}
 
+    -- flip compEquiv ΠvsBridgeP
+    -- (equivΠCod λ k0 → equivΠCod λ k1 →
+    -- equivΠ'
+      -- (flip compEquiv ΠvsBridgeP
+      -- (equivΠCod λ a0 → equivΠCod λ a1 →
+      -- equivΠ' (mypathToEquiv (sym (flip _∙_ (funExt⁻ (funExt⁻ (retEq relativity AA) a0) a1)
+      --   (change-line-path (λ x → Abdg x) (λ x → primGel A0 A1 AA x) a0 a1 a0 a1
+      --   (λ x → λ j → hypA (~ j) x) (transportRefl _) (transportRefl _) ) )))
+    --   λ {aa abdg} hypa →
+    --   {!invEq
+    --   (compEquiv
+    --    (equivΠCod
+    --     (λ A2 →
+    --        equivΠCod
+    --        (λ A3 →
+    --           equivΠ' relativity
+    --           (λ {_ _} hypA₁ → relativity))))
+    --    ΠvsBridgeP)
+    --   Mbdg B0 B1 BB (k0 a0) (k1 a1)!} ))
+    -- {!!})))) }
 
-
-
+    -- bindr : ∀ A0 A1 AA B0 B1 BB → 
+    --   ∀ ma0 ma1 (maa : actyr A0 A1 AA ma0 ma1) → --wrapped values are structurally related
+    --   ∀ k0 k1 (kk : ∀ a0 a1 (aa : AA a0 a1) → (actyr B0 B1 BB) (k0 a0) (k1 a1)) → --continuations are pointwise related
+    --   actyr B0 B1 BB (M0 .bind ma0 k0) (M1 .bind ma1 k1) --then their bind are related as well
       
--- -- whats a bridge at PreMnd? we can either start by transforming
--- -- PreMnd into a Sigma (see thm below), or have a custom thm making bridge
--- -- commute with the record type former. Bridge commutation for records can not
--- -- be stated generally as records are not first-class.
+-- whats a bridge at PreMnd? we can either start by transforming
+-- PreMnd into a Sigma (see thm below), or have a custom thm making bridge
+-- commute with the record type former. Bridge commutation for records can not
+-- be stated generally as records are not first-class.
+
 -- premnd-asΣ : {l : Level} →
 --   (PreMnd l)
 --   ≃
