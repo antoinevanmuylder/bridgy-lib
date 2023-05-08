@@ -1,6 +1,7 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
 
 open import Bridgy.BridgePrims
+open import Bridgy.BridgeExamples
 open import Bridgy.ExtentExamples
 open import Bridgy.GelExamples
 open import Cubical.Foundations.Prelude
@@ -62,6 +63,17 @@ record PreMndRecOfBdg {l : Level} (M0 M1 : PreMnd l) : Type (ℓ-suc l) where
                     (λ A B → M0 .bind {A = A} {B = B}) λ A B → M1 .bind {A = A} {B = B}
 open PreMndRecOfBdg
 
+PreMndRecOfBdg≡ : {l : Level} {M0 M1 : PreMnd l} (rv0 rv1 : PreMndRecOfBdg M0 M1)
+  (actybp : rv0 .actyb ≡ rv1 .actyb) →
+  (PathP (λ i → BridgeP (λ x → ∀ A → A → (actybp i x) A) (λ A → M0 .ret {A = A}) (λ A → M1 .ret {A = A})) (rv0 .retb) (rv1 .retb)) →
+  (PathP (λ i → BridgeP (λ x → ∀ A B → (actybp i x) A → (A → (actybp i x) B) → (actybp i x) B)
+                    (λ A B → M0 .bind {A = A} {B = B}) λ A B → M1 .bind {A = A} {B = B}) (rv0 .bindb) (rv1 .bindb)) →
+  rv0 ≡ rv1
+PreMndRecOfBdg≡ rv0 rv1 actybp retbp bindbp =
+  λ i → record { actyb = actybp i ; retb = retbp i ; bindb = bindbp i }
+
+
+
 -- make Bridge and the record type former for PreMnd commute
 BridgeVsPreMndRecord : {l : Level} (M0 M1 : PreMnd l) →
   PreMndRecOfBdg M0 M1 ≃ BridgeP (λ _ → PreMnd l) M0 M1
@@ -77,7 +89,9 @@ BridgeVsPreMndRecord M0 M1 = isoToEquiv (iso
   (λ q → refl)
   λ recMbdg → refl)
 
-
+-- since ret and bind depend on the acty term, they have a dependent bdg commutation pcpl
+-- that we must inline in the proof
+-- In the CwF of native reflexive graphs, we just would have to write their dependent types
 PreMndLrelEquivPreMndRecOfBdg : {l : Level} (M0 M1 : PreMnd l) →
   PreMndLrel M0 M1 ≃ PreMndRecOfBdg M0 M1
 PreMndLrelEquivPreMndRecOfBdg M0 M1 = isoToEquiv (iso
@@ -88,18 +102,34 @@ PreMndLrelEquivPreMndRecOfBdg M0 M1 = isoToEquiv (iso
           (sym (retEq (relativity {A0 = M0 .acty A0} {A1 = M1 .acty A1}) (θ .actyr A0 A1 (BridgeP (λ x₁ → AA x₁)))))
           (M0 .ret {A = A0} a0)) (M1 .ret {A = A1} a1))
       ( (θ .retr A0 A1 (invEq relativity AA) a0 a1 aa)) ;
-      -- prim^gel {R = (θ .actyr A0 A1 (BridgeP (λ x₁ → AA x₁))) }
-      -- (M0 .ret {A = A0} a0) (M1 .ret {A = A1} a1)
-      -- (θ .retr A0 A1 (invEq relativity AA) a0 a1 aa) x  ;
     bindb = ΠBridgeP λ A0 A1 AA → ΠBridgeP λ B0 B1 BB → 
       ΠBridgeP λ ma0 ma1 maa → ΠBridgeP λ k0 k1 kk →
-      λ x → {!θ .bindr A0 A1 (invEq relativity AA) B0 B1 (invEq relativity BB) ma0 ma1  !}
+      transport (funExt⁻ (funExt⁻
+        (sym (retEq (relativity {A0 = M0 .acty B0} {A1 = M1 .acty B1}) (θ .actyr B0 B1 (BridgeP (λ x₁ → BB x₁)))))
+        (bind M0 ma0 k0)) (bind M1 ma1 k1))
+      (θ .bindr A0 A1 (invEq relativity AA) B0 B1 (invEq relativity BB) ma0 ma1
+        (transport (funExt⁻ (funExt⁻ (retEq (relativity {A0 = M0 .acty A0} {A1 = M1 .acty A1}) (θ .actyr A0 A1 (BridgeP (λ x₁ → AA x₁)))) ma0) ma1) maa)
+      k0 k1 λ a0 a1 aa →
+        transport (funExt⁻ (funExt⁻ (retEq (relativity {A0 = M0 .acty B0} {A1 = M1 .acty B1}) (θ .actyr B0 B1 (BridgeP (λ x₁ → BB x₁)))) (k0 a0)) (k1 a1))
+        (invEq ΠvsBridgeP kk a0 a1 aa))
       })
--- λ x gl-ma gl-k → 
---       prim^gel {R = (θ .actyr B0 B1 (BridgeP (λ x₁ → BB x₁))) }
---       {!θ .bindr A0 A1 (invEq relativity AA) B0 B1 (invEq relativity BB)!}
---       {!!}
---       {!!} x })
-  {!!}
-  {!!}
+  (λ sbdg → record {
+    actyr = λ A0 A1 AA → invEq relativity (invEq ΠvsBridgeP (sbdg .actyb) A0 A1 (equivFun relativity AA)) ;
+    retr = λ A0 A1 AA a0 a1 aa →
+      invEq ΠvsBridgeP (invEq ΠvsBridgeP (sbdg .retb) A0 A1 (equivFun relativity AA)) a0 a1
+      (transport (funExt⁻ (funExt⁻ (sym (retEq (relativity {A0 = A0} {A1 = A1}) AA)) a0) a1) aa) ;
+    bindr = λ A0 A1 AA B0 B1 BB ma0 ma1 maa k0 k1 kk →
+      invEq ΠvsBridgeP (invEq ΠvsBridgeP (invEq ΠvsBridgeP (invEq ΠvsBridgeP (sbdg .bindb) A0 A1 (equivFun relativity AA)) B0 B1 (equivFun relativity BB)) ma0 ma1
+      maa)
+      k0 k1
+      (ΠBridgeP λ a0 a1 aa → kk a0 a1 (transport (funExt⁻ (funExt⁻ (retEq relativity AA) a0) a1) aa )) })
+  (λ sbdg → PreMndRecOfBdg≡ _ _
+    ( invEq ( PathPvsBridgeP _)
+      λ x → funExt λ A → {!
+        primExtent {B = λ y → !})
+    {!!}
+    {!!})
   {!!})
+
+-- TODO: obtain the ret and bind dependent types using dsl, or at least express them as dNRGs
+-- combine them by hand into a record
