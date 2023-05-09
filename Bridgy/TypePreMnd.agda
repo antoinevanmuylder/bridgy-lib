@@ -123,8 +123,14 @@ bindTy l = record {
     equivΠ'
       (flip compEquiv ΠvsBridgeP
       (equivΠCod λ a0 → equivΠCod λ a1 →
-      equivΠ' (mypathToEquiv (sym (flip _∙_ (funExt⁻ (funExt⁻ (retEq relativity AA) a0) a1) {!!}))) {!!}))
+      equivΠ' (mypathToEquiv (sym (flip _∙_ (funExt⁻ (funExt⁻ (retEq relativity AA) a0) a1)
+        {!!}))) {!!}))
     {!!})))) }
+
+
+-- (change-line-path (λ x → Abdg x) (λ x → primGel A0 A1 AA x) a0 a1 a0 a1 (λ x → λ j → hypA (~ j) x) (transportRefl _) (transportRefl _) )
+
+
 
     -- flip compEquiv ΠvsBridgeP
     -- (equivΠCod λ k0 → equivΠCod λ k1 →
