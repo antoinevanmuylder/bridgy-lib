@@ -113,16 +113,47 @@ bindTy l = record {
     equivΠ' relativity λ {BB Bbdg} hypB →
     flip compEquiv ΠvsBridgeP
     (equivΠCod λ ma0 → equivΠCod λ ma1 →
-    let rmbr = some-line-change M0 M1 Mbdg A0 A1 AA Abdg hypA ma0 ma1 in
-    equivΠ' rmbr
+    let happyLHS = BridgeP (λ x → Mbdg x (primGel A0 A1 AA x)) ma0 ma1 in
+    equivΠ' {A = happyLHS}
+      (some-line-change M0 M1 Mbdg A0 A1 AA Abdg hypA ma0 ma1)
     λ {maa-bad maa} hyp-ma →
     flip compEquiv ΠvsBridgeP
     (equivΠCod λ k0 → equivΠCod λ k1 →
     equivΠ'
-      (flip compEquiv ΠvsBridgeP
-      (equivΠCod λ a0 → equivΠCod λ a1 →
-      equivΠ' ((appliedRelativityEquiv AA Abdg hypA a0 a1)) {!!})) -- (appliedRelativityEquiv AA Abdg hypA a0 a1)
-    {!!})))) }
+      {!!}
+    λ {kk-bad kk} hypk →
+    mypathToEquiv (change-line-path (λ x → Mbdg x (primGel B0 B1 BB x)) (λ x → Mbdg x (Bbdg x))
+     (bnd0 A0 B0 ma0 k0) (bnd1 A1 B1 ma1 k1) (bnd0 A0 B0 ma0 k0) (bnd1 A1 B1 ma1 k1)
+     (λ x → cong (Mbdg x) (λ k → hypB k x)) (transportRefl _) (transportRefl _)))))) }
+
+    -- flip compEquiv ΠvsBridgeP
+    -- (equivΠCod λ k0 → equivΠCod λ k1 →
+    -- let happyLHS2 =
+    --       ((a0 : A0) (a1 : A1) (aa : AA a0 a1) →
+    --       BridgeP (λ x → Mbdg x (primGel B0 B1 BB x)) (k0 a0) (k1 a1)) in
+    -- equivΠ' {A = happyLHS2}
+    --   (flip compEquiv ΠvsBridgeP
+    --   (equivΠCod λ a0 → equivΠCod λ a1 →
+    --   equivΠ' {A = AA a0 a1} (appliedRelativityEquiv AA Abdg hypA a0 a1) {!!}))
+    -- {!!})))) }
+
+-- (appliedRelativityEquiv AA Abdg hypA a0 a1)
+
+    --   ((flip compEquiv ΠvsBridgeP
+    --   (equivΠCod λ a0 → equivΠCod λ a1 →
+    --   equivΠ' {!!} {!!} ))) -- (appliedRelativityEquiv AA Abdg hypA a0 a1)
+    -- {!!})))) }
+    -- let Abdg' = Abdg in
+    -- let rmbr = some-line-change M0 M1 Mbdg A0 A1 AA Abdg' hypA ma0 ma1 in
+    -- equivΠ' rmbr
+    -- λ {maa-bad maa} hyp-ma →
+    -- flip compEquiv ΠvsBridgeP
+    -- (equivΠCod λ k0 → equivΠCod λ k1 →
+    -- equivΠ'
+      -- (flip compEquiv ΠvsBridgeP
+      -- (equivΠCod λ a0 → equivΠCod λ a1 →
+      -- equivΠ' {!equivΠ'!} {!!})) -- (appliedRelativityEquiv AA Abdg hypA a0 a1)
+    -- {!!})))) }
     -- λ {maa-bad maa} hyp-ma →
     -- flip compEquiv ΠvsBridgeP
     -- (equivΠCod λ k0 → equivΠCod λ k1 →
@@ -160,6 +191,20 @@ bindTy l = record {
       mypathToEquiv (change-line-path
       (λ x → Mbdg x (primGel A0 A1 AA x)) (λ x → Mbdg x (Abdg x))
       ma0 ma1 ma0 ma1 (λ x → cong (Mbdg x) (λ i → hypA i x)) (transportRefl _) (transportRefl _) )
+
+    happy : ∀ (M0 M1 : Type l → Type l) (Mbdg : BridgeP (λ _ → Type l → Type l) M0 M1)
+      (A0 A1 : Type l) (AA : A0 → A1 → Type l) (B0 B1 : Type l) (BB : B0 → B1 → Type l)
+      (ma0 : M0 A0) (ma1 : M1 A1)
+      (bnd0 : ∀ A B → M0 A → (A → M0 B) → M0 B) (bnd1 : ∀ A B → M1 A → (A → M1 B) → M1 B) →
+      Type _
+    happy M0 M1 Mbdg A0 A1 AA B0 B1 BB ma0 ma1 bnd0 bnd1 =
+      BridgeP (λ x → Mbdg x (primGel A0 A1 AA x)) ma0 ma1 →
+       (k0 : A0 → M0 B0) (k1 : A1 → M1 B1) →
+       ((a0 : A0) (a1 : A1) →
+        AA a0 a1 →
+        BridgeP (λ x → Mbdg x (primGel B0 B1 BB x)) (k0 a0) (k1 a1)) →
+       BridgeP (λ x → Mbdg x (primGel B0 B1 BB x)) (bnd0 A0 B0 ma0 k0)
+       (bnd1 A1 B1 ma1 k1)
 
 -- 
 
