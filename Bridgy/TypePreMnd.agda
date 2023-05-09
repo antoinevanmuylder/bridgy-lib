@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce   #-} -- -v tc.meta.assign:45
 
 open import Bridgy.BridgePrims
 open import Bridgy.BridgeExamples
@@ -113,22 +113,55 @@ bindTy l = record {
     equivΠ' relativity λ {BB Bbdg} hypB →
     flip compEquiv ΠvsBridgeP
     (equivΠCod λ ma0 → equivΠCod λ ma1 →
-    equivΠ'
-      (mypathToEquiv (change-line-path (λ x → (Mbdg x) (primGel A0 A1 AA x)) (λ x → (Mbdg x) (Abdg x))
-      ma0 ma1 ma0 ma1
-      (λ x → cong (Mbdg x) (λ i → hypA i x)) (transportRefl _) (transportRefl _) ))
+    let rmbr = some-line-change M0 M1 Mbdg A0 A1 AA Abdg hypA ma0 ma1 in
+    equivΠ' rmbr
     λ {maa-bad maa} hyp-ma →
     flip compEquiv ΠvsBridgeP
     (equivΠCod λ k0 → equivΠCod λ k1 →
     equivΠ'
       (flip compEquiv ΠvsBridgeP
       (equivΠCod λ a0 → equivΠCod λ a1 →
-      equivΠ' (mypathToEquiv (sym (flip _∙_ (funExt⁻ (funExt⁻ (retEq relativity AA) a0) a1)
-        {!!}))) {!!}))
+      equivΠ' ((appliedRelativityEquiv AA Abdg hypA a0 a1)) {!!})) -- (appliedRelativityEquiv AA Abdg hypA a0 a1)
     {!!})))) }
+    -- λ {maa-bad maa} hyp-ma →
+    -- flip compEquiv ΠvsBridgeP
+    -- (equivΠCod λ k0 → equivΠCod λ k1 →
+    -- equivΠ' (flip compEquiv ΠvsBridgeP
+    -- (equivΠCod λ a0 → equivΠCod λ a1 →
+    -- equivΠ' {!!} {!!})) -- (appliedRelativityEquiv AA Abdg hypA a0 a1)
+      -- (flip compEquiv ΠvsBridgeP
+      -- (equivΠCod λ a0 → equivΠCod λ a1 →
+      -- equivΠ' (mypathToEquiv (sym (flip _∙_ (funExt⁻ (funExt⁻ (retEq relativity AA) a0) a1)
+      --   ((change-line-path (λ x → Abdg x) (λ x → primGel A0 A1 AA x) a0 a1 a0 a1 (λ x → λ j → hypA (~ j) x) (transportRefl _) (transportRefl _) )))))
+      -- λ {aa abdg} hypa →
+      -- mypathToEquiv (change-line-path (λ x → (Mbdg x) (primGel B0 B1 BB x)) (λ x → (Mbdg x) (Bbdg x))
+      -- (k0 a0) (k1 a1) (k0 a0) (k1 a1)
+      -- (λ x k → (Mbdg x) (hypB k x)) (transportRefl _) (transportRefl _))))
+    -- {!!})))) }
 
+  where
 
--- (change-line-path (λ x → Abdg x) (λ x → primGel A0 A1 AA x) a0 a1 a0 a1 (λ x → λ j → hypA (~ j) x) (transportRefl _) (transportRefl _) )
+    appliedRelativityEquiv : ∀ {A0 A1 : Type l}
+      (AA : A0 → A1 → Type l) (Abdg : BridgeP (λ _ → Type l) A0 A1)
+      (hypA : relativity .fst AA ≡ Abdg) (a0 : A0) (a1 : A1) →
+      AA a0 a1 ≃ BridgeP (λ v → Abdg v) a0 a1
+    appliedRelativityEquiv {A0 = A0} {A1 = A1} AA Abdg hypA a0 a1 =
+      mypathToEquiv (sym (flip _∙_ (funExt⁻ (funExt⁻ (retEq relativity AA) a0) a1)
+      (change-line-path (λ x → Abdg x) (λ x → primGel A0 A1 AA x) a0 a1 a0 a1 (λ x → λ j → hypA (~ j) x) (transportRefl _) (transportRefl _))))
+
+    some-line-change :  ∀ (M0 M1 : Type l → Type l) (Mbdg : BridgeP (λ _ → Type l → Type l) M0 M1)
+      (A0 A1 : Type l) (AA : A0 → A1 → Type l)  (Abdg : BridgeP (λ _ → Type l) A0 A1)
+      (hypA : relativity .fst AA ≡ Abdg)
+      (ma0 : M0 A0) (ma1 : M1 A1) →
+      BridgeP (λ x → Mbdg x (primGel A0 A1 AA x)) ma0 ma1
+        ≃
+      BridgeP (λ x → Mbdg x (Abdg x)) ma0 ma1
+    some-line-change M0 M1 Mbdg A0 A1 AA Abdg hypA ma0 ma1 =
+      mypathToEquiv (change-line-path
+      (λ x → Mbdg x (primGel A0 A1 AA x)) (λ x → Mbdg x (Abdg x))
+      ma0 ma1 ma0 ma1 (λ x → cong (Mbdg x) (λ i → hypA i x)) (transportRefl _) (transportRefl _) )
+
+-- 
 
 
 
