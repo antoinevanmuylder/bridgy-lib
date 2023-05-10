@@ -11,10 +11,33 @@ open import Cubical.Foundations.Function
 open import Cubical.Foundations.Univalence
 open import Cubical.Functions.FunExtEquiv
 open import Cubical.Functions.Implicit
+open import Cubical.Data.Sigma
 open import Bridgy.MyPathToEquiv
 
 -- if G ≅ H as rgraphs, and hasNativ(H), then hasNativ(G)
 -- we just need to prove the sip for rgraphs
+
+-- lessons learned...
+-- while proving SIP (for Bridge commutation it's basically the same recipe) for a record type R,
+-- ie observational equality ≃ equality: (r0 [R≅] r1) ≃ Path R r0 r1) where R≅ : R → R → Type is the type of isos
+-- it's good to
+-- 0. if some fields depend on a field B, prove a simpl commutation pcpl for B (SIP or bdg comm.)
+-- 0bis. for fields of R that are dependent on say B, prove their dependent SIP
+--    equivalently, formulate those dependent types as displayed native groupoids (resp. dNRGs in the case of bridges)
+-- 1. rephrase (r0 [R≅] r1) as a sigma type (R≅EquivR≅-asΣ : R≅ r0 r1 ≃ R≅-asΣ r0 r1)
+-- 2. have a Σ type preOeq of preobservational equalities. ie record values that have path fields.
+--      proving this should then be routine
+--      preEquiv: preOeq r0 r1  ≃ Path R r0 r1
+-- 3. by 1 and 2 the goal is now R≅-asΣ r0 r1 ≃ preOeq r0 r1, an equiv of sigma types.
+-- 4. We can now use commutation withΣ,  Σ-cong-equiv : ... → Σ S T ≡ Σ S' T'
+-- 5. S≃S' goes by 0
+-- 6. ...⊢ T≃T' goes by 0bis.
+--
+-- Overall this technique avoids having inlined proofs of dependent commutation principles,
+-- And it does not commit fully to "writing the type in the syntax of displayed native groupoids/native reflexive graphs."
+-- The latter DSL is interesting theoretically but gives types and terms with questionable definitional behaviour.
+-- Moreover writing in this DSL can be cumbersome inferencewise (it's often the case for DTT in DTT)
+
 module Bridgy.TransportNativ where
 
 
@@ -79,6 +102,19 @@ module ObsEqRGraph {l : Level} (G H : RGraph l) where
                G .redge g0 g1 ≃ H .redge h0 h1
   open RGraph≅ public
 
+  RGraph≅-asΣ : Type l
+  RGraph≅-asΣ =
+    Σ (G .rg-cr ≃ H .rg-cr) (λ rgcr≅ →
+      ∀ (g0 : G .rg-cr) (h0 : H .rg-cr) (gh0 : equivFun rgcr≅ g0 ≡ h0) →
+      ∀ (g1 : G .rg-cr) (h1 : H .rg-cr) (gh1 : equivFun rgcr≅ g1 ≡ h1) →
+      G .redge g0 g1 ≃ H .redge h0 h1)
+  
+  RGraph≅EquivRGraph≅-asΣ : RGraph≅ ≃ RGraph≅-asΣ
+  RGraph≅EquivRGraph≅-asΣ = isoToEquiv (iso
+    (λ obseq → (obseq .rg-cr≅ ) , (obseq .redge≅))
+    (λ apr → record { rg-cr≅ = apr .fst ; redge≅ = apr .snd })
+    (λ _ → refl)
+    λ _ → refl)
 
   --preobservational equality at RGraph
   record pre-RGraph≅ : Type (ℓ-suc l) where
@@ -96,6 +132,16 @@ module ObsEqRGraph {l : Level} (G H : RGraph l) where
     rg-cr≡ = rg-cr≡p i ;
     redgePath = redgePathp i }
 
+  pre-RGraph≅-asΣ : Type (ℓ-suc l)
+  pre-RGraph≅-asΣ = Σ (G .rg-cr ≡ H .rg-cr) (λ rgcr≡ → PathP (λ i → rgcr≡ i → rgcr≡ i → Type l) (G .redge) (H .redge))
+
+  pre-RGraph≅Equivpre-RGraph≅-asΣ : pre-RGraph≅ ≃ pre-RGraph≅-asΣ
+  pre-RGraph≅Equivpre-RGraph≅-asΣ = isoToEquiv (iso
+    (λ rv → (rv .rg-cr≡) , rv .redgePath)
+    (λ apr → record { rg-cr≡ = apr .fst ; redgePath = apr .snd })
+    (λ _ → refl)
+    λ _ → refl)
+
   preObsEqIsPath : pre-RGraph≅ ≃ (G ≡ H)
   preObsEqIsPath = isoToEquiv (iso
     (λ recOf≡ → λ i → record {
@@ -109,43 +155,9 @@ module ObsEqRGraph {l : Level} (G H : RGraph l) where
 
   RGraph-SIP : RGraph≅ ≃ (G ≡ H)
   RGraph-SIP = flip compEquiv preObsEqIsPath
-    (isoToEquiv (iso
-    (λ obseq → record {
-      rg-cr≡ = ua (obseq .rg-cr≅) ;
-      redgePath =
-        funExtDep λ {g0 h0} gh0 →
-        funExtDep λ {g1 h1} gh1 →
-        ua (obseq .redge≅ g0 h0 (sym (transportRefl _) ∙ fromPathP gh0) g1 h1 (sym (transportRefl _) ∙ fromPathP gh1))  })
-    (λ poeq → record {
-      rg-cr≅ = mypathToEquiv (poeq .rg-cr≡ ) ;
-      redge≅ = λ g0 h0 gh0 g1 h1 gh1 → mypathToEquiv
-        (invEq funExtDepEquiv (invEq funExtDepEquiv (poeq .redgePath) {g0} {h0}
-          (toPathP gh0)) {g1} {h1}
-        (toPathP gh1)) } )
-    (λ poeq → pre-RGraph≅≡ _ _
-      (ua-mypathToEquiv (poeq .rg-cr≡))
-      (toPathP (flip _∙_ (secEq funExtDepEquiv (poeq .redgePath))
-      (flip _∙_ (secEq funExtDepEquiv _)
-      {!funExtDepEquiv .fst
-      (invEq funExtDepEquiv
-       (funExtDepEquiv .fst (invEq funExtDepEquiv (poeq .redgePath))))!} ))))
-    {!!}))
--- {PathP {ℓ-suc l}
---        (λ i → (x : rg-cr≡ poeq i) → rg-cr≡ poeq i → Type l) (G .redge)
---        (H .redge)}
-
-      -- (symP (toPathP {!transport
-      -- (λ i →
-      --    PathP
-      --    (λ i₁ →
-      --       ua-mypathToEquiv (poeq .rg-cr≡) (~ i) i₁ →
-      --       ua-mypathToEquiv (poeq .rg-cr≡) (~ i) i₁ → Type l)
-      --    (G .redge) (H .redge))
-      -- (redgePath poeq)!}) )
-
-
--- ( sym (equivFun (equivAdjointEquiv funExtDepEquiv) {!!}))
-
--- ∀ (g0 : G .rg-cr) (h0 : H .rg-cr) (gh0 : equivFun rg-cr≅ g0 ≡ h0) →
---              ∀ (g1 : G .rg-cr) (h1 : H .rg-cr) (gh1 : equivFun rg-cr≅ g1 ≡ h1) →
---              G .redge g0 g1 ≃ H .redge h0 h1
+    (compEquiv RGraph≅EquivRGraph≅-asΣ
+    (flip compEquiv (invEquiv pre-RGraph≅Equivpre-RGraph≅-asΣ)
+    (Σ-cong-equiv (invEquiv univalence) λ GH →
+    redgeSipP (G .rg-cr) (H .rg-cr) GH
+      (equivFun (invEquiv univalence) GH) refl
+      (G .redge) (H .redge))))
