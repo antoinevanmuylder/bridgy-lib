@@ -29,7 +29,7 @@ open import Cubical.Data.Sigma using (_×_ ; ≃-× ; ≡-× ; Σ-cong-equiv ; �
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Path -- using (congPathEquiv ; PathP≃Path ; compPathrEquiv ; compPathlEquiv)
--- open import Bridgy.MyPathToEquiv
+open import Bridgy.MyPathToEquiv
 -- open import Cubical.Foundations.Transport using (transportEquiv)
 
 -- cubical lemmas
@@ -325,11 +325,25 @@ record DispNRG {ℓ} (ℓ' : Level) (Γ : NRGraph ℓ) : Type (ℓ-max ℓ (ℓ-
                    dedge γ0 γ1 (invEq (Γ .nativ γ0 γ1) γbdg) a0 a1 ≃ BridgeP (λ x → dcr (γbdg x)) a0 a1
 open DispNRG public
 
-    -- dnativ : ∀ (γ0 γ1 : Γ .nrg-cr) (e : Γ ⦅ γ0 , γ1 ⦆ ) (a0 : dcr γ0) (a1 : dcr γ1) →
-    --                dedge γ0 γ1 e a0 a1 ≃ BridgeP (λ x → dcr (Γ .nativ γ0 γ1 .fst e x)) a0 a1
+
 
 _⦅_,_⦆#_ : ∀ {ℓ ℓ' : Level} {Γ} (A : DispNRG {ℓ = ℓ} ℓ' Γ) {γ0 γ1 : Γ .nrg-cr} (a0 : A .dcr γ0) (a1 : A .dcr γ1) (γγ : Γ ⦅ γ0 , γ1 ⦆) → Type ℓ'
 _⦅_,_⦆#_ {ℓ} {ℓ'} {Γ} A {γ0} {γ1} a0 a1 γγ = A .dedge γ0 γ1 γγ a0 a1
+
+dnativ-sym : ∀ {ℓ ℓ'} {Γ : NRGraph ℓ} {A : DispNRG ℓ' Γ}
+  {γ0 γ1 : Γ .nrg-cr} (γγ : Γ ⦅ γ0 , γ1 ⦆ ) (γbdg : BridgeP (λ _ → Γ .nrg-cr) γ0 γ1) →
+  (edge-bdg : Γ .nativ γ0 γ1 .fst γγ ≡ γbdg) →
+  (a0 : A .dcr γ0) (a1 : A .dcr γ1) →
+  (A ⦅ a0 , a1 ⦆# γγ) ≃ BridgeP (λ x → A .dcr (γbdg x)) a0 a1
+dnativ-sym {Γ = Γ} {A = A} {γ0 = g0} {γ1 = g1} gg gbdg edge-bdg a0 a1 =
+  flip compEquiv (A .dnativ g0 g1 gbdg a0 a1)
+  (mypathToEquiv λ j → A ⦅ a0 , a1 ⦆# (invEq (equivAdjointEquiv (Γ .nativ g0 g1)) edge-bdg j))
+
+-- 
+
+ --    (edge-bdg : Γ .nativ γ0 γ1 
+ -- (a0 : dcr γ0) (a1 : dcr γ1) →
+ --                 dedge γ0 γ1 e a0 a1 ≃ BridgeP (λ x → dcr (Γ .nativ γ0 γ1 .fst e x)) a0 a1
 
 
 -- dnativ' : ∀ {ℓ ℓ'} (Γ : NRGraph ℓ) (A : DispNRG ℓ' Γ)
