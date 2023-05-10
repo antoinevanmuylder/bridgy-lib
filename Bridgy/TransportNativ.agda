@@ -14,6 +14,8 @@ open import Cubical.Functions.Implicit
 open import Cubical.Data.Sigma
 open import Bridgy.MyPathToEquiv
 
+open import Bridgy.NRGRelRecord
+
 -- if G ≅ H as rgraphs, and hasNativ(H), then hasNativ(G)
 -- we just need to prove the sip for rgraphs
 
@@ -161,3 +163,13 @@ module ObsEqRGraph {l : Level} (G H : RGraph l) where
     redgeSipP (G .rg-cr) (H .rg-cr) GH
       (equivFun (invEquiv univalence) GH) refl
       (G .redge) (H .redge))))
+open ObsEqRGraph public
+
+-- we can now transport nativeness proofs along RGraph isomorphisms
+
+hasNativ : ∀ {l} (G : RGraph l) → Type l
+hasNativ G = ∀ g0 g1 → G .redge g0 g1 ≃ BridgeP (λ _ → G .rg-cr) g0 g1
+
+transpNativ : ∀ {l} (G H : RGraph l) (gh : RGraph≅ G H) → (hasNativ G ≡ hasNativ H)
+transpNativ G H gh =
+  λ i → hasNativ (equivFun (RGraph-SIP _ _) gh i)

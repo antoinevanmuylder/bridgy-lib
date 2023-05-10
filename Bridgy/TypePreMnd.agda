@@ -5,6 +5,7 @@ open import Bridgy.BridgeExamples
 open import Bridgy.ExtentExamples
 open import Bridgy.GelExamples
 open import Bridgy.NRGRelRecord
+open import Bridgy.TransportNativ
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function using ( flip )
 open import Cubical.Foundations.Equiv
@@ -152,6 +153,15 @@ module PackRetBind (l : Level) (Tret Tbnd : DispNRG (ℓ-suc l) (TypeEndoNRG l))
       bind : Tbnd .dcr acty -- ∀ A B → MA → (A → M B)
   open PreMnd public
 
+  premnd-asΣ :
+    (PreMnd)
+    ≃
+    ( Σ[ M ∈ (Type l → Type l) ] (Tret .dcr M × Tbnd .dcr M) )
+  premnd-asΣ = isoToEquiv (iso
+    (λ M → M .acty , M .ret , M .bind)
+    (λ M → record { acty = M .fst ; ret = M .snd .fst ; bind = M .snd .snd })
+    (λ _ → refl)
+    λ _ → refl)
 
   -- type of logical relations btw 2 premonads M0 and M1
   record PreMndLrel (M0 M1 : PreMnd) : Type (ℓ-suc l) where
@@ -172,6 +182,9 @@ module PackRetBind (l : Level) (Tret Tbnd : DispNRG (ℓ-suc l) (TypeEndoNRG l))
       --   actyr B0 B1 BB (M0 .bind ma0 k0) (M1 .bind ma1 k1) --then their bind are related as well
       bindr : Tbnd .dedge (M0 .acty) (M1 .acty) actyr (M0 .bind) (M1 .bind)
   open PreMndLrel public
+
+
+      
 
   record PreMndAuxBdg (M0 M1 : PreMnd) : Type (ℓ-suc l) where
     field
@@ -201,58 +214,6 @@ module PackRetBind (l : Level) (Tret Tbnd : DispNRG (ℓ-suc l) (TypeEndoNRG l))
   PreMndAuxBdg≡ rv0 rv1 actybp retbp bindbp =
     λ i → record { actyb = actybp i ; retb = retbp i ; bindb = bindbp i }
 
-
-  -- -- we equip a record like
-  -- --    Σ [ M ∈  Ty → Ty] ret[M] × bind[M]
-  -- -- with NRG structure,
-  -- -- for abstract types ret and bind (see module parameters)
-  -- --
-  -- -- note: proving this for sigmas was easier
-  -- PreMndNRG : NRGraph (ℓ-suc l)
-  -- PreMndNRG = record {
-  --   nrg-cr = PreMnd ;
-  --   nedge = λ M0 M1 → PreMndLrel M0 M1 ;
-  --   nativ = λ M0 M1 →
-  --     flip compEquiv (PreMndAuxBdg≃BridgePreMnd M0 M1)
-  --     (isoToEquiv (iso
-  --     (λ MM →
-  --       let Mbdg = equivFun (TypeEndoNRG l .nativ (M0 .acty) (M1 .acty)) (MM .actyr) in
-  --       record {
-  --       actyb = Mbdg ;
-  --       retb =
-  --         equivFun (dnativ-sym {A = Tret} (MM .actyr) Mbdg
-  --           refl (M0 .ret) (M1 .ret))
-  --         (MM .retr) ;
-  --       bindb =
-  --         equivFun (dnativ-sym {A = Tbnd} (MM .actyr) Mbdg refl (M0 .bind) (M1 .bind))
-  --         (MM .bindr) })
-  --     (λ recOfBdg →
-  --       let MM = invEq (TypeEndoNRG l .nativ (M0 .acty) (M1 .acty)) (recOfBdg .actyb) in
-  --       record {
-  --       actyr = MM ;
-  --       retr =
-  --         invEq (dnativ-sym {A = Tret} MM (recOfBdg .actyb)
-  --           (equivFun (equivAdjointEquiv (ΠvsBridgeP) {b = recOfBdg .actyb})
-  --           (funExt λ A0 → funExt λ A1 → funExt λ AA →
-  --           (secEq relativity _) ∙
-  --           λ j x → recOfBdg .actyb x (secEq relativity AA j x)))
-  --         (M0 .ret) (M1 .ret)) (recOfBdg .retb) ;
-  --       bindr =
-  --         invEq (dnativ-sym {A = Tbnd} MM (recOfBdg .actyb)
-  --           (equivFun (equivAdjointEquiv (ΠvsBridgeP) {b = recOfBdg .actyb})
-  --           (funExt λ A0 → funExt λ A1 → funExt λ AA →
-  --           (secEq relativity _) ∙
-  --           λ j x → recOfBdg .actyb x (secEq relativity AA j x)))
-  --         (M0 .bind) (M1 .bind)) (recOfBdg .bindb) })
-  --     (λ recOfBdg → PreMndAuxBdg≡ _ recOfBdg
-  --       (secEq (TypeEndoNRG l .nativ (M0 .acty) (M1 .acty)) (recOfBdg .actyb))
-  --       {!PathPvsBridgeP (λ x i → !} {!!})
-  --     -- (λ recOfBdg →
-  --     --   PreMndAuxBdg≡ _ recOfBdg
-  --     --   (bridgePPath (λ x → {!!}))
-  --     --   {!!} {!!})
-  --     {!!}))   }
-
   -- NRG structure for Σ [ M ∈  Ty → Ty] ret[M] × bind[M] 
   -- where ret, bind are abstract types (see module params)
   PreMndNRG-asΣ : NRGraph (ℓ-suc l)
@@ -281,7 +242,28 @@ module PackRetBind (l : Level) (Tret Tbnd : DispNRG (ℓ-suc l) (TypeEndoNRG l))
       flip compEquiv (Tbnd .dnativ (M0 .fst) (M1 .fst) (equivFun (TypeEndoNRG l .nativ (M0 .fst) (M1 .fst)) MM) (M0 .snd .snd) (M1 .snd .snd))
       ((mypathToEquiv ( λ j → Tbnd .dedge (M0 .fst) (M1 .fst) (sym (retEq ( TypeEndoNRG l .nativ (M0 .fst) (M1 .fst)) MM) j) (M0 .snd .snd) (M1 .snd .snd)))))) }
 
+  -- no nativ
+  PreMndRGraph : RGraph (ℓ-suc l)
+  PreMndRGraph = record {
+    rg-cr = PreMnd ;
+    redge = λ M0 M1 → PreMndLrel M0 M1 }
 
+  PreMndRGraph-asΣ : RGraph (ℓ-suc l)
+  PreMndRGraph-asΣ = record {
+    rg-cr = PreMndNRG-asΣ .nrg-cr ;
+    redge = PreMndNRG-asΣ .nedge }
+
+  PreMndRGraphISOPreMndRGraph-asΣ : RGraph≅ PreMndRGraph PreMndRGraph-asΣ
+  PreMndRGraphISOPreMndRGraph-asΣ = record {
+    rg-cr≅ = premnd-asΣ ;
+    redge≅ = λ M0 Msig0 hypM0 M1 Msig1 hypM1 → isoToEquiv (iso
+      {!λ MM → ?!} {!!} {!!} {!!}) }
+
+
+
+
+  hey : Unit
+  hey = {!transpNativ PreMndRGraph PreMndRGraph-asΣ!}
 
 
 
@@ -295,18 +277,6 @@ module PackRetBind (l : Level) (Tret Tbnd : DispNRG (ℓ-suc l) (TypeEndoNRG l))
 -- -- commute with the record type former. Bridge commutation for records can not
 -- -- be stated generally as records are not first-class.
 
--- -- premnd-asΣ : {l : Level} →
--- --   (PreMnd l)
--- --   ≃
--- --   ( Σ[ M ∈ (Type l → Type l) ] (∀ A → A → (M A)) × (∀ A B → M A → (A → M B) → M B) )
--- -- premnd-asΣ = isoToEquiv (iso
--- --   (λ MM → MM .acty ,  (λ A → MM .ret) , λ A B → MM .bind)
--- --   (λ M → record {
--- --     acty = M .fst ;
--- --     ret = λ {_} → M .snd .fst _ ;
--- --     bind = λ {_ _} → M .snd .snd _ _ })
--- --     (λ M → refl)
--- --     λ MM → refl)
 
 -- record PreMndRecOfBdg {l : Level} (M0 M1 : PreMnd l) : Type (ℓ-suc l) where
 --   field
