@@ -96,6 +96,7 @@ redgeSipP G0 G1 GG Gpth hypG rdg0 rdg1 =
 module ObsEqRGraph {l : Level} (G H : RGraph l) where
 
   --observational equality at RGraph
+  --an easier version (less parametric formulation) is provided at the end of the module
   record RGraph≅ : Type l where
     field
       rg-cr≅ : G .rg-cr ≃ H .rg-cr
@@ -163,6 +164,38 @@ module ObsEqRGraph {l : Level} (G H : RGraph l) where
     redgeSipP (G .rg-cr) (H .rg-cr) GH
       (equivFun (invEquiv univalence) GH) refl
       (G .redge) (H .redge))))
+
+  record RGraph≅' : Type l where
+    field
+      rg-cr≅' : G .rg-cr ≃ H .rg-cr
+      redge≅' : ∀ x0 x1 → G .redge x0 x1 ≃ H .redge (rg-cr≅' .fst x0) (rg-cr≅' .fst x1)
+  open RGraph≅'
+
+  -- RGraph≅'EquivRGraph≅ : RGraph≅' ≃ RGraph≅
+  -- RGraph≅'EquivRGraph≅ = isoToEquiv (iso
+  --   (λ iso' → record {
+  --     rg-cr≅ = iso' .rg-cr≅' ;
+  --     redge≅ = λ g0 h0 gh0 g1 h1 gh1 →
+  --       compEquiv (iso' .redge≅' g0 g1)
+  --       (mypathToEquiv λ j → H .redge (gh0 j) (gh1 j))  })
+  --   (λ iso → record {
+  --     rg-cr≅' = iso .rg-cr≅ ;
+  --     redge≅' = λ x0 x1 → iso .redge≅ x0 _ refl x1 _ refl })
+  --   (λ iso →
+  --     λ i → record { rg-cr≅ = iso .rg-cr≅ ;
+  --       redge≅ = λ g0 h0 gh0 g1 h1 gh1 → {!
+  --                  secEq (compEquiv
+  --                  (iso .redge≅ g0 (equivFun (rg-cr≅ iso) g0)
+  --                  (λ _ → equivFun (rg-cr≅ iso) g0) g1 (equivFun (rg-cr≅ iso) g1)
+  --                  (λ _ → equivFun (rg-cr≅ iso) g1))
+  --                  (mypathToEquiv (λ j → H .redge (gh0 j) (gh1 j)))) !} })
+  --   {!!})
+
+      -- redge≅' : ∀ (g0 : G .rg-cr) (h0 : H .rg-cr) (gh0 : equivFun rg-cr≅ g0 ≡ h0) →
+      --          ∀ (g1 : G .rg-cr) (h1 : H .rg-cr) (gh1 : equivFun rg-cr≅ g1 ≡ h1) →
+      --          G .redge g0 g1 ≃ H .redge h0 h1
+  open RGraph≅' public
+
 open ObsEqRGraph public
 
 -- we can now transport nativeness proofs along RGraph isomorphisms
