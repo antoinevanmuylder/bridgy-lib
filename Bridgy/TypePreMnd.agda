@@ -274,3 +274,12 @@ module PackRetBind (l : Level) (Tret Tbnd : DispNRG (ℓ-suc l) (TypeEndoNRG l))
 PreMnd : (l : Level) → Type (ℓ-suc l)
 PreMnd l = PackRetBind.PreMnd l (retTy l) (bindTy l)
 
+acty : ∀ {l : Level} → (PreMnd l) → Type l → Type l
+acty M = M .fst
+
+ret : ∀ {l : Level} (M : PreMnd l) → ∀ (A : Type l) → A → acty M A
+ret M = M .snd .fst
+
+bind : ∀ {l : Level} (M : PreMnd l) → ∀ (A B : Type l) → (acty M A) → (A → acty M B) → acty M B
+bind M = M .snd .snd
+
