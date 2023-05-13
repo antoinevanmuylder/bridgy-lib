@@ -220,6 +220,11 @@ module PreMndRecrd (l : Level) (Tret Tbnd : DispNRG (ℓ-suc l) (TypeEndoNRG l))
   PreMndRGraph = record {
     rg-cr = PreMnd ;
     redge = λ M0 M1 → PreMndLrel M0 M1 }
+
+  -- PreMndLrelΣ : (M0 M1 : PreMnd) → Type (ℓ-suc l)
+  -- PreMndLrelΣ M0 M1 =
+  --   Σ (TypeEndoNRG l ⦅ M0 .acty , M1 .acty ⦆ 
+
   -- PreMndRGraph-asΣ : RGraph (ℓ-suc l)
   -- PreMndRGraph-asΣ = record {
   --   rg-cr = PreMndNRG-asΣ .nrg-cr ;
@@ -232,7 +237,7 @@ module PreMndRecrd (l : Level) (Tret Tbnd : DispNRG (ℓ-suc l) (TypeEndoNRG l))
   --     (λ MM →
   --       (transport (λ i → TypeEndoNRG l ⦅ hypM0 i .fst , hypM1 i .fst ⦆) (MM .actyr) ) ,
   --       ({!!} , {!!})) {!!} {!!} {!!}) }
-
+-- open PreMndRecrd public hiding ( PreMnd ; acty ; ret ; bind )
 
 -- This module defines the type of pre monads as a sigma type.
 -- This module is parametrized by dependent commutation princples for the ret and bind types
@@ -243,23 +248,36 @@ module PackRetBind (l : Level) (Tret Tbnd : DispNRG (ℓ-suc l) (TypeEndoNRG l))
   PreMnd = Σ (TypeEndoNRG l .nrg-cr) (λ M →
              (Tret .dcr M) × Tbnd .dcr M)
 
+  PreMndLrel : (M0 M1 : PreMnd) → Type (ℓ-suc l)
+  PreMndLrel M0 M1 =
+    let 
+      M0acty = M0 .fst
+      M0ret = M0 .snd .fst
+      M0bnd = M0 .snd .snd
+      M1acty = M1 .fst
+      M1ret = M1 .snd .fst
+      M1bnd = M1 .snd .snd
+    in
+      Σ (TypeEndoNRG l ⦅ M0acty , M1acty ⦆) (λ MM →
+      (Tret .dedge M0acty M1acty MM M0ret M1ret) × Tbnd .dedge M0acty M1acty MM M0bnd M1bnd) 
+
   -- NRG structure for Σ [ M ∈  Ty → Ty] ret[M] × bind[M] 
   -- where ret, bind are abstract types (see module params)
   PreMndNRG : NRGraph (ℓ-suc l)
   PreMndNRG =  record {
     nrg-cr = Σ (TypeEndoNRG l .nrg-cr) (λ M →
              (Tret .dcr M) × Tbnd .dcr M) ;
-    nedge = λ M0 M1 →
-      let 
-        M0acty = M0 .fst
-        M0ret = M0 .snd .fst
-        M0bnd = M0 .snd .snd
-        M1acty = M1 .fst
-        M1ret = M1 .snd .fst
-        M1bnd = M1 .snd .snd
-      in
-        Σ (TypeEndoNRG l ⦅ M0acty , M1acty ⦆) (λ MM →
-        (Tret .dedge M0acty M1acty MM M0ret M1ret) × Tbnd .dedge M0acty M1acty MM M0bnd M1bnd) ;
+    nedge = λ M0 M1 → PreMndLrel M0 M1 ;
+      -- let 
+      --   M0acty = M0 .fst
+      --   M0ret = M0 .snd .fst
+      --   M0bnd = M0 .snd .snd
+      --   M1acty = M1 .fst
+      --   M1ret = M1 .snd .fst
+      --   M1bnd = M1 .snd .snd
+      -- in
+      --   Σ (TypeEndoNRG l ⦅ M0acty , M1acty ⦆) (λ MM →
+      --   (Tret .dedge M0acty M1acty MM M0ret M1ret) × Tbnd .dedge M0acty M1acty MM M0bnd M1bnd) ;
     nativ = λ M0 M1 →
       flip compEquiv ΣvsBridgeP
       (Σ-cong-equiv (TypeEndoNRG l .nativ (M0 .fst) (M1 .fst)) λ MM →
@@ -271,8 +289,12 @@ module PackRetBind (l : Level) (Tret Tbnd : DispNRG (ℓ-suc l) (TypeEndoNRG l))
       flip compEquiv (Tbnd .dnativ (M0 .fst) (M1 .fst) (equivFun (TypeEndoNRG l .nativ (M0 .fst) (M1 .fst)) MM) (M0 .snd .snd) (M1 .snd .snd))
       ((mypathToEquiv ( λ j → Tbnd .dedge (M0 .fst) (M1 .fst) (sym (retEq ( TypeEndoNRG l .nativ (M0 .fst) (M1 .fst)) MM) j) (M0 .snd .snd) (M1 .snd .snd)))))) }
 
+
 PreMnd : (l : Level) → Type (ℓ-suc l)
 PreMnd l = PackRetBind.PreMnd l (retTy l) (bindTy l)
+
+PreMndLrel : {l : Level} → (M0 M1 : PreMnd l) → Type (ℓ-suc l)
+PreMndLrel {l} M0 M1 = PackRetBind.PreMndLrel l (retTy l) (bindTy l) M0 M1
 
 acty : ∀ {l : Level} → (PreMnd l) → Type l → Type l
 acty M = M .fst
@@ -282,4 +304,19 @@ ret M = M .snd .fst
 
 bind : ∀ {l : Level} (M : PreMnd l) → ∀ (A B : Type l) → (acty M A) → (A → acty M B) → acty M B
 bind M = M .snd .snd
+
+module Morphisms {l : Level} (M0 M1 : PreMnd l) where
+
+  record PreMndMorph  : Type (ℓ-suc l) where
+    field
+      actym : ∀ A → acty M0 A → acty M1 A
+      reteq : ∀ A a → actym _ (ret M0 A a) ≡ ret M1 A a
+      bindeq : ∀ A B ma f →
+        actym _ (bind M0 A B ma f) ≡ bind M1 A B (actym _ ma) (λ a → actym _ (f a))
+  open PreMndMorph public
+
+  morphToLrel : PreMndMorph → PreMndLrel M0 M1
+  morphToLrel θ =
+    (λ A0 A1 AA m0a0 ma1a1 → {!θ .actym!}) ,
+    {!!}
 
