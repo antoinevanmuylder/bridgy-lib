@@ -14,7 +14,8 @@ open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Path
 open import Bridgy.BDisc
-
+open import Bridgy.GelExamples
+open import Bridgy.MyPathToEquiv
 
 
 module HProp where
@@ -357,6 +358,35 @@ HSetEl Γ ℓ = record {
 --   ; dnativ = λ { (γ0 , A0) (γ1 , A1) γbdg a0 a1 → idEquiv _ } }
 
 
+
+module HPropsAndBDisc {l : Level} (P : (@tick x : BI) → Type l) (isp : (@tick x : BI) → isProp (P x)) where
+
+  PasBdg : BridgeP (λ _ → hProp l) (P bi0 , isp bi0) (P bi1 , isp bi1)
+  PasBdg = λ x → (P x , isp x)
+
+  isPropBridgePHProp : (p0 : P bi0) (p1 : P bi1) → isProp (BridgeP (λ x → P x) p0 p1)
+  isPropBridgePHProp p0 p1 =
+    invEq (hPropNRG _ .nativ (P bi0 , isp bi0) (P bi1 , isp bi1)) PasBdg p0 p1 .snd
+
+
+inhBridgeHProp : ∀ {l : Level} (P : hProp l) (p0 p1 : P .fst) → BridgeP (λ _ → P .fst) p0 p1
+inhBridgeHProp P p0 p1 = lsen (P .snd p0 p1)
+
+-- the 2 above results entail isContr( BridgeP (λ _ → P .fst) p0 p1 ) if P : hProp.
+-- It's not true that BridgeP (λ x → P x) p0 p1 is contractible though.
+-- for instance:
+--  BridgeP (λ x → Gel P0 P1 (λ _ _ → ⊥) x) p0 p1
+--  ≃
+--  ⊥
+-- and I think x.Gel x is a line of props.
+
+
+
+
+
+-- why P bi0 inhabited -> P x forall x?
+
+-- isProp ( BridgeP (x.isMon(Abdg x)) A0 A1 )
 
 -- module HPropsAreBDisc {l : Level} (P : hProp l)  where -- (P : (@tick x : BI) → Type l) (isp : (@tick x : BI) → isProp (P x))
 
