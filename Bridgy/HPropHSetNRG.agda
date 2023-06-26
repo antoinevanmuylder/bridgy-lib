@@ -13,7 +13,7 @@ open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Path
-
+open import Bridgy.BDisc
 
 
 
@@ -83,7 +83,7 @@ module HProp where
         ac1 =  λ { ( ( ( tt , A0 ) , c0 ) , c0' ) ( ( ( tt , A1 ) , c1 ) , c1' ) ( ( ( tt , AA ) , cc ) , cc' ) →
           cc  } ;
         tm-nativ =  λ { ( ( ( tt , A0 ) , c0 ) , c0' ) ( ( ( tt , A1 ) , c1 ) , c1' ) γbdg →
-          sym (transportRefl (λ x → snd (fst (γbdg x)))) }
+          sym ( transportRefl _ ∙ transportRefl (λ x → snd (fst (γbdg x))) )  } 
         }
 
       rhs : SectNRG totalCtx
@@ -94,7 +94,7 @@ module HProp where
         ac1 =  λ { ( ( ( tt , A0 ) , c0 ) , c0' ) ( ( ( tt , A1 ) , c1 ) , c1' ) ( ( ( tt , AA ) , cc ) , cc' ) →
           cc'  }  ;
         tm-nativ =  λ { ( ( ( tt , A0 ) , c0 ) , c0' ) ( ( ( tt , A1 ) , c1 ) , c1' ) γbdg →
-          sym (transportRefl (λ x → snd (γbdg x))) } }
+           (sym (transportRefl (λ x → snd (γbdg x)))) ∙ sym (transportRefl _)  } } 
 
   -- 1, A : Type ℓ ⊢ isProp(A) type(l)
   isPropDispNRG0 : ∀ {ℓ : Level} → DispNRG ℓ (topNRG # TypeForm topNRG ℓ)
@@ -358,4 +358,11 @@ HSetEl Γ ℓ = record {
 
 
 
+-- module HPropsAreBDisc {l : Level} (P : hProp l)  where -- (P : (@tick x : BI) → Type l) (isp : (@tick x : BI) → isProp (P x))
 
+--   hPropsAreBDisc : isBDisc (P .fst)
+--   hPropsAreBDisc p0 p1 = isoToIsEquiv (iso
+--     lsen
+--     (λ _ → P .snd p0 p1)
+--     (λ b → λ i x → {!P .snd (lsen (P .snd p0 p1) bi1) (b bi1) i!})
+--     λ pp → {!!})
