@@ -7,6 +7,7 @@ open import Bridgy.BridgePrims
 open import Bridgy.NRGRelRecord
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Unit
+open import Cubical.Data.Empty
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
@@ -357,7 +358,16 @@ HSetEl Γ ℓ = record {
 --   ; dedge = λ γA0 γA1 γγAA → γγAA .snd 
 --   ; dnativ = λ { (γ0 , A0) (γ1 , A1) γbdg a0 a1 → idEquiv _ } }
 
+module MoreOnProp {l : Level} (P0 P1 : Type l) (isp0 : isProp P0) (isp1 : isProp P1) (Pbdg : BridgeP (λ _ → Type l) P0 P1) where
 
+  coucou : (∀ p0 p1 → isProp (BridgeP (λ x → Pbdg x) p0 p1))
+           ≃
+           BridgeP (λ x → isProp (Pbdg x)) isp0 isp1
+  coucou = 
+    let ok1 = isPropDedgeCharac P0 P1 isp0 isp1 (BridgeP (λ x → Pbdg x)) in
+    let ok2 = isPropDispNRG0 .dnativ (tt , P0) (tt , P1) (λ x → tt , Pbdg x) isp0 isp1 in
+    let cmp = compEquiv ok1 ok2 in
+    cmp
 
 module HPropsAndBDisc {l : Level} (P : (@tick x : BI) → Type l) (isp : (@tick x : BI) → isProp (P x)) where
 
@@ -371,7 +381,6 @@ module HPropsAndBDisc {l : Level} (P : (@tick x : BI) → Type l) (isp : (@tick 
 
 inhBridgeHProp : ∀ {l : Level} (P : hProp l) (p0 p1 : P .fst) → BridgeP (λ _ → P .fst) p0 p1
 inhBridgeHProp P p0 p1 = lsen (P .snd p0 p1)
-
 -- the 2 above results entail isContr( BridgeP (λ _ → P .fst) p0 p1 ) if P : hProp.
 -- It's not true that BridgeP (λ x → P x) p0 p1 is contractible though.
 -- for instance:
@@ -379,6 +388,26 @@ inhBridgeHProp P p0 p1 = lsen (P .snd p0 p1)
 --  ≃
 --  ⊥
 -- and I think x.Gel x is a line of props.
+
+
+-- module Mooore {l} (Γ : Type (ℓ-suc l)) (isSmth : Γ → Type l) (props : ∀ γ → isProp (isSmth γ))
+--                  (g0 g1 : Γ) (gbdg : BridgeP (λ _ → Γ) g0 g1) (ist0 : isSmth g0) (ist1 : isSmth g1) where
+
+--   must : BridgeP (λ x → isSmth (gbdg x)) ist0 ist1
+--   must = {!primExtent {A = λ _ → Unit} {B = λ x _ → isSmth (gbdg x)} (λ _ → ist0) (λ _ → ist1)!}
+
+
+
+
+
+
+-- module Moore {l : Level} (P0 P1 : Type l) (isp0 : isProp P0) (isp1 : isProp P1) where
+
+--   Pline : (@tick x : BI) → Type l
+--   Pline x = primGel P0 P1 (λ _ _ → ⊥*) x
+
+--   ofprops : (@tick x : BI) → isProp (Pline x)
+--   ofprops x g0 g1 = {!primExtent !}
 
 
 

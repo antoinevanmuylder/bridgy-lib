@@ -73,5 +73,64 @@ hasPreMonDNRG = record {
 PreMonNRG : (l : Level) → NRGraph (ℓ-suc l)
 PreMonNRG l = (hSetNRG l) # (hasPreMonDNRG)
 
+PreMon : (l : Level) → Type (ℓ-suc l)
+PreMon l = PreMonNRG l .nrg-cr
+
+pmoncr : {l : Level} → PreMon l → Type l
+pmoncr M = M .fst .fst
+
+pmonIsSet : {l : Level} → (M : PreMon l) → isSet (pmoncr M)
+pmonIsSet M = M .fst .snd
+
+pmone : {l : Level} → (M : PreMon l) → pmoncr M
+pmone M = M .snd .fst
+
+pmonbin : {l : Level} → (M : PreMon l) → (pmoncr M → pmoncr M → pmoncr M)
+pmonbin M = M .snd .snd
+
+isMon : {l : Level} → (M : PreMon l) → Type l
+isMon M = (∀ m → pmonbin M (pmone M) m ≡ m) ×
+          (∀ m → pmonbin M m (pmone M) ≡ m) ×
+          (∀ m n o → pmonbin M (pmonbin M m n) o ≡ pmonbin M m (pmonbin M n o))
+
+-- -- we keep bridges for isMon⦅ A0 , A1 ⦆# AA since the latter type is a prop anyway
+-- isMonDNRG : {l : Level} → DispNRG l (PreMonNRG l)
+-- isMonDNRG = record {
+--   dcr = λ M → isMon M ;
+--   dedge = λ A0 A1 AA ismonA0 ismonA1 →
+--     BridgeP (λ x → isMon (equivFun (PreMonNRG _ .nativ A0 A1) AA x)) ismonA0 ismonA1  ;
+--   dnativ = λ A0 A1 Abdg ism0 ism1 →
+--     mypathToEquiv
+--     {!change-line-path
+--       (λ x → isMon (equivFun (PreMonNRG _ .nativ A0 A1) (invEq (PreMonNRG _ .nativ A0 A1) Abdg) x))
+--       (λ x → isMon (Abdg x))
+--       ism0 ism1 ism0 ism1!} }
 
 
+preMoncrDNRG : {l : Level} → DispNRG l (PreMonNRG l)
+preMoncrDNRG = record {
+  dcr = λ A → pmoncr A ;
+  dedge = λ A0 A1 AA →  equivFun (setRelRew _ _) (AA .fst) .fst ;
+  dnativ = λ A0 A1 Abdg a0 a1 →
+    idEquiv _ }
+
+-- A : PreMon, m : A .cr  ⊨ e * m : A .cr
+lnTerm : {l : Level} → SectNRG (PreMonNRG l # preMoncrDNRG) (wkn-type-by (PreMonNRG l) preMoncrDNRG preMoncrDNRG)
+lnTerm = record {
+  ac0 = λ Am → pmonbin (Am .fst) (pmone (Am .fst)) (Am .snd) ;
+  ac1 = λ Am0 Am1 Amm →
+    Amm .fst .snd .snd
+    (pmone (Am0 .fst)) (pmone (Am1 .fst)) (Amm .fst .snd .fst)
+    (Am0 .snd) (Am1 .snd) (Amm .snd) ;
+  tm-nativ = λ Am0 Am1 Ambdg →
+    λ i x  → {!!}  }
+
+
+-- A : PreMon ⊨ ∀ m. e * m ≡ m  dnrg
+leftNeutrDNRG : {l : Level} → DispNRG l (PreMonNRG l)
+leftNeutrDNRG {l} =
+  ΠForm {Γ = PreMonNRG l} (preMoncrDNRG)
+  (PathForm (PreMonNRG l # preMoncrDNRG)
+    (wkn-type-by (PreMonNRG l) preMoncrDNRG preMoncrDNRG)
+  {!!}
+  (var-rule (PreMonNRG l) (preMoncrDNRG)))
