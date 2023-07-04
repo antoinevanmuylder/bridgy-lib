@@ -28,6 +28,7 @@ open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Data.Sigma using (_×_ ; ≃-× ; ≡-× ; Σ-cong-equiv ; Σ-cong-equiv-snd ; ΣPath≃PathΣ)
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Transport
 open import Cubical.Foundations.Path -- using (congPathEquiv ; PathP≃Path ; compPathrEquiv ; compPathlEquiv)
 -- open import Bridgy.MyPathToEquiv
 -- open import Cubical.Foundations.Transport using (transportEquiv)
@@ -167,6 +168,10 @@ topNRG .nrg-cr = ⊤
 topNRG .nedge  = (λ _ _ → ⊤)
 topNRG .nativ  = (λ where tt tt → topBdgDiscrEquiv)
 
+discrNRG : ∀ {ℓ} → (A : Set ℓ) → (∀ a b → (a ≡ b) ≃ BridgeP (λ _ → A) a b) → NRGraph ℓ
+nrg-cr (discrNRG A Adiscr) = A
+nedge (discrNRG A Adiscr) = _≡_
+nativ (discrNRG A Adiscr) = Adiscr
 
 -- -- Type with -logical- relations is a native reflexive graph
 -- -- this is proved using relativity
@@ -658,28 +663,28 @@ PathForm Γ A a b = record {
 -- Γ ⊢ f a : B
 --
 -- nativeness not trivial
--- app : ∀ {ℓΓ ℓA ℓB} (Γ : NRGraph ℓΓ)
---       (A : DispNRG ℓA Γ) (B : DispNRG ℓB Γ) →
---       (a : SectNRG Γ A) (f : SectNRG Γ (→Form A B)) →
---       SectNRG Γ B
+app : ∀ {ℓΓ ℓA ℓB} (Γ : NRGraph ℓΓ)
+      (A : DispNRG ℓA Γ) (B : DispNRG ℓB Γ) →
+      (a : SectNRG Γ A) (f : SectNRG Γ (→Form A B)) →
+      SectNRG Γ B
 -- app Γ A B a f = record {
 --   ac0 = λ g → f .ac0 g (a .ac0 g) ;
 --   ac1 = λ g0 g1 gg → f .ac1 g0 g1 gg _ _ (a. ac1 g0 g1 gg)  ;
 --   tm-nativ = λ g0 g1 gbdg → {!!} }
 
 
--- app Γ A B a f = record {
---   ac0 = λ g → f .ac0 g (a .ac0 g) ;
---   ac1 = λ g0 g1 gg → f .ac1 g0 g1 gg (a .ac0 g0) (a .ac0 g1) (a .ac1 g0 g1 gg) ;
---   tm-nativ = λ g0 g1 gbdg →
---     _∙_ (funExt⁻ (funExt⁻ (funExt⁻ (f .tm-nativ g0 g1 gbdg) (a .ac0 g0)) (a .ac0 g1)) (a .ac1 g0 g1 (invEq (Γ .nativ g0 g1) gbdg)))
---     let auxf = invEq (→Form A B .dnativ g0 g1 gbdg (ac0 f g0) (ac0 f g1)) (λ x → ac0 f (gbdg x)) (a .ac0 g0) (a .ac0 g1)
---     in _∙_ (cong auxf (a .tm-nativ g0 g1 gbdg))
---     (_∙_ (transportRefl _)
---     (cong (invEq (B .dnativ g0 g1 gbdg (f .ac0 g0 (a .ac0 g0)) (f .ac0 g1 (a .ac0 g1))))
---     let auxf2 = invEq ΠvsBridgeP (λ x → ac0 f (gbdg x)) (a .ac0 g0) (a .ac0 g1)
---     in
---     cong auxf2 (secEq (A .dnativ g0 g1 gbdg (a .ac0 g0) (a .ac0 g1)) (λ x → ac0 a (gbdg x)))))   }
+app Γ A B a f = record {
+  ac0 = λ g → f .ac0 g (a .ac0 g) ;
+  ac1 = λ g0 g1 gg → f .ac1 g0 g1 gg (a .ac0 g0) (a .ac0 g1) (a .ac1 g0 g1 gg) ;
+  tm-nativ = λ g0 g1 gbdg →
+    _∙_ (funExt⁻ (funExt⁻ (funExt⁻ (f .tm-nativ g0 g1 gbdg) (a .ac0 g0)) (a .ac0 g1)) (a .ac1 g0 g1 (invEq (Γ .nativ g0 g1) gbdg)))
+    let auxf = invEq (→Form A B .dnativ g0 g1 gbdg (ac0 f g0) (ac0 f g1)) (λ x → ac0 f (gbdg x)) (a .ac0 g0) (a .ac0 g1)
+    in _∙_ (cong auxf (a .tm-nativ g0 g1 gbdg))
+    (_∙_ (transportRefl _)
+    (cong (invEq (B .dnativ g0 g1 gbdg (f .ac0 g0 (a .ac0 g0)) (f .ac0 g1 (a .ac0 g1))))
+    let auxf2 = invEq ΠvsBridgeP (λ x → ac0 f (gbdg x)) (a .ac0 g0) (a .ac0 g1)
+    in
+    cong auxf2 (secEq (A .dnativ g0 g1 gbdg (a .ac0 g0) (a .ac0 g1)) (λ x → ac0 a (gbdg x)))))   }
 
 
 -- Γ ⊢ A type   Γ, A:Type ⊢ F type
@@ -870,6 +875,25 @@ module CHminus where
 
 -}
 
+constDispNRG : ∀ {ℓ ℓ'} {Γ : NRGraph ℓ} (A : NRGraph ℓ') → DispNRG ℓ' Γ
+dcr (constDispNRG A) _ = nrg-cr A
+dedge (constDispNRG A) γ0 γ1 γR a0 a1 = nedge A a0 a1
+dnativ (constDispNRG A) γ0 γ1 γbdg = nativ A
 
 
 
+TypeFormNRel : ∀ {ℓ} → NRelator (topNRG # TypeForm topNRG ℓ) (TypeNRG ℓ)
+nobjMap TypeFormNRel (_ , A) = A
+nedgeMap TypeFormNRel (_ , R) x y = R x y
+nativ-rel TypeFormNRel (_ , A) (_ , B) = refl
+
+Nrelator-DispNRG : ∀ {ℓ ℓ'} {Γ : NRGraph ℓ} → NRelator Γ (TypeNRG ℓ') → DispNRG ℓ' Γ
+dcr (Nrelator-DispNRG {ℓ} {ℓ'} {Γ} nrel) = nobjMap nrel
+dedge (Nrelator-DispNRG {ℓ} {ℓ'} {Γ} nrel) γ0 γ1 γR = nedgeMap nrel γR
+dnativ (Nrelator-DispNRG {ℓ} {ℓ'} {Γ} nrel) γ0 γ1 γbdg a0 a1 =
+  substEquiv (λ R → R γbdg a0 a1) (nativ-rel nrel γ0 γ1)
+
+DispNRG-Nrelator : ∀ {ℓ ℓ'} {Γ : NRGraph ℓ} → DispNRG ℓ' Γ → NRelator Γ (TypeNRG ℓ')
+DispNRG-Nrelator {ℓ} {ℓ'} {Γ} dg = 
+            compNRelator {G = Γ} {H = topNRG # TypeForm topNRG ℓ'} {K = TypeNRG ℓ'}
+            (unEl Γ dg) (TypeFormNRel {ℓ'})
