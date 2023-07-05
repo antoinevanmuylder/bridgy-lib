@@ -66,26 +66,58 @@ paramChF : (f : ChF) (A B : Type) (R : A → B → Type)
              R (f A foldA) (f B foldB)
 paramChF = param {ℓ-zero} {ℓ-zero} ChNRel
 
--- chFAlg : FAlg
--- chFAlg = ChF , ChFold
+-- transport-domain : 
+--   ∀ {A : Set} {B : A → Set} {C : Set} {a1 a2 : A} (eq : a1 ≡ a2) (f : B a1 → C) (v : B a2) →
+--   transport (λ i → B (eq i) → C) f v ≡ f (subst B (sym eq) v)
+-- transport-domain {A} {B} {C} {a1} {a2} eq f v =
+--   J (λ a2 eq → (v : B a2) → transport (λ i → B (eq i) → C) f v ≡ f (subst B (sym eq) v))
+--   (λ v → cong (λ f → f v) (transportRefl f) ∙ sym (cong f (substRefl {B = B} v))) 
+--   eq v 
 
--- FMorph : FAlg -> FAlg → Set
--- FMorph (X , foldX) (Y , foldY) = Σ[ f ∈ (X → Y) ] (f ∘ foldX ≡ foldY ∘ fmapF f)
+subst-subst : {A : Set} (B : A → Set) {a1 a2 : A} (eq : a1 ≡ a2) (b : B a2) → subst B eq (subst B (sym eq) b) ≡ b
+subst-subst B eq b i = transp (λ j → B (eq (j ∨ i))) i (transp (λ j → B (eq (~ j ∨ i))) i b)
 
--- initMorph : (XA : FAlg) → FMorph chFAlg XA
--- initMorph (X ,  foldX) = (λ ch → ch X foldX) , refl 
+-- ChFinit : (f : ChF) → (FA : FAlg) → f ChF ChFold (fst FA) (snd FA) ≡ f (fst FA) (snd FA)
+-- ChFinit f (X , FX) = paramChF f ChF X (λ c x → c X FX ≡ x) ChFold FX help
+--   where help : (fa : F ChF) (fb : F X) → Σ[ eq ∈ fst fa ≡ fst fb ]
+--                    ((pa : P (fst fa)) (pb : P (fst fb)) →
+--                      subst P eq pa ≡ pb → snd fa pa X FX ≡ snd fb pb) → ChFold fa X FX ≡ FX fb
+--         help (sf , vsF) (sx , vsX) (eqs , eqvs) =
+--           cong FX (cong₂ _,_ eqs (toPathP (funExt λ pb → transport-domain eqs (λ pos → vsF pos X FX) pb ∙ eqvs (subst P (sym eqs) pb) pb (subst-subst P eqs pb))))
 
--- initMorphUnique : (XA : FAlg) → (f : FMorph chFAlg XA) → fst f ≡ fst (initMorph XA)
--- initMorphUnique (X , foldX) (fm , fmcom) = funExt λ ch → {!!}
+ChFalg : Set
+ChFalg = Σ[ X ∈ Set ] (F X → X)
 
+chFAlg : ChFalg
+chFAlg = ChF , ChFold
 
+FMorph : FAlg -> FAlg → Set
+FMorph (X , foldX) (Y , foldY) = Σ[ f ∈ (X → Y) ] (f ∘ foldX ≡ foldY ∘ fmapF f)
 
--- -- unfold : FP → F FP
--- -- unfold fp = fp (F FP) (fmapF fold)
+initMorph : (XA : FAlg) → FMorph chFAlg XA
+initMorph (X ,  foldX) = (λ ch → ch X foldX) , refl 
 
--- -- fold∘unfold : ∀ fp → fold (unfold fp) ≡ fp
--- -- fold∘unfold fp = funExt (λ X → funExt λ red → {!!})
+initMorphUnique : (XA : FAlg) → (f : FMorph chFAlg XA) → fst (initMorph XA) ≡ fst f 
+initMorphUnique (X , foldX) (fm , fmcom) = {!!}
 
--- -- unfold∘fold : ∀ ffp → unfold (fold ffp) ≡ ffp
--- -- unfold∘fold (s , vs) = cong (s ,_) (funExt λ pos → fold∘unfold (vs pos))
+ChUnfold : ChF → F ChF
+ChUnfold fp = fp (F ChF) (fmapF ChFold)
+
+fold∘ChUnfold : ∀ fp → ChFold (ChUnfold fp) ≡ fp
+fold∘ChUnfold fp = funExt (λ X → funExt help)
+  where 
+    help2 : {X : Set} (FX : F X → X) (fa : F (F ChF)) (fb : F X) →
+            Σ[ eq ∈ fst fa ≡ fst fb ]
+              ((pa : P (fst fa)) (pb : P (fst fb)) →
+                subst P eq pa ≡ pb →
+                FX (fmapF (λ ch → ch X FX) (snd fa pa)) ≡ snd fb pb) →
+            FX (fmapF (λ ch → ch X FX) (fmapF ChFold fa)) ≡ FX fb
+    help2 {X} FX (sa , vsa) (sb , vsb) (eqs , eqvs) = cong FX (cong₂ _,_ eqs (toPathP (funExt λ pb → 
+      fromPathP {A = λ i → X} {x = FX (fmapF (λ ch → ch X FX) (vsa (subst P (λ i → eqs (~ i)) pb)))} refl ∙
+      eqvs (subst P (sym eqs) pb) pb (subst-subst P eqs pb))))
+    help : {X : Set} (FX : F X → X) → FX (fmapF (λ ch → ch X FX) (fp (F ChF) (fmapF ChFold))) ≡ fp X FX
+    help {X} foldX = paramChF fp (F ChF) X (λ c x → foldX (fmapF (λ ch → ch X foldX) c) ≡ x) (fmapF ChFold) foldX (help2 foldX)
+
+ChUnfold∘fold : ∀ ffp → ChUnfold (ChFold ffp) ≡ ffp
+ChUnfold∘fold (s , vs) = cong (s ,_) (funExt λ pos → fold∘ChUnfold (vs pos))
 
