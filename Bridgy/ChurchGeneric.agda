@@ -6,6 +6,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Equiv.HalfAdjoint
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Function
@@ -113,8 +114,8 @@ initMorphUnique (X , foldX) (fm , fmcom) = {!!}
 ChUnfold : ChF → F ChF
 ChUnfold fp = fp (F ChF) (fmapF ChFold)
 
-fold∘ChUnfold : ∀ fp → ChFold (ChUnfold fp) ≡ fp
-fold∘ChUnfold fp = funExt (λ X → funExt help)
+ChFold∘ChUnfold : ∀ fp → ChFold (ChUnfold fp) ≡ fp
+ChFold∘ChUnfold fp = funExt (λ X → funExt help)
   where 
     help2 : {X : Set} (FX : F X → X) (fa : F (F ChF)) (fb : F X) →
             Σ[ eq ∈ fst fa ≡ fst fb ]
@@ -128,6 +129,15 @@ fold∘ChUnfold fp = funExt (λ X → funExt help)
     help : {X : Set} (FX : F X → X) → FX (fmapF (λ ch → ch X FX) (fp (F ChF) (fmapF ChFold))) ≡ fp X FX
     help {X} foldX = paramChF fp (F ChF) X (λ c x → foldX (fmapF (λ ch → ch X foldX) c) ≡ x) (fmapF ChFold) foldX (help2 foldX)
 
-ChUnfold∘fold : ∀ ffp → ChUnfold (ChFold ffp) ≡ ffp
-ChUnfold∘fold (s , vs) = cong (s ,_) (funExt λ pos → fold∘ChUnfold (vs pos))
+ChUnfold∘ChFold : ∀ ffp → ChUnfold (ChFold ffp) ≡ ffp
+ChUnfold∘ChFold (s , vs) = cong (s ,_) (funExt λ pos → ChFold∘ChUnfold (vs pos))
 
+ChFoldIsEquiv : isEquiv ChFold
+equiv-proof ChFoldIsEquiv c = (ChUnfold c , ChFold∘ChUnfold c) , λ (c' , eq') → cong₂ _,_ (cong ChUnfold (sym eq') ∙ ChUnfold∘ChFold _) {!!} -- something missing?
+
+ChFFixpoint : F ChF ≃ ChF
+ChFFixpoint = ChFold , ChFoldIsEquiv
+
+-- relation to initial algebra as data type?
+data μF {ℓ} : Set ℓ where
+  foldμF : (Σ[ s ∈ S ] (P s → μF)) → μF
