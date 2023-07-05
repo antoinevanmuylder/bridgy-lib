@@ -112,9 +112,9 @@ fold∘ChUnfold fp = funExt (λ X → funExt help)
                 subst P eq pa ≡ pb →
                 FX (fmapF (λ ch → ch X FX) (snd fa pa)) ≡ snd fb pb) →
             FX (fmapF (λ ch → ch X FX) (fmapF ChFold fa)) ≡ FX fb
-    help2 {X} FX (sa , vsa) (sb , vsb) (eqs , eqvs) = cong FX (cong₂ _,_ eqs (toPathP (funExt λ pb → 
-      fromPathP {A = λ i → X} {x = FX (fmapF (λ ch → ch X FX) (vsa (subst P (λ i → eqs (~ i)) pb)))} refl ∙
-      eqvs (subst P (sym eqs) pb) pb (subst-subst P eqs pb))))
+    help2 {X} FX (sa , vsa) (sb , vsb) (eqs , eqvs) =
+      cong FX (cong₂ _,_ eqs (toPathP (funExt λ pb → 
+      fromPathP (eqvs (subst P (sym eqs) pb) pb (subst-subst P eqs pb)))))
     help : {X : Set} (FX : F X → X) → FX (fmapF (λ ch → ch X FX) (fp (F ChF) (fmapF ChFold))) ≡ fp X FX
     help {X} foldX = paramChF fp (F ChF) X (λ c x → foldX (fmapF (λ ch → ch X foldX) c) ≡ x) (fmapF ChFold) foldX (help2 foldX)
 
