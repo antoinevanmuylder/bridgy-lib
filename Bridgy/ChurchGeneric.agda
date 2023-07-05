@@ -13,6 +13,7 @@ open import Cubical.Foundations.Transport
 open import Cubical.HITs.S1
 
 open import Bridgy.BridgePrims
+open import Bridgy.BDisc
 open import Bridgy.BridgeExamples
 open import Bridgy.ExtentExamples
 open import Bridgy.GelExamples
@@ -20,9 +21,18 @@ open import Bridgy.NRGRelRecord
 open import Bridgy.Param
 
 postulate S : Set
-          Sdiscr : ∀ s1 s2 → (s1 ≡ s2) ≃ BridgeP (λ _ → S) s1 s2
+          Sdiscr : isBDisc S
           P : S → Set
-          Pdiscr : ∀ s1 s2 → (sbdg : BridgeP (λ _ → S) s1 s2) (p1 : P s1) (p2 : P s2) → (subst P (invEq (Sdiscr s1 s2) sbdg) p1 ≡ p2) ≃ BridgeP (λ i → P (sbdg i)) p1 p2
+          Pdiscr : ∀ s1 s2 → (sbdg : BridgeP (λ _ → S) s1 s2) (p1 : P s1) (p2 : P s2) → (subst P (invEq (isBDisc→equiv S Sdiscr s1 s2) sbdg) p1 ≡ p2) ≃ BridgeP (λ i → P (sbdg i)) p1 p2
+
+SB : BDisc ℓ-zero
+SB = S , Sdiscr
+
+SNRG : NRGraph ℓ-zero
+SNRG = discrNRG SB
+
+SDispNRG : ∀ {Γ} → DispNRG ℓ-zero Γ
+SDispNRG = constDispNRG SNRG
 
 F : ∀ {ℓ} → Set ℓ → Set ℓ
 F X = Σ[ s ∈ S ] (P s → X) 
@@ -42,14 +52,14 @@ ChFold f X red = red (fmapF (λ fp → fp X red) f)
 varZero : ∀ {ℓ} → DispNRG ℓ (TypeNRG ℓ)
 varZero {ℓ} = Nrelator-DispNRG {ℓ} {ℓ} (idNRelator {ℓ} {TypeNRG ℓ})
 
-PDispNRG : ∀ {ℓ} (Γ : NRGraph ℓ) → DispNRG ℓ-zero (Γ # constDispNRG (discrNRG S Sdiscr))
+PDispNRG : ∀ {ℓ} (Γ : NRGraph ℓ) → DispNRG ℓ-zero (Γ # SDispNRG)
 dcr (PDispNRG Γ) (γ , s) = P s 
 dedge (PDispNRG Γ) (γ0 , s0) (γ1 , s1) (γR , eqs) pos0 pos1 = subst P eqs pos0 ≡ pos1
 dnativ (PDispNRG Γ) (γ0 , s0) (γ1 , s1) γR = Pdiscr s0 s1 (λ i → snd (γR i))
 
 FNrel : ∀ {ℓ} → NRelator (TypeNRG ℓ) (TypeNRG ℓ)
-FNrel {ℓ} = DispNRG-Nrelator {ℓ} {ℓ} (ΣForm (constDispNRG (discrNRG S Sdiscr))
-            (→Form (PDispNRG (TypeNRG ℓ)) (wkn-type-by (TypeNRG ℓ) (constDispNRG (discrNRG S Sdiscr)) (varZero {ℓ}))))
+FNrel {ℓ} = DispNRG-Nrelator {ℓ} {ℓ} (ΣForm SDispNRG
+            (→Form (PDispNRG (TypeNRG ℓ)) (wkn-type-by (TypeNRG ℓ) SDispNRG (varZero {ℓ}))))
 
 ChNRel : NRelator (TypeNRG ℓ-zero) (TypeNRG ℓ-zero)
 ChNRel = DispNRG-Nrelator {ℓ-zero} {ℓ-zero} (→Form (→Form (tySubst (TypeNRG ℓ-zero) (TypeNRG ℓ-zero) (FNrel {ℓ-zero}) (varZero {ℓ-zero})) (varZero {ℓ-zero})) (varZero {ℓ-zero}))

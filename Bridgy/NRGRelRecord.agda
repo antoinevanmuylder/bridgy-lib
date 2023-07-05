@@ -13,6 +13,7 @@
 module Bridgy.NRGRelRecord where
 
 open import Bridgy.BridgePrims
+open import Bridgy.BDisc
 open import Bridgy.BridgeExamples
 open import Bridgy.ExtentExamples
 open import Bridgy.GelExamples
@@ -168,10 +169,10 @@ topNRG .nrg-cr = ⊤
 topNRG .nedge  = (λ _ _ → ⊤)
 topNRG .nativ  = (λ where tt tt → topBdgDiscrEquiv)
 
-discrNRG : ∀ {ℓ} → (A : Set ℓ) → (∀ a b → (a ≡ b) ≃ BridgeP (λ _ → A) a b) → NRGraph ℓ
-nrg-cr (discrNRG A Adiscr) = A
-nedge (discrNRG A Adiscr) = _≡_
-nativ (discrNRG A Adiscr) = Adiscr
+discrNRG : ∀ {ℓ} → BDisc ℓ → NRGraph ℓ
+nrg-cr (discrNRG (A , Ad)) = A
+nedge (discrNRG (A , Ad)) = _≡_
+nativ (discrNRG (A , Ad)) = isBDisc→equiv A Ad
 
 -- -- Type with -logical- relations is a native reflexive graph
 -- -- this is proved using relativity
