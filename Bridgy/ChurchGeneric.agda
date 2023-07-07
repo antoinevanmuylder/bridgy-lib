@@ -26,6 +26,8 @@ postulate S : Set
           P : S → Set
           Pdiscr : ∀ s1 s2 → (sbdg : BridgeP (λ _ → S) s1 s2) (p1 : P s1) (p2 : P s2) → (subst P (invEq (isBDisc→equiv S Sdiscr s1 s2) sbdg) p1 ≡ p2) ≃ BridgeP (λ i → P (sbdg i)) p1 p2
 
+open ParamDNRG
+
 SB : BDisc ℓ-zero
 SB = S , Sdiscr
 
@@ -62,11 +64,14 @@ FNrel : ∀ {ℓ} → NRelator (TypeNRG ℓ) (TypeNRG ℓ)
 FNrel {ℓ} = DispNRG-Nrelator {ℓ} {ℓ} (ΣForm SDispNRG
             (→Form (PDispNRG (TypeNRG ℓ)) (wkn-type-by (TypeNRG ℓ) SDispNRG (varZero {ℓ}))))
 
-ChNRel : NRelator (TypeNRG ℓ-zero) (TypeNRG ℓ-zero)
-ChNRel = DispNRG-Nrelator {ℓ-zero} {ℓ-zero} (→Form (→Form (tySubst (TypeNRG ℓ-zero) (TypeNRG ℓ-zero) (FNrel {ℓ-zero}) (varZero {ℓ-zero})) (varZero {ℓ-zero})) (varZero {ℓ-zero}))
+ChDNRG : DispNRG ℓ-zero (TypeNRG ℓ-zero)
+ChDNRG = →Form (→Form (tySubst (TypeNRG ℓ-zero) (TypeNRG ℓ-zero) (FNrel {ℓ-zero}) (varZero {ℓ-zero})) (varZero {ℓ-zero})) (varZero {ℓ-zero})
 
-ChNRGraph : NRGraph ℓ-zero
-ChNRGraph = ΠNRG {ℓ-zero} {ℓ-zero} (TypeNRG ℓ-zero) ChNRel
+-- ChNRel : NRelator (TypeNRG ℓ-zero) (TypeNRG ℓ-zero)
+-- ChNRel = DispNRG-Nrelator {ℓ-zero} {ℓ-zero} ChDNRG
+
+-- ChNRGraph : NRGraph ℓ-zero
+-- ChNRGraph = ΠNRG {ℓ-zero} {ℓ-zero} (TypeNRG ℓ-zero) ChNRel
 
 paramChF : (f : ChF) (A B : Type) (R : A → B → Type)
              (foldA : F A → A) (foldB : F B → B) →
@@ -75,7 +80,7 @@ paramChF : (f : ChF) (A B : Type) (R : A → B → Type)
                       (pa : P (fst fa)) (pb : P (fst fb)) → subst P eqs pa ≡ pb → R (snd fa pa) (snd fb pb))) →
                    R (foldA fa) (foldB fb)) →
              R (f A foldA) (f B foldB)
-paramChF = param {ℓ-zero} {ℓ-zero} ChNRel
+paramChF = param' {ℓ-zero} {ℓ-zero} (TypeNRG ℓ-zero) ChDNRG
 
 transport-domain : 
   ∀ {A : Set} {B : A → Set} {C : Set} {a1 a2 : A} (eq : a1 ≡ a2) (f : B a1 → C) (v : B a2) →
@@ -132,11 +137,14 @@ ChFold∘ChUnfold fp = funExt (λ X → funExt help)
 ChUnfold∘ChFold : ∀ ffp → ChUnfold (ChFold ffp) ≡ ffp
 ChUnfold∘ChFold (s , vs) = cong (s ,_) (funExt λ pos → ChFold∘ChUnfold (vs pos))
 
-ChFoldIsEquiv : isEquiv ChFold
-equiv-proof ChFoldIsEquiv c = (ChUnfold c , ChFold∘ChUnfold c) , λ (c' , eq') → cong₂ _,_ (cong ChUnfold (sym eq') ∙ ChUnfold∘ChFold _) {!!} -- something missing?
+ChFFixpointIso : Iso (F ChF) ChF
+Iso.fun ChFFixpointIso = ChFold
+Iso.inv ChFFixpointIso = ChUnfold
+Iso.rightInv ChFFixpointIso = ChFold∘ChUnfold
+Iso.leftInv ChFFixpointIso = ChUnfold∘ChFold
 
 ChFFixpoint : F ChF ≃ ChF
-ChFFixpoint = ChFold , ChFoldIsEquiv
+ChFFixpoint = isoToEquiv ChFFixpointIso
 
 -- relation to initial algebra as data type?
 data μF ℓ : Set ℓ where
@@ -169,10 +177,12 @@ congΣ eqs b1 b2 eq2 = cong₂ _,_ eqs (toPathP eq2)
         help : {X : Set} (foldX : F X → X) → μFtoChF (x (μF ℓ-zero) foldμF) X foldX ≡ x X foldX
         help {X} foldX = paramChF x (μF ℓ-zero) X (λ v x → μFtoChF v X foldX ≡ x) foldμF foldX (help2 foldX)
 
-μFtoChF-isEquiv : isEquiv μFtoChF
-equiv-proof μFtoChF-isEquiv c = (ChFtoμF c , μFtoChF∘ChFtoμF c) , uniqueFiber
-  where uniqueFiber : (y : fiber μFtoChF c) → (ChFtoμF c , μFtoChF∘ChFtoμF c) ≡ y
-        uniqueFiber (v' , eq) = cong₂ _,_ (cong ChFtoμF (sym eq) ∙ ChFtoμF∘μFtoChF v') {!!}
+μFChIso : Iso (μF ℓ-zero) ChF
+Iso.fun μFChIso = μFtoChF
+Iso.inv μFChIso = ChFtoμF
+Iso.rightInv μFChIso = μFtoChF∘ChFtoμF
+Iso.leftInv μFChIso = ChFtoμF∘μFtoChF
 
 μFChFequiv : μF ℓ-zero ≃ ChF
-μFChFequiv = μFtoChF , μFtoChF-isEquiv
+μFChFequiv = isoToEquiv μFChIso
+
