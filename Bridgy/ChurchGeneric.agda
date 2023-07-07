@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce --type-in-type #-}
+{-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
 
 module Bridgy.ChurchGeneric where
 
@@ -34,26 +34,26 @@ SB = S , Sdiscr
 SNRG : NRGraph ℓ-zero
 SNRG = discrNRG SB
 
-SDispNRG : ∀ {Γ} → DispNRG ℓ-zero Γ
+SDispNRG : ∀ {ℓ} {Γ : NRGraph ℓ} → DispNRG ℓ-zero Γ
 SDispNRG = constDispNRG SNRG
 
 F : ∀ {ℓ} → Set ℓ → Set ℓ
 F X = Σ[ s ∈ S ] (P s → X) 
 
-FAlg : Set
+FAlg : Set₁
 FAlg = Σ[ X ∈ Set ] (F X → X)
 
 fmapF : ∀ {a b} {A : Set a} {B : Set b} (f : A → B) → F A → F B
 fmapF f (s , vs) = s , λ pos → f (vs pos)
 
-ChF : Set
+ChF : Set₁
 ChF = ∀ (X : Set) → (F X → X) → X -- Suggestion by Antoine: quantify over hSets?
 
 ChFold : F ChF → ChF
 ChFold f X red = red (fmapF (λ fp → fp X red) f)
 
 varZero : ∀ {ℓ} → DispNRG ℓ (TypeNRG ℓ)
-varZero {ℓ} = Nrelator-DispNRG {ℓ} {ℓ} (idNRelator {ℓ} {TypeNRG ℓ})
+varZero {ℓ} = Nrelator-DispNRG idNRelator
 
 PDispNRG : ∀ {ℓ} (Γ : NRGraph ℓ) → DispNRG ℓ-zero (Γ # SDispNRG)
 dcr (PDispNRG Γ) (γ , s) = P s 
@@ -61,7 +61,7 @@ dedge (PDispNRG Γ) (γ0 , s0) (γ1 , s1) (γR , eqs) pos0 pos1 = subst P eqs po
 dnativ (PDispNRG Γ) (γ0 , s0) (γ1 , s1) γR = Pdiscr s0 s1 (λ i → snd (γR i))
 
 FNrel : ∀ {ℓ} → NRelator (TypeNRG ℓ) (TypeNRG ℓ)
-FNrel {ℓ} = DispNRG-Nrelator {ℓ} {ℓ} (ΣForm SDispNRG
+FNrel {ℓ} = DispNRG-Nrelator (ΣForm SDispNRG
             (→Form (PDispNRG (TypeNRG ℓ)) (wkn-type-by (TypeNRG ℓ) SDispNRG (varZero {ℓ}))))
 
 ChDNRG : DispNRG ℓ-zero (TypeNRG ℓ-zero)
@@ -80,7 +80,7 @@ paramChF : (f : ChF) (A B : Type) (R : A → B → Type)
                       (pa : P (fst fa)) (pb : P (fst fb)) → subst P eqs pa ≡ pb → R (snd fa pa) (snd fb pb))) →
                    R (foldA fa) (foldB fb)) →
              R (f A foldA) (f B foldB)
-paramChF = param' {ℓ-zero} {ℓ-zero} (TypeNRG ℓ-zero) ChDNRG
+paramChF = param' (TypeNRG ℓ-zero) ChDNRG
 
 transport-domain : 
   ∀ {A : Set} {B : A → Set} {C : Set} {a1 a2 : A} (eq : a1 ≡ a2) (f : B a1 → C) (v : B a2) →
@@ -92,59 +92,6 @@ transport-domain {A} {B} {C} {a1} {a2} eq f v =
 
 subst-subst : {A : Set} (B : A → Set) {a1 a2 : A} (eq : a1 ≡ a2) (b : B a2) → subst B eq (subst B (sym eq) b) ≡ b
 subst-subst B eq b i = transp (λ j → B (eq (j ∨ i))) i (transp (λ j → B (eq (~ j ∨ i))) i b)
-
--- ChFinit : (f : ChF) → (FA : FAlg) → f ChF ChFold (fst FA) (snd FA) ≡ f (fst FA) (snd FA)
--- ChFinit f (X , FX) = paramChF f ChF X (λ c x → c X FX ≡ x) ChFold FX help
---   where help : (fa : F ChF) (fb : F X) → Σ[ eq ∈ fst fa ≡ fst fb ]
---                    ((pa : P (fst fa)) (pb : P (fst fb)) →
---                      subst P eq pa ≡ pb → snd fa pa X FX ≡ snd fb pb) → ChFold fa X FX ≡ FX fb
---         help (sf , vsF) (sx , vsX) (eqs , eqvs) =
---           cong FX (cong₂ _,_ eqs (toPathP (funExt λ pb → transport-domain eqs (λ pos → vsF pos X FX) pb ∙ eqvs (subst P (sym eqs) pb) pb (subst-subst P eqs pb))))
-
-ChFalg : Set
-ChFalg = Σ[ X ∈ Set ] (F X → X)
-
-chFAlg : ChFalg
-chFAlg = ChF , ChFold
-
-FMorph : FAlg -> FAlg → Set
-FMorph (X , foldX) (Y , foldY) = Σ[ f ∈ (X → Y) ] (f ∘ foldX ≡ foldY ∘ fmapF f)
-
-initMorph : (XA : FAlg) → FMorph chFAlg XA
-initMorph (X ,  foldX) = (λ ch → ch X foldX) , refl 
-
-initMorphUnique : (XA : FAlg) → (f : FMorph chFAlg XA) → fst (initMorph XA) ≡ fst f 
-initMorphUnique (X , foldX) (fm , fmcom) = {!!}
-
-ChUnfold : ChF → F ChF
-ChUnfold fp = fp (F ChF) (fmapF ChFold)
-
-ChFold∘ChUnfold : ∀ fp → ChFold (ChUnfold fp) ≡ fp
-ChFold∘ChUnfold fp = funExt (λ X → funExt help)
-  where 
-    help2 : {X : Set} (FX : F X → X) (fa : F (F ChF)) (fb : F X) →
-            Σ[ eq ∈ fst fa ≡ fst fb ]
-              ((pa : P (fst fa)) (pb : P (fst fb)) →
-                subst P eq pa ≡ pb →
-                FX (fmapF (λ ch → ch X FX) (snd fa pa)) ≡ snd fb pb) →
-            FX (fmapF (λ ch → ch X FX) (fmapF ChFold fa)) ≡ FX fb
-    help2 {X} FX (sa , vsa) (sb , vsb) (eqs , eqvs) =
-      cong FX (cong₂ _,_ eqs (toPathP (funExt λ pb → 
-      fromPathP (eqvs (subst P (sym eqs) pb) pb (subst-subst P eqs pb)))))
-    help : {X : Set} (FX : F X → X) → FX (fmapF (λ ch → ch X FX) (fp (F ChF) (fmapF ChFold))) ≡ fp X FX
-    help {X} foldX = paramChF fp (F ChF) X (λ c x → foldX (fmapF (λ ch → ch X foldX) c) ≡ x) (fmapF ChFold) foldX (help2 foldX)
-
-ChUnfold∘ChFold : ∀ ffp → ChUnfold (ChFold ffp) ≡ ffp
-ChUnfold∘ChFold (s , vs) = cong (s ,_) (funExt λ pos → ChFold∘ChUnfold (vs pos))
-
-ChFFixpointIso : Iso (F ChF) ChF
-Iso.fun ChFFixpointIso = ChFold
-Iso.inv ChFFixpointIso = ChUnfold
-Iso.rightInv ChFFixpointIso = ChFold∘ChUnfold
-Iso.leftInv ChFFixpointIso = ChUnfold∘ChFold
-
-ChFFixpoint : F ChF ≃ ChF
-ChFFixpoint = isoToEquiv ChFFixpointIso
 
 -- relation to initial algebra as data type?
 data μF ℓ : Set ℓ where
