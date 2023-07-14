@@ -21,12 +21,14 @@ open import Bridgy.GelExamples
 open import Bridgy.NRGRelRecord
 open import Bridgy.Param
 
+
 postulate S : Set
           Sdiscr : isBDisc S
           P : S → Set
           Pdiscr : ∀ s1 s2 → (sbdg : BridgeP (λ _ → S) s1 s2) (p1 : P s1) (p2 : P s2) → (subst P (invEq (isBDisc→equiv S Sdiscr s1 s2) sbdg) p1 ≡ p2) ≃ BridgeP (λ i → P (sbdg i)) p1 p2
+-- in the case of List A, 
 
-open ParamDNRG
+open ParamDNRG --where param theorem for dNRGs is
 
 SB : BDisc ℓ-zero
 SB = S , Sdiscr
@@ -47,7 +49,7 @@ fmapF : ∀ {a b} {A : Set a} {B : Set b} (f : A → B) → F A → F B
 fmapF f (s , vs) = s , λ pos → f (vs pos)
 
 ChF : Set₁
-ChF = ∀ (X : Set) → (F X → X) → X -- Suggestion by Antoine: quantify over hSets?
+ChF = ∀ (X : Set) → (F X → X) → X -- Suggestion: quantify over hSets?
 
 ChFold : F ChF → ChF
 ChFold f X red = red (fmapF (λ fp → fp X red) f)
@@ -133,3 +135,5 @@ Iso.leftInv μFChIso = ChFtoμF∘μFtoChF
 μFChFequiv : μF ℓ-zero ≃ ChF
 μFChFequiv = isoToEquiv μFChIso
 
+
+--   {!ChDNRG .dedge (μF ℓ-zero) X (λ dt elx → recμF {M = X} foldX dt ≡ elx) (x (μF ℓ-zero)) (x X) !} 

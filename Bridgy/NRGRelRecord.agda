@@ -671,35 +671,35 @@ PathForm Γ A a b = record {
 --                {!!} }
 
 
--- function application
--- Γ ⊢ A type-ℓA    Γ ⊢ B type-ℓB
--- Γ ⊢ a : A     Γ ⊢ f : A → B
--- --------------------------------
--- Γ ⊢ f a : B
---
--- nativeness not trivial
-app : ∀ {ℓΓ ℓA ℓB} (Γ : NRGraph ℓΓ)
-      (A : DispNRG ℓA Γ) (B : DispNRG ℓB Γ) →
-      (a : SectNRG Γ A) (f : SectNRG Γ (→Form A B)) →
-      SectNRG Γ B
+-- -- function application
+-- -- Γ ⊢ A type-ℓA    Γ ⊢ B type-ℓB
+-- -- Γ ⊢ a : A     Γ ⊢ f : A → B
+-- -- --------------------------------
+-- -- Γ ⊢ f a : B
+-- --
+-- -- nativeness not trivial
+-- app : ∀ {ℓΓ ℓA ℓB} (Γ : NRGraph ℓΓ)
+--       (A : DispNRG ℓA Γ) (B : DispNRG ℓB Γ) →
+--       (a : SectNRG Γ A) (f : SectNRG Γ (→Form A B)) →
+--       SectNRG Γ B
+-- -- app Γ A B a f = record {
+-- --   ac0 = λ g → f .ac0 g (a .ac0 g) ;
+-- --   ac1 = λ g0 g1 gg → f .ac1 g0 g1 gg _ _ (a. ac1 g0 g1 gg)  ;
+-- --   tm-nativ = λ g0 g1 gbdg → {!!} }
+
+
 -- app Γ A B a f = record {
 --   ac0 = λ g → f .ac0 g (a .ac0 g) ;
---   ac1 = λ g0 g1 gg → f .ac1 g0 g1 gg _ _ (a. ac1 g0 g1 gg)  ;
---   tm-nativ = λ g0 g1 gbdg → {!!} }
-
-
-app Γ A B a f = record {
-  ac0 = λ g → f .ac0 g (a .ac0 g) ;
-  ac1 = λ g0 g1 gg → f .ac1 g0 g1 gg (a .ac0 g0) (a .ac0 g1) (a .ac1 g0 g1 gg) ;
-  tm-nativ = λ g0 g1 gbdg →
-    _∙_ (funExt⁻ (funExt⁻ (funExt⁻ (f .tm-nativ g0 g1 gbdg) (a .ac0 g0)) (a .ac0 g1)) (a .ac1 g0 g1 (invEq (Γ .nativ g0 g1) gbdg)))
-    let auxf = invEq (→Form A B .dnativ g0 g1 gbdg (ac0 f g0) (ac0 f g1)) (λ x → ac0 f (gbdg x)) (a .ac0 g0) (a .ac0 g1)
-    in _∙_ (cong auxf (a .tm-nativ g0 g1 gbdg))
-    (_∙_ (transportRefl _)
-    (cong (invEq (B .dnativ g0 g1 gbdg (f .ac0 g0 (a .ac0 g0)) (f .ac0 g1 (a .ac0 g1))))
-    let auxf2 = invEq ΠvsBridgeP (λ x → ac0 f (gbdg x)) (a .ac0 g0) (a .ac0 g1)
-    in
-    cong auxf2 (secEq (A .dnativ g0 g1 gbdg (a .ac0 g0) (a .ac0 g1)) (λ x → ac0 a (gbdg x)))))   }
+--   ac1 = λ g0 g1 gg → f .ac1 g0 g1 gg (a .ac0 g0) (a .ac0 g1) (a .ac1 g0 g1 gg) ;
+--   tm-nativ = λ g0 g1 gbdg →
+--     _∙_ (funExt⁻ (funExt⁻ (funExt⁻ (f .tm-nativ g0 g1 gbdg) (a .ac0 g0)) (a .ac0 g1)) (a .ac1 g0 g1 (invEq (Γ .nativ g0 g1) gbdg)))
+--     let auxf = invEq (→Form A B .dnativ g0 g1 gbdg (ac0 f g0) (ac0 f g1)) (λ x → ac0 f (gbdg x)) (a .ac0 g0) (a .ac0 g1)
+--     in _∙_ (cong auxf (a .tm-nativ g0 g1 gbdg))
+--     (_∙_ (transportRefl _)
+--     (cong (invEq (B .dnativ g0 g1 gbdg (f .ac0 g0 (a .ac0 g0)) (f .ac0 g1 (a .ac0 g1))))
+--     let auxf2 = invEq ΠvsBridgeP (λ x → ac0 f (gbdg x)) (a .ac0 g0) (a .ac0 g1)
+--     in
+--     cong auxf2 (secEq (A .dnativ g0 g1 gbdg (a .ac0 g0) (a .ac0 g1)) (λ x → ac0 a (gbdg x)))))   }
 
 
 -- Γ ⊢ A type   Γ, A:Type ⊢ F type

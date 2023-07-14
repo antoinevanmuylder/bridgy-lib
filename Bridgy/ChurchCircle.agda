@@ -95,3 +95,20 @@ forgPt = record {
 --   edgeChoice {A} {a} {h}  = (λ { base → λ x → a ≡ x ; (loop j) → λ x → h j ≡ x }) , refl
 
 --   -- smth = (param S¹NRelator c (S¹ , base) (A , a) edgeChoice loop h refl)
+
+
+-- X* ⊧ X dnrg
+fg : ∀ {ℓ} → DispNRG ℓ (Type⋆NRG ℓ)
+fg {ℓ} .dcr (X , x) = X
+fg {ℓ} .dedge (X0 , x0) (X1 , x1) (XX , xx) = XX
+fg {ℓ} .dnativ (X0 , x0) (X1 , x1) Xbdg a0 a1 = idEquiv _
+
+-- X* ⊧ x : X
+pt : ∀ {ℓ} → SectNRG (Type⋆NRG ℓ) fg
+pt .ac0 (X , x) = x
+pt .ac1 (X0 , x0) (X1 , x1) (XX , xx) = xx
+pt .tm-nativ (X0 , x0) (X1 , x1) Xbdg = {!refl!}
+
+-- X* ⊧ x ≡ x dnrg?
+omg : ∀ {ℓ} → DispNRG ℓ (Type⋆NRG ℓ)
+omg {ℓ} = {!PathForm (Type⋆NRG ℓ) fg!}
