@@ -1,17 +1,17 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
-module Bridgy.Param where
+module Bridgy.ROTT.Param where
 
 -- param for NRGRelRecord version of relators
 
-open import Bridgy.BridgePrims
-open import Bridgy.BridgeExamples
-open import Bridgy.NRGRelRecord
-open import Bridgy.GelExamples
+open import Bridgy.Core.BridgePrims
+open import Bridgy.Core.BridgeExamples
+open import Bridgy.Core.GelExamples
+open import Bridgy.ROTT.NRGRelRecord
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
 open import Cubical.Data.Unit
-open import Bridgy.MyPathToEquiv
+open import Bridgy.Core.MyPathToEquiv
 
 
 -- param ≈says all nonvariant native diagrams F : I → Type ℓ

@@ -10,13 +10,13 @@
 -- -v tc.term.args.target:30 
 
 
-module Bridgy.NRGRelRecord where
+module Bridgy.ROTT.NRGRelRecord where
 
-open import Bridgy.BridgePrims
-open import Bridgy.BDisc
-open import Bridgy.BridgeExamples
-open import Bridgy.ExtentExamples
-open import Bridgy.GelExamples
+open import Bridgy.Core.BridgePrims
+open import Bridgy.Core.BDisc
+open import Bridgy.Core.BridgeExamples
+open import Bridgy.Core.ExtentExamples
+open import Bridgy.Core.GelExamples
 open import Agda.Builtin.Bool
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Unit renaming (Unit to ⊤)
@@ -31,7 +31,7 @@ open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Transport
 open import Cubical.Foundations.Path -- using (congPathEquiv ; PathP≃Path ; compPathrEquiv ; compPathlEquiv)
-open import Bridgy.MyPathToEquiv
+open import Bridgy.Core.MyPathToEquiv
 -- open import Cubical.Foundations.Transport using (transportEquiv)
 
 -- cubical lemmas

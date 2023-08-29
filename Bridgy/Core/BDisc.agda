@@ -1,7 +1,8 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
-module Bridgy.BDisc where
 
-open import Bridgy.BridgePrims
+module Bridgy.Core.BDisc where
+
+open import Bridgy.Core.BridgePrims
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 
