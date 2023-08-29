@@ -1,7 +1,3 @@
-{-
-  a record version of NRGraph, instead of instance version
--}
-
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
 -- -v tc.prim.ungel:30 -v tc.conv.term:30 -v tc.conv.gel:40 -v tc.reduce:90 -v tc.prim.mhcomp.gel:30 
 -- -v tc.prim.ungel:30  -v tc.prim.transp.bridge:40 -v tc.prim.mhcomp.gel:30 -v tc.app.mpor:30 -v tc.app.mhocom:30

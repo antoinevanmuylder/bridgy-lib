@@ -24,6 +24,9 @@ open Prims renaming (primLockUniv to LockU)
 postulate
   BridgeP : ∀ {ℓ} (A : (@tick x : BI) → Type ℓ) → A bi0 → A bi1 → Type ℓ
 
+Bridge : ∀ {ℓ} (A : Type ℓ) → A → A → Type ℓ
+Bridge A a0 a1 = BridgeP (λ x → A) a0 a1
+
 {-# BUILTIN BRIDGEP        BridgeP     #-}
 
 -- NN = pointwise relatedness of N0 N1
