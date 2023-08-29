@@ -7,10 +7,17 @@ Check out the ~Bridgy/~ directory or ~./Everything.agda~.
   - ~ExtentExamples.agda~: commutation ~Bridge~ vs ~Π~.
   - ~GelExamples.agda~: commutation with equivalences, and the universe ("relativity").
   - ~List.adga~: commutation ~Bridge~ vs ~List~.
-- ~NRGRelRecord.agda~: native reflexive graphs and relators, needed to state parametricity.
-- ~Param.agda~: general parametricity theorem: ~param~.
-- ~SimpleParam.agda~: proofs of simple Church encodings with ~param~.
-- ~SystemF.agda~: shallow embedding of system F where each semantic term is parametric thanks to ~param~.
+- ~Bridgy.ROTT~ contains our relational observational type theory (ROTT), which is a shallowly embedeed DTT used to build types satisfying the SRP (i.e. having composite commutation principles).
+  - ~Judgments.agda~ defines what are are:
+    - semantic contexts (native reflexive graphs or NRG)
+    - semantic substitutions (native relators)
+    - semantic types (displayed native reflexive graphs i.e. dNRGs)
+    - semantic terms
+  - ~Param.agda~ is our internal observational parametricity theorem, defined for dNRGs.
+# - ~NRGRelRecord.agda~: native reflexive graphs and relators, needed to state parametricity.
+# - ~Param.agda~: general parametricity theorem: ~param~.
+# - ~SimpleParam.agda~: proofs of simple Church encodings with ~param~.
+# - ~SystemF.agda~: shallow embedding of system F where each semantic term is parametric thanks to ~param~.
 *** Comparison with other internally parametric systems
 A previous experimental implementation by Cavallo ("ptt") exists [[https://github.com/ecavallo/ptt][here]].
 | criterion            | this impl        | ptt impl           |
