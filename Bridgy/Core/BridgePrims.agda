@@ -1,7 +1,6 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
-module Bridgy.BridgePrims where
 
--- this is a reproduction of test/Succeed/LaterPrims.agda and-or Agda.Primitive.Cubical
+module Bridgy.Core.BridgePrims where
 
 open import Cubical.Core.Everything public
 

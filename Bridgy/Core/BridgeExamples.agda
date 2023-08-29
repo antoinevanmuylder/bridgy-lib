@@ -1,7 +1,7 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce -v tc.reduce.fast:60 #-} -- -v tc.constr:60 -v tc.conv:50 -v tc.cover.iapply:40 -v tc.iapply:40 -v tc.conv.face:40 -v tc.conv.bridgeface:40 -v conv.forall:40
-module Bridgy.BridgeExamples where
+module Bridgy.Core.BridgeExamples where
 
-open import Bridgy.BridgePrims
+open import Bridgy.Core.BridgePrims
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Equiv

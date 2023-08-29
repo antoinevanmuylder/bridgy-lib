@@ -1,10 +1,11 @@
 This repo contains internal parametricity experiments, coded in ~agda --bridges~. The ~--bridges~ branch can be found here https://github.com/antoinevanmuylder/agda/tree/bridges. It implements the parametricity primitives of Cavallo-Harper (CH) from https://arxiv.org/pdf/2005.11290.pdf. See ~INSTALL.org~ for instructions.
 *** Quick tour of some files
 Check out the ~Bridgy/~ directory or ~./Everything.agda~.
-- ~BridgePrims.agda~: contains CH primitives.
-- ~BridgeExamples.agda~: basic bridge behaviour + commutation principles for ~Bridge, Path, Σ, ×~.
-- ~ExtentExamples.agda~: commutation with Π.
-- ~GelExamples.agda~: commutation with equivalences, and the universe ("relativity").
+- ~Bridgy.Core/~ contains the CH primitives declarations and raw commutation principles (i.e. relational extensionality principles) for important type formers:
+  - ~BridgePrims.agda~: declares the CH primitives.
+  - ~BridgeExamples.agda~: basic bridge behaviour + commutation principles for ~Bridge~ vs ~Bridge, Path, Σ, ×~.
+  - ~ExtentExamples.agda~: commutation ~Bridge~ vs ~Π~.
+  - ~GelExamples.agda~: commutation with equivalences, and the universe ("relativity").
 - ~NRGRelRecord.agda~: native reflexive graphs and relators, needed to state parametricity.
 - ~Param.agda~: general parametricity theorem: ~param~.
 - ~SimpleParam.agda~: proofs of simple Church encodings with ~param~.
