@@ -8,12 +8,9 @@ Check out the ~Bridgy/~ directory or ~./Everything.agda~.
   - ~GelExamples.agda~: commutation with equivalences, and the universe ("relativity").
   - ~List.adga~: commutation ~Bridge~ vs ~List~.
 - ~Bridgy.ROTT~ contains our relational observational type theory (ROTT), which is a shallowly embedeed DTT used to build types satisfying the SRP (i.e. having composite commutation principles).
-  - ~Judgments.agda~ defines types of:
-    - semantic contexts (native reflexive graphs or NRG)
-    - semantic substitutions (native relators)
-    - semantic types (displayed native reflexive graphs i.e. dNRGs)
-    - semantic terms
+  - ~Judgments.agda~ defines types of: semantic contexts (native reflexive graphs or NRG), semantic substitutions (native relators), semantic types (displayed native reflexive graphs i.e. dNRGs) and semantic terms.
   - ~Param.agda~ is our internal observational parametricity theorem, defined for dNRGs.
+  - ~Rules.agda~ contains semantic rules to build composite dNRGs.
 # - ~NRGRelRecord.agda~: native reflexive graphs and relators, needed to state parametricity.
 # - ~Param.agda~: general parametricity theorem: ~param~.
 # - ~SimpleParam.agda~: proofs of simple Church encodings with ~param~.
