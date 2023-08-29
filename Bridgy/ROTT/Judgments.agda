@@ -33,6 +33,10 @@ module EquGraph {l : Level} {A0 A1 : Type l} where
     _[_]_ : A0 → A0 ≃ A1 → A1 → Type l
     _[_]_ a0 e a1 = (equivFun e a0) ≡ a1
 
+    inEquGr : (a0 : A0) → (e : A0 ≃ A1) → (a1 : A1) → 
+      (equivFun e a0) ≡ a1 → (a0 [ e ] a1)
+    inEquGr a0 e a1 prf = prf
+
 open EquGraph public
     
 
