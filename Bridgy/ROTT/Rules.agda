@@ -111,62 +111,6 @@ pr lA A .nrel1 (g0 , a0) (g1 , a1) (gg , aa) = gg
 pr lA A .nativ-rel (g0 , a0) (g1 , a1) gaa gabdg gaprf
   = inEquGr _ _ _ λ i x → outEquGr _ _ _ gaprf i x .fst
 
--- Γ ⊢ A type
--- Γ ⊢ B type
--- ----------
--- Γ . A ⊢ B type
-wknt1 : ∀ {l lA lB} {Γ : NRGraph l} {A : DispNRG lA Γ} (B : DispNRG lB Γ) →
-  DispNRG lB (Γ # A)
-wknt1 {lA = lA} {Γ = Γ} {A = A} B = tySubst (Γ # A) Γ (pr lA A) B
-
--- -- Γ ⊢ A type
--- -- Γ ⊢ B type
--- -- ----------
--- -- Γ . A ⊢ B type
--- wknt1 : ∀ {l lA lB} {Γ : NRGraph l} {A : DispNRG lA Γ} (B : DispNRG lB Γ) →
---   DispNRG lB (Γ # A)
--- wknt1 B .dcr (g , a) = B .dcr g
--- wknt1 B .dedge (g0 , _) (g1 , _) (gg , _) b0 b1 = B ⦅ b0 , b1 ⦆# gg
--- wknt1 B .dnativ (g0 , _) (g1 , _) (gg , _) gabdg gaprf  b0 b1 =
---   B .dnativ g0 g1 gg (λ x → gabdg x .fst)
---   (inEquGr _ _ _ λ i x → outEquGr _ _ _ gaprf i x .fst)
---   b0 b1
-
--- Γ ⊢ A type
--- -------------------
--- Γ , (x : A) ⊢ x : A
-var : ∀ {ℓ} {ℓA} {Γ : NRGraph ℓ} (A : DispNRG ℓA Γ) →
-  TermDNRG (Γ # A) (wknt1 A)
-var A .tm0 (g , a) = a
-var A .tm1 (g0 , a0) (g1 , a1) (gg , aa) = aa
-var A .tm-nativ (g0 , a0) (g1 , a1) (gg , aa) gabdg gaprf =
-  inEquGr _ _ _ {!!}
-
-
--- -- Γ ⊢ A type
--- -- Γ ⊢ B type
--- -- ----------
--- -- Γ . A ⊢ B type
--- wkn-type-by : ∀ {ℓ ℓA ℓB} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB Γ) →
---              DispNRG ℓB (Γ # A)
--- wkn-type-by Γ A B =
---   record {
---     dcr = λ γa → B .dcr (γa .fst) ;
---     dedge = λ γa0 γa1 γγaa → B .dedge (γa0 .fst) (γa1 .fst) (γγaa .fst) ;
---     dnativ = λ { (γ0 , a0) (γ1 , a1) γbdg b0 b1 → B .dnativ γ0 γ1 (λ x → γbdg x .fst) b0 b1 }
---   }
-
--- -- Γ ⊢ A type
--- -- -------------------
--- -- Γ , (x : A) ⊢ x : A
--- var-rule : ∀ {ℓ} {ℓA} (Γ : NRGraph ℓ) {A : DispNRG ℓA Γ} →
---   SectNRG (Γ # A) (wkn-type-by Γ A A)
--- var-rule Γ A =
---   record {
---     ac0 = λ γa → γa .snd ;
---     ac1 = λ γa0 γa1 γγaa → γγaa .snd ;
---     tm-nativ = λ γa0 γa1 γγaa → refl }
-
 
 
 -- Γ ⊢ A type   Γ ⊢ B type
@@ -183,6 +127,8 @@ var A .tm-nativ (g0 , a0) (g1 , a1) (gg , aa) gabdg gaprf =
   equivΠ' (A .dnativ g0 g1 gg gbdg gprf a0 a1) λ {aa} {abdg} aprf →
   B .dnativ g0 g1 gg gbdg gprf (f0 a0) (f1 a1) )
 
+-- Theres a difference btw this and simply U ∈ NRG. 
+--
 -- -----------------
 -- Γ ⊢ U(l) type(l+1)
 UForm : ∀ {l} {Γ : NRGraph l} (lU : Level) → DispNRG (ℓ-suc lU) Γ
