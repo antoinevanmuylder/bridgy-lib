@@ -6,6 +6,7 @@ module Bridgy.ROTT.Rules where
 open import Bridgy.Core.BridgePrims
 open import Bridgy.Core.MyPathToEquiv
 open import Bridgy.Core.BridgeExamples
+open import Bridgy.Core.ExtentExamples
 open import Bridgy.Core.GelExamples
 open import Bridgy.ROTT.Judgments
 open import Cubical.Foundations.Prelude
@@ -14,6 +15,17 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Function
 open import Cubical.Data.Unit
 open import Cubical.Data.Sigma
+
+
+------------------------------------------------------------------------
+-- lemmas
+
+funExt2⁻ : {ℓ ℓ' : Level} {A : Type ℓ} {B : A → A → I → Type ℓ'}
+  {f : (x y : A) → B x y i0} {g : (x y : A) → B x y i1} →
+  (x y : A) →
+  PathP (λ i → (x y : A) → B x y i) f g →
+  PathP (B x y) (f x y) (g x y)
+funExt2⁻ x y eq = λ i → eq i x y
 
 
 ------------------------------------------------------------------------
@@ -91,3 +103,37 @@ _#_ Γ A .nativ (g0 , a0) (g1 , a1) =
 
 infixl 40 _#_
 
+-- Γ ⊢ A type   Γ ⊢ B type
+-- ------------------------
+-- Γ ⊢ A → B type
+→Form : ∀ {ℓ} {Γ : NRGraph ℓ}
+  (lA : Level) (A : DispNRG lA Γ) (lB : Level) (B : DispNRG lB Γ) → 
+  DispNRG (ℓ-max lA lB) Γ
+→Form lA A lB B .dcr g = (A .dcr g) → (B .dcr g)
+→Form lA A lB B .dedge g0 g1 gg f0 f1 = ∀ a0 a1 → A ⦅ a0 , a1 ⦆# gg → B ⦅ f0 a0 , f1 a1 ⦆# gg
+→Form lA A lB B .dnativ g0 g1 gg gbdg gprf f0 f1 =
+  flip compEquiv ΠvsBridgeP
+  (equivΠCod λ a0 → equivΠCod λ a1 →
+  equivΠ' (A .dnativ g0 g1 gg gbdg gprf a0 a1) λ {aa} {abdg} aprf →
+  B .dnativ g0 g1 gg gbdg gprf (f0 a0) (f1 a1) )
+
+-- -----------------
+-- Γ ⊢ U(l) type(l+1)
+UForm : ∀ {l} {Γ : NRGraph l} (lU : Level) → DispNRG (ℓ-suc lU) Γ
+UForm lU .dcr _ = Type lU
+UForm lU .dedge _ _ _ A0 A1 = A0 → A1 → Type lU
+UForm lU .dnativ _ _ _ _ _ A0 A1 = relativity
+
+
+-- Formation rule for the El type
+--
+-- Γ ⊢ C : U(lC)
+-- -----------------
+-- Γ ⊢ El C  type(lC)
+El : ∀ {l} {Γ : NRGraph l} {lC} → TermDNRG Γ (UForm lC) → DispNRG lC Γ
+El c .dcr g = c .tm0 g
+El c .dedge g0 g1 gg c0 c1 = c .tm1 g0 g1 gg c0 c1
+-- c .tm-nativ gives a ≡, displayed nativeness asks for a ≃.
+El c .dnativ g0 g1 gg gbdg gprf c0 c1 =
+  let z = (outEquGrInv _ _ _ (c .tm-nativ g0 g1 gg gbdg gprf)) in
+  mypathToEquiv (funExt⁻ (funExt⁻ z c0) c1)

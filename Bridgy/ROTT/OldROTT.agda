@@ -1,12 +1,13 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
 
 ------------------------------------------------------------------------
--- Old version of ROTT. This is being rewritten in Judgments.agda and 
--- Rules.agda.
+-- Old version of ROTT.
+-- This is being rewritten in Judgments.agda and Rules.agda.
+-- Using Rules.agda is advised.
 ------------------------------------------------------------------------
 
 
-module Bridgy.ROTT.NRGRelRecord where
+module Bridgy.ROTT.OldROTT where
 
 open import Bridgy.Core.BridgePrims
 open import Bridgy.Core.BDisc
@@ -530,7 +531,7 @@ El Γ ℓ = record {
 -- applied version of the El universal family
 -- Γ ⊢ C : U(l)
 -- -----------------
--- Γ ⊢ El C : type(l)
+-- Γ ⊢ El C  type(l)
 ElApply : ∀ {ℓΓ ℓ} (Γ : NRGraph ℓΓ) → (SectNRG Γ (TypeForm Γ ℓ)) → DispNRG ℓ Γ
 ElApply Γ C = record {
   dcr = λ g → C .ac0 g ;
