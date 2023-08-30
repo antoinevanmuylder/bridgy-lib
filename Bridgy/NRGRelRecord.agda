@@ -1,19 +1,22 @@
+{-
+  a record version of NRGraph, instead of instance version
+-}
+
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
+-- -v tc.prim.ungel:30 -v tc.conv.term:30 -v tc.conv.gel:40 -v tc.reduce:90 -v tc.prim.mhcomp.gel:30 
+-- -v tc.prim.ungel:30  -v tc.prim.transp.bridge:40 -v tc.prim.mhcomp.gel:30 -v tc.app.mpor:30 -v tc.app.mhocom:30
+--  -v tc.prim.mhcomp.gel:30 
+-- -v tc.prim.ungel:27 -v tc.prim.mhcomp:25 -v tc.prim.transp:25 -v tc.conv.gel:25
+-- -v tc.term.args.target:30 
 
-------------------------------------------------------------------------
--- Old version of ROTT.
--- This is being rewritten in Judgments.agda and Rules.agda.
--- Using Rules.agda is advised.
-------------------------------------------------------------------------
 
+module Bridgy.NRGRelRecord where
 
-module Bridgy.ROTT.OldROTT where
-
-open import Bridgy.Core.BridgePrims
-open import Bridgy.Core.BDisc
-open import Bridgy.Core.BridgeExamples
-open import Bridgy.Core.ExtentExamples
-open import Bridgy.Core.GelExamples
+open import Bridgy.BridgePrims
+open import Bridgy.BDisc
+open import Bridgy.BridgeExamples
+open import Bridgy.ExtentExamples
+open import Bridgy.GelExamples
 open import Agda.Builtin.Bool
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Unit renaming (Unit to ⊤)
@@ -28,7 +31,7 @@ open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Transport
 open import Cubical.Foundations.Path -- using (congPathEquiv ; PathP≃Path ; compPathrEquiv ; compPathlEquiv)
-open import Bridgy.Core.MyPathToEquiv
+open import Bridgy.MyPathToEquiv
 -- open import Cubical.Foundations.Transport using (transportEquiv)
 
 -- cubical lemmas
@@ -531,7 +534,7 @@ El Γ ℓ = record {
 -- applied version of the El universal family
 -- Γ ⊢ C : U(l)
 -- -----------------
--- Γ ⊢ El C  type(l)
+-- Γ ⊢ El C : type(l)
 ElApply : ∀ {ℓΓ ℓ} (Γ : NRGraph ℓΓ) → (SectNRG Γ (TypeForm Γ ℓ)) → DispNRG ℓ Γ
 ElApply Γ C = record {
   dcr = λ g → C .ac0 g ;

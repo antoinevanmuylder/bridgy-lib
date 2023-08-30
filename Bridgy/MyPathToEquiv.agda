@@ -5,7 +5,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Univalence
 
-module Bridgy.Core.MyPathToEquiv where
+module Bridgy.MyPathToEquiv where
 
 -- The 4 following lemmas concern a function formerly known as pathToEquiv
 -- and defined using lineToEquiv (from Agda.Builtin.Cubical.Glue)
