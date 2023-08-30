@@ -1,9 +1,9 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
--- -v tc.prim.ungel:30 -v tc.conv.term:30 -v tc.conv.gel:40 -v tc.reduce:90 -v tc.prim.mhcomp.gel:30 
--- -v tc.prim.ungel:30  -v tc.prim.transp.bridge:40 -v tc.prim.mhcomp.gel:30 -v tc.app.mpor:30 -v tc.app.mhocom:30
---  -v tc.prim.mhcomp.gel:30 
--- -v tc.prim.ungel:27 -v tc.prim.mhcomp:25 -v tc.prim.transp:25 -v tc.conv.gel:25
--- -v tc.term.args.target:30 
+
+------------------------------------------------------------------------
+-- Old version of ROTT. This is being rewritten in Judgments.agda and 
+-- Rules.agda.
+------------------------------------------------------------------------
 
 
 module Bridgy.ROTT.NRGRelRecord where
