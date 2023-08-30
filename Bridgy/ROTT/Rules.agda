@@ -71,7 +71,22 @@ _×NRG_ G H .nativ  (g0 , h0) (g1 , h1) = flip compEquiv ×vsBridgeP (≃-× (G 
 
 
 ------------------------------------------------------------------------
--- Rules involving dNRGs
+-- Rules of ROTT
+
+
+-- Γ ctx
+-- Γ ⊢ A type
+-- ----------
+-- Γ.A ctx
+_#_ : ∀ {ℓ ℓ'} (Γ : NRGraph ℓ) (A : DispNRG ℓ' Γ) → NRGraph (ℓ-max ℓ ℓ')
+_#_ Γ A .nrg-cr = Σ (Γ .nrg-cr) (A .dcr)
+_#_ Γ A .nedge (g0 , a0) (g1 , a1) = Σ (Γ ⦅ g0 , g1 ⦆) (λ gg → A ⦅ a0 , a1 ⦆# gg)
+_#_ Γ A .nativ (g0 , a0) (g1 , a1) =
+  flip compEquiv ΣvsBridgeP
+  (Σ-cong-equiv (Γ .nativ g0 g1) λ gg →
+  A .dnativ _ _ gg (equivFun (Γ .nativ g0 g1) gg) (inEquGr _ _ _ refl) a0 a1)
+
+infixl 40 _#_
 
 
 -- Ty subst
@@ -88,20 +103,71 @@ tySubst {ℓΔ = ℓΔ} Γ Δ σ A .dnativ g0 g1 gg gbdg gprf a0 a1 =
   (σ .nativ-rel _ _ gg gbdg gprf)
   a0 a1
 
--- Γ ctx
+-- proj : Γ.A → Γ
+pr : ∀ {l} {Γ : NRGraph l} (lA : Level) (A : DispNRG lA Γ) →
+  NRelator (Γ # A) Γ
+pr lA A .nrel0 (g , _) = g
+pr lA A .nrel1 (g0 , a0) (g1 , a1) (gg , aa) = gg
+pr lA A .nativ-rel (g0 , a0) (g1 , a1) gaa gabdg gaprf
+  = inEquGr _ _ _ λ i x → outEquGr _ _ _ gaprf i x .fst
+
 -- Γ ⊢ A type
+-- Γ ⊢ B type
 -- ----------
--- Γ.A ctx
-_#_ : ∀ {ℓ ℓ'} (Γ : NRGraph ℓ) (A : DispNRG ℓ' Γ) → NRGraph (ℓ-max ℓ ℓ')
-_#_ Γ A .nrg-cr = Σ (Γ .nrg-cr) (A .dcr)
-_#_ Γ A .nedge (g0 , a0) (g1 , a1) = Σ (Γ ⦅ g0 , g1 ⦆) (λ gg → A ⦅ a0 , a1 ⦆# gg)
-_#_ Γ A .nativ (g0 , a0) (g1 , a1) =
-  flip compEquiv ΣvsBridgeP
-  (Σ-cong-equiv (Γ .nativ g0 g1) λ gg →
-  A .dnativ _ _ gg (equivFun (Γ .nativ g0 g1) gg) (inEquGr _ _ _ refl) a0 a1)
+-- Γ . A ⊢ B type
+wknt1 : ∀ {l lA lB} {Γ : NRGraph l} {A : DispNRG lA Γ} (B : DispNRG lB Γ) →
+  DispNRG lB (Γ # A)
+wknt1 {lA = lA} {Γ = Γ} {A = A} B = tySubst (Γ # A) Γ (pr lA A) B
+
+-- -- Γ ⊢ A type
+-- -- Γ ⊢ B type
+-- -- ----------
+-- -- Γ . A ⊢ B type
+-- wknt1 : ∀ {l lA lB} {Γ : NRGraph l} {A : DispNRG lA Γ} (B : DispNRG lB Γ) →
+--   DispNRG lB (Γ # A)
+-- wknt1 B .dcr (g , a) = B .dcr g
+-- wknt1 B .dedge (g0 , _) (g1 , _) (gg , _) b0 b1 = B ⦅ b0 , b1 ⦆# gg
+-- wknt1 B .dnativ (g0 , _) (g1 , _) (gg , _) gabdg gaprf  b0 b1 =
+--   B .dnativ g0 g1 gg (λ x → gabdg x .fst)
+--   (inEquGr _ _ _ λ i x → outEquGr _ _ _ gaprf i x .fst)
+--   b0 b1
+
+-- Γ ⊢ A type
+-- -------------------
+-- Γ , (x : A) ⊢ x : A
+var : ∀ {ℓ} {ℓA} {Γ : NRGraph ℓ} (A : DispNRG ℓA Γ) →
+  TermDNRG (Γ # A) (wknt1 A)
+var A .tm0 (g , a) = a
+var A .tm1 (g0 , a0) (g1 , a1) (gg , aa) = aa
+var A .tm-nativ (g0 , a0) (g1 , a1) (gg , aa) gabdg gaprf =
+  inEquGr _ _ _ {!!}
 
 
-infixl 40 _#_
+-- -- Γ ⊢ A type
+-- -- Γ ⊢ B type
+-- -- ----------
+-- -- Γ . A ⊢ B type
+-- wkn-type-by : ∀ {ℓ ℓA ℓB} (Γ : NRGraph ℓ) (A : DispNRG ℓA Γ) (B : DispNRG ℓB Γ) →
+--              DispNRG ℓB (Γ # A)
+-- wkn-type-by Γ A B =
+--   record {
+--     dcr = λ γa → B .dcr (γa .fst) ;
+--     dedge = λ γa0 γa1 γγaa → B .dedge (γa0 .fst) (γa1 .fst) (γγaa .fst) ;
+--     dnativ = λ { (γ0 , a0) (γ1 , a1) γbdg b0 b1 → B .dnativ γ0 γ1 (λ x → γbdg x .fst) b0 b1 }
+--   }
+
+-- -- Γ ⊢ A type
+-- -- -------------------
+-- -- Γ , (x : A) ⊢ x : A
+-- var-rule : ∀ {ℓ} {ℓA} (Γ : NRGraph ℓ) {A : DispNRG ℓA Γ} →
+--   SectNRG (Γ # A) (wkn-type-by Γ A A)
+-- var-rule Γ A =
+--   record {
+--     ac0 = λ γa → γa .snd ;
+--     ac1 = λ γa0 γa1 γγaa → γγaa .snd ;
+--     tm-nativ = λ γa0 γa1 γγaa → refl }
+
+
 
 -- Γ ⊢ A type   Γ ⊢ B type
 -- ------------------------
@@ -137,3 +203,5 @@ El c .dedge g0 g1 gg c0 c1 = c .tm1 g0 g1 gg c0 c1
 El c .dnativ g0 g1 gg gbdg gprf c0 c1 =
   let z = (outEquGrInv _ _ _ (c .tm-nativ g0 g1 gg gbdg gprf)) in
   mypathToEquiv (funExt⁻ (funExt⁻ z c0) c1)
+
+
