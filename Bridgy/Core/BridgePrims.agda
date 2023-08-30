@@ -1,7 +1,6 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
-module Bridgy.BridgePrims where
 
--- this is a reproduction of test/Succeed/LaterPrims.agda and-or Agda.Primitive.Cubical
+module Bridgy.Core.BridgePrims where
 
 open import Cubical.Core.Everything public
 
@@ -24,6 +23,9 @@ open Prims renaming (primLockUniv to LockU)
 -- heterogenous bridges over line A.
 postulate
   BridgeP : ∀ {ℓ} (A : (@tick x : BI) → Type ℓ) → A bi0 → A bi1 → Type ℓ
+
+Bridge : ∀ {ℓ} (A : Type ℓ) → A → A → Type ℓ
+Bridge A a0 a1 = BridgeP (λ x → A) a0 a1
 
 {-# BUILTIN BRIDGEP        BridgeP     #-}
 

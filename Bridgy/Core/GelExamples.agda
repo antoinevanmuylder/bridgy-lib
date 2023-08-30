@@ -1,9 +1,11 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
-module Bridgy.GelExamples where
 
-open import Bridgy.BridgePrims
-open import Bridgy.BridgeExamples
-open import Bridgy.ExtentExamples
+module Bridgy.Core.GelExamples where
+
+open import Bridgy.Core.BridgePrims
+open import Bridgy.Core.BridgeExamples
+open import Bridgy.Core.ExtentExamples
+open import Bridgy.Core.MyPathToEquiv
 open import Agda.Builtin.Bool
 open import Agda.Builtin.Unit
 open import Cubical.Foundations.Prelude
@@ -14,7 +16,7 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.HalfAdjoint
 open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.Path
-open import Bridgy.MyPathToEquiv
+
 
 
 -- ------------------------------------------------------------------------
