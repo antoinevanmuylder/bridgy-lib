@@ -20,3 +20,4 @@ BDisc ℓ = Σ (Type ℓ) isBDisc
 isBDisc→equiv : ∀ {ℓ} (A : Type ℓ) (bd : isBDisc A) (a0 a1 : A) →
   (a0 ≡ a1) ≃ (BridgeP (λ _ → A) a0 a1)
 isBDisc→equiv A bd a0 a1 = lsen , (bd a0 a1)
+

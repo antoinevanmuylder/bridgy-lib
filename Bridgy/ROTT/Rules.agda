@@ -8,6 +8,7 @@ open import Bridgy.Core.MyPathToEquiv
 open import Bridgy.Core.BridgeExamples
 open import Bridgy.Core.ExtentExamples
 open import Bridgy.Core.GelExamples
+open import Bridgy.Core.BDisc
 open import Bridgy.ROTT.Judgments
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
@@ -116,12 +117,12 @@ pr lA A .nativ-rel (g0 , a0) (g1 , a1) gaa gabdg gaprf
 -- Γ ⊢ A type   Γ ⊢ B type
 -- ------------------------
 -- Γ ⊢ A → B type
-→Form : ∀ {ℓ} {Γ : NRGraph ℓ}
-  (lA : Level) (A : DispNRG lA Γ) (lB : Level) (B : DispNRG lB Γ) → 
+→Form : ∀ {ℓ} {Γ : NRGraph ℓ} (lA : Level) (lB : Level)
+   (A : DispNRG lA Γ) (B : DispNRG lB Γ) → 
   DispNRG (ℓ-max lA lB) Γ
-→Form lA A lB B .dcr g = (A .dcr g) → (B .dcr g)
-→Form lA A lB B .dedge g0 g1 gg f0 f1 = ∀ a0 a1 → A ⦅ a0 , a1 ⦆# gg → B ⦅ f0 a0 , f1 a1 ⦆# gg
-→Form lA A lB B .dnativ g0 g1 gg gbdg gprf f0 f1 =
+→Form lA lB A B .dcr g = (A .dcr g) → (B .dcr g)
+→Form lA lB A B .dedge g0 g1 gg f0 f1 = ∀ a0 a1 → A ⦅ a0 , a1 ⦆# gg → B ⦅ f0 a0 , f1 a1 ⦆# gg
+→Form lA lB A B .dnativ g0 g1 gg gbdg gprf f0 f1 =
   flip compEquiv ΠvsBridgeP
   (equivΠCod λ a0 → equivΠCod λ a1 →
   equivΠ' (A .dnativ g0 g1 gg gbdg gprf a0 a1) λ {aa} {abdg} aprf →
@@ -149,5 +150,25 @@ El c .dedge g0 g1 gg c0 c1 = c .tm1 g0 g1 gg c0 c1
 El c .dnativ g0 g1 gg gbdg gprf c0 c1 =
   let z = (outEquGrInv _ _ _ (c .tm-nativ g0 g1 gg gbdg gprf)) in
   mypathToEquiv (funExt⁻ (funExt⁻ z c0) c1)
+
+X⊨ElX : ∀ {l : Level} → DispNRG l (TypeNRG l)
+X⊨ElX {l} = El (record {
+  tm0 = λ X → X ;
+  tm1 = λ X0 X1 XX → XX ;
+  tm-nativ = λ X0 X1 XX Xbdg Xprf → Xprf})
+
+
+
+
+-- A (closed) bridge discrete type gives rise to a dNRG.
+--
+-- isBDisc (A : Type l)
+-- --------------------
+-- Γ ⊢ A dNRG (use paths as edges)
+bDisc-asDNRG : ∀ {lΓ lA} {Γ : NRGraph lΓ} (A : Type lA) (bd : isBDisc A) → DispNRG lA Γ
+bDisc-asDNRG A bd .dcr _ = A
+bDisc-asDNRG A bd .dedge g0 g1 gg a0 a1 = a0 ≡ a1
+bDisc-asDNRG A bd .dnativ g0 g1 gg gbdg gprf a0 a1 = isBDisc→equiv A bd a0 a1
+
 
 
