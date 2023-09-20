@@ -17,8 +17,8 @@ open import Cubical.Data.Bool
 open import Cubical.Data.List
 
 
-------------------------------------------------------------------------
--- encoding of 1
+-- In this file: specific Church encodings.
+
 
 -- X:Type ⊨ ElX → ElX dNRG
 churchUnitDNRG : ∀ (l : Level) → DispNRG l (TypeNRG l)
