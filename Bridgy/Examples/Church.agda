@@ -11,9 +11,11 @@ open import Bridgy.ROTT.Param
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Function
 open import Cubical.Data.Unit
 open import Cubical.Data.Bool
-open import Cubical.Foundations.Function
+open import Cubical.Data.List
+
 
 ------------------------------------------------------------------------
 -- encoding of 1
@@ -60,8 +62,34 @@ churchListDNRG l A isbA =
   (bDisc-asDNRG A isbA)
   (→Form l l (X⊨ElX) (X⊨ElX) )))
 
+-- crucial hypothesis: isBDisc A. Else too many elements in the encoding.
+-- E.g. for A = Type₀,
+--   foo : ( (X : Type ℓ) → X → (Type₀ → X → X) → X )
+--   foo = λ X niil coons → (coons X niil)
+churchList : ∀ {ℓ} (A : Type ℓ) (bd : isBDisc A) →
+  ( (X : Type ℓ) → X → (A → X → X) → X ) ≃ List A
+churchList {ℓ} A bd =
+  isoToEquiv (iso
+  churchToList
+  listToChurch
+  sameList
+  λ chl → funExt λ X → funExt λ niil → funExt λ coons →
+    param (TypeNRG ℓ) (churchListDNRG ℓ A bd) chl (List A) X (λ as x → listToChurch as X niil coons ≡ x) [] niil refl _∷_ coons
+      λ a0 a1 abdg as x hyp →
+      λ i → coons (abdg i) (hyp i))
 
+  where
 
+    churchToList : ( (X : Type ℓ) → X → (A → X → X) → X ) → List A
+    churchToList = (λ f → f (List A) [] _∷_)
 
+    listToChurch : List A → ( (X : Type ℓ) → X → (A → X → X) → X )
+    listToChurch [] = λ X d f → d
+    listToChurch (a ∷ as) = λ X d f → f a (listToChurch as X d f)
 
-
+    sameList : ∀ as → churchToList (listToChurch as) ≡ as
+    sameList [] = refl
+    sameList (a ∷ as) = ListPath.decode _ _
+      (refl ,
+      ListPath.encode (churchToList (listToChurch as)) as
+      (sameList as))
