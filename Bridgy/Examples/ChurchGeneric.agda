@@ -1,31 +1,33 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
 
-module Bridgy.ChurchGeneric where
+module Bridgy.Examples.ChurchGeneric where
+
+open import Bridgy.Core.BridgePrims
+open import Bridgy.Core.BDisc
+open import Bridgy.Core.BridgeExamples
+open import Bridgy.Core.ExtentExamples
+open import Bridgy.Core.GelExamples
+open import Bridgy.ROTT.Judgments
+open import Bridgy.ROTT.Param
+open import Bridgy.ROTT.Rules
 
 open import Cubical.Foundations.Prelude
-open import Cubical.Data.Unit renaming (Unit to ⊤)
+open import Cubical.Data.Unit
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.Equiv.HalfAdjoint
+-- open import Cubical.Foundations.Equiv.HalfAdjoint
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Function
-open import Cubical.Foundations.Transport
-open import Cubical.HITs.S1
-
-open import Bridgy.BridgePrims
-open import Bridgy.BDisc
-open import Bridgy.BridgeExamples
-open import Bridgy.ExtentExamples
-open import Bridgy.GelExamples
-open import Bridgy.NRGRelRecord
-open import Bridgy.Param
+-- open import Cubical.Foundations.Transport
 
 
-postulate S : Set
+
+
+postulate S : Type
           Sdiscr : isBDisc S
           P : S → Set
-          Pdiscr : ∀ s1 s2 → (sbdg : BridgeP (λ _ → S) s1 s2) (p1 : P s1) (p2 : P s2) → (subst P (invEq (isBDisc→equiv S Sdiscr s1 s2) sbdg) p1 ≡ p2) ≃ BridgeP (λ i → P (sbdg i)) p1 p2
+          Pdiscr : ∀ s1 s2 → (sbdg : Bridge S s1 s2) (p1 : P s1) (p2 : P s2) → (subst P (invEq (isBDisc→equiv S Sdiscr s1 s2) sbdg) p1 ≡ p2) ≃ BridgeP (λ i → P (sbdg i)) p1 p2
 -- in the case of List A, 
 
 open ParamDNRG --where param theorem for dNRGs is
