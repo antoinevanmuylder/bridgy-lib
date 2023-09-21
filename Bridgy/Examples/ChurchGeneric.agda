@@ -22,13 +22,31 @@ open import Cubical.Foundations.Function
 -- open import Cubical.Foundations.Transport
 
 
+module _ (S : Type) (Sbd : isBDisc S) (P : S → Set) (PbdP : isBDiscP S Sbd P) where
+
+  SNRG : NRGraph ℓ-zero
+  SNRG = bDisc-asNRG S Sbd
+
+  PdNRG : DispNRG ℓ-zero SNRG
+  PdNRG = bDiscP-asDNRG S Sbd P PbdP
+
+  
 
 
-postulate S : Type
-          Sdiscr : isBDisc S
-          P : S → Set
-          Pdiscr : ∀ s1 s2 → (sbdg : Bridge S s1 s2) (p1 : P s1) (p2 : P s2) → (subst P (invEq (isBDisc→equiv S Sdiscr s1 s2) sbdg) p1 ≡ p2) ≃ BridgeP (λ i → P (sbdg i)) p1 p2
--- in the case of List A, 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -3,6 +3,7 @@ module Bridgy.ROTT.Param where
 
 
 open import Bridgy.Core.BridgePrims
+open import Bridgy.Core.EquGraph
 open import Bridgy.Core.BridgeExamples
 open import Bridgy.Core.GelExamples
 open import Bridgy.ROTT.Judgments

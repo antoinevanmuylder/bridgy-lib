@@ -4,6 +4,7 @@ module Bridgy.ROTT.Rules where
 
 
 open import Bridgy.Core.BridgePrims
+open import Bridgy.Core.EquGraph
 open import Bridgy.Core.MyPathToEquiv
 open import Bridgy.Core.BridgeExamples
 open import Bridgy.Core.ExtentExamples
@@ -16,6 +17,7 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Function
 open import Cubical.Data.Unit
 open import Cubical.Data.Sigma
+open import Cubical.Data.Sigma.Properties
 
 
 ------------------------------------------------------------------------
@@ -157,7 +159,51 @@ X⊨ElX {l} = El (record {
   tm1 = λ X0 X1 XX → XX ;
   tm-nativ = λ X0 X1 XX Xbdg Xprf → Xprf})
 
+module ΣΠForm {ℓΓ ℓA ℓB} {Γ : NRGraph ℓΓ} (A : DispNRG ℓA Γ) (B : DispNRG ℓB (Γ # A)) where
 
+  -- Γ ⊢ A type
+  -- Γ . A ⊢ B type
+  -- --------------
+  -- Γ ⊢ Σ A B type
+  ΣForm : DispNRG (ℓ-max ℓA ℓB) Γ
+  ΣForm .dcr g = Σ[ a ∈ A .dcr g ] B .dcr (g , a)
+  ΣForm .dedge g0 g1 gg (a0 , b0) (a1 , b1) =
+    Σ[ aa ∈ A .dedge g0 g1 gg a0 a1 ] B .dedge (g0 , a0) (g1 , a1) (gg , aa) b0 b1
+  ΣForm .dnativ g0 g1 gg gbdg gprf (a0 , b0) (a1 , b1) =
+    flip compEquiv ΣvsBridgeP
+    {!Σ-cong-equiv!}
+  -- ΣForm =
+  --   record {
+  --     dcr = λ γ → Σ (A .dcr γ) (λ a → B .dcr (γ , a))  ;
+  --     dedge = λ γ0 γ1 γγ ab0 ab1 →  Σ (A .dedge γ0 γ1 γγ (ab0 .fst) (ab1 .fst)) (λ aa → B .dedge (γ0 , ab0 .fst) (γ1 , ab1 .fst) ( (γγ , aa)) (ab0 .snd) (ab1 .snd)) ;
+  --     dnativ = λ { γ0 γ1 γbdg (a0 , b0) (a1 , b1) →
+  --       flip compEquiv ΣvsBridgeP (invEquiv
+  --       (Σ-cong-equiv (invEquiv (A .dnativ _ _ γbdg a0 a1 )) λ abdg →
+  --       invEquiv (B .dnativ (γ0 , a0) (γ1 , a1) (λ x → (γbdg x , abdg x )) b0 b1) )) }
+  --   }
+
+  -- -- -- Γ ⊢ A type
+  -- -- -- Γ.A ⊢ B type
+  -- -- -- --------------
+  -- -- -- Γ ⊢ Π A B type
+  -- ΠForm : DispNRG (ℓ-max ℓA ℓB) Γ
+  -- ΠForm = record {
+  --   dcr = λ γ → ∀ (a : A .dcr γ) → B .dcr (γ , a) ;
+  --   dedge = λ γ0 γ1 γγ f0 f1 → ∀ (a0 : A .dcr γ0) (a1 : A .dcr γ1) (aa : A ⦅ a0 , a1 ⦆# γγ ) → B ⦅ f0 a0 , f1 a1 ⦆# (γγ , aa) ;
+  --   dnativ = λ γ0 γ1 γbdg f0 f1 →
+  --     flip compEquiv ΠvsBridgeP
+  --     (equivΠCod λ a0 →
+  --     equivΠCod λ a1 → invEquiv
+  --     (equivΠ (invEquiv (A .dnativ _ _ γbdg a0 a1)) λ abdg →
+  --     (invEquiv (B .dnativ (γ0 , a0) (γ1 , a1) (λ x → (γbdg x , abdg x)) (f0 a0) (f1 a1))) ) )
+  --   }
+open ΣΠForm public
+
+
+
+
+------------------------------------------------------------------------
+-- Bridge discrete types
 
 
 -- A (closed) bridge discrete type gives rise to a dNRG.
@@ -169,6 +215,25 @@ bDisc-asDNRG : ∀ {lΓ lA} {Γ : NRGraph lΓ} (A : Type lA) (bd : isBDisc A) �
 bDisc-asDNRG A bd .dcr _ = A
 bDisc-asDNRG A bd .dedge g0 g1 gg a0 a1 = a0 ≡ a1
 bDisc-asDNRG A bd .dnativ g0 g1 gg gbdg gprf a0 a1 = isBDisc→equiv A bd a0 a1
+
+-- A (closed) bridge discrete type gives rise to an NRG
+-- isBDIsc (A : Type l)
+-- --------------------
+-- A  NRG
+bDisc-asNRG : ∀ {l} (A : Type l) (bd : isBDisc A) → NRGraph l
+bDisc-asNRG A bd .nrg-cr = A
+bDisc-asNRG A bd .nedge a0 a1 = (a0 ≡ a1)
+bDisc-asNRG A bd .nativ a0 a1 = isBDisc→equiv A bd a0 a1
+
+-- A dependently bridge-discrete type B over a closed bridge-discrete type A
+-- gives rise to a dNRG.
+-- isBDisc (A : Type lA)       isBDiscP A bdA (B : A → Type lB)
+-- -------------------------------------------------------------
+-- A ⊨ B dNRG
+bDiscP-asDNRG : ∀ {lA lB} (A : Type lA) (bdA : isBDisc A) (B : A → Type lB) (bdB : isBDiscP A bdA B) → DispNRG lB (bDisc-asNRG A bdA)
+bDiscP-asDNRG A bdA B bdB .dcr = B
+bDiscP-asDNRG A bdA B bdB .dedge a0 a1 aa b0 b1 = PathP (λ i → B (aa i)) b0 b1
+bDiscP-asDNRG A bdA B bdB .dnativ a0 a1 aa abdg aprf b0 b1 = bdB a0 a1 b0 b1 aa abdg aprf
 
 
 

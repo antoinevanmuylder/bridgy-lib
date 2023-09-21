@@ -16,6 +16,7 @@ open import Bridgy.ROTT.Param
 open import Bridgy.ROTT.Rules
 
 open import Bridgy.Examples.Church
+open import Bridgy.Examples.ChurchGeneric
 -- open import Bridgy.NativeReflGraphRelator
 -- open import Bridgy.ParamNativeRelator
 -- open import Bridgy.NRGRelRecord
