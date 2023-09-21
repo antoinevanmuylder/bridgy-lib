@@ -5,6 +5,7 @@ module Bridgy.ROTT.Rules where
 
 open import Bridgy.Core.BridgePrims
 open import Bridgy.Core.EquGraph
+open import Bridgy.Core.Cong
 open import Bridgy.Core.MyPathToEquiv
 open import Bridgy.Core.BridgeExamples
 open import Bridgy.Core.ExtentExamples
@@ -86,10 +87,30 @@ _#_ Γ A .nrg-cr = Σ (Γ .nrg-cr) (A .dcr)
 _#_ Γ A .nedge (g0 , a0) (g1 , a1) = Σ (Γ ⦅ g0 , g1 ⦆) (λ gg → A ⦅ a0 , a1 ⦆# gg)
 _#_ Γ A .nativ (g0 , a0) (g1 , a1) =
   flip compEquiv ΣvsBridgeP
-  (Σ-cong-equiv (Γ .nativ g0 g1) λ gg →
-  A .dnativ _ _ gg (equivFun (Γ .nativ g0 g1) gg) (inEquGr _ _ _ refl) a0 a1)
+  (Σ-cong-equiv-2ary _ _ _ _ (Γ .nativ g0 g1)
+   λ gg gbdg gprf → A .dnativ g0 g1 gg gbdg gprf a0 a1)
 
 infixl 40 _#_
+
+nativ-lemma-# : ∀ {lΓ lA} (Γ : NRGraph lΓ) (A : DispNRG lA Γ)
+  (g0 g1 : Γ .nrg-cr) (gg : Γ ⦅ g0 , g1 ⦆ ) (gbdg : Bridge (Γ .nrg-cr) g0 g1) (gprf : gg [ Γ .nativ g0 g1 ] gbdg) →
+  (a0 : A .dcr g0) (a1 : A .dcr g1) (aa : A ⦅ a0 , a1 ⦆# gg) (abdg : BridgeP (λ x → A .dcr (gbdg x)) a0 a1) (aprf : aa [ A .dnativ g0 g1 gg gbdg gprf a0 a1 ] abdg ) →
+  (gg , aa) [ (Γ # A) .nativ (g0 , a0) (g1 , a1) ] (λ x → gbdg x , abdg x)
+nativ-lemma-# Γ A g0 g1 gg gbdg gprf a0 a1 aa abdg aprf =
+  compGr _ ΣvsBridgeP (gg , aa) (gbdg , abdg) (λ x → gbdg x , abdg x)
+  {!!}
+  (inEquGr _ _ _ refl)
+  -- inEquGr _ _ _ λ i → equivFun ΣvsBridgeP (outEquGr _ _ _ gprf i , {!!})
+
+
+
+-- Goal: (λ x →
+--          Γ .nativ g0 g1 .fst gg x ,
+--          A .dnativ g0 g1 gg (fst (Γ .nativ g0 g1) gg)
+--          (inEquGr gg (Γ .nativ g0 g1) (fst (Γ .nativ g0 g1) gg)
+--           (λ _ → fst (Γ .nativ g0 g1) gg))
+--          a0 a1 .fst aa x)
+--       ≡ (λ x → gbdg x , abdg x)
 
 
 -- Ty subst
@@ -171,7 +192,10 @@ module ΣΠForm {ℓΓ ℓA ℓB} {Γ : NRGraph ℓΓ} (A : DispNRG ℓA Γ) (B 
     Σ[ aa ∈ A .dedge g0 g1 gg a0 a1 ] B .dedge (g0 , a0) (g1 , a1) (gg , aa) b0 b1
   ΣForm .dnativ g0 g1 gg gbdg gprf (a0 , b0) (a1 , b1) =
     flip compEquiv ΣvsBridgeP
-    {!Σ-cong-equiv!}
+    (Σ-cong-equiv-2ary _ _ _ _ (A .dnativ g0 g1 gg gbdg gprf a0 a1) λ aa abdg aprf →
+    B .dnativ (g0 , a0) (g1 , a1) (gg , aa) (λ x → gbdg x , abdg x)
+    {!!}
+    b0 b1)
   -- ΣForm =
   --   record {
   --     dcr = λ γ → Σ (A .dcr γ) (λ a → B .dcr (γ , a))  ;
