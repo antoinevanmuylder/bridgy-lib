@@ -5,9 +5,11 @@ open import Bridgy.Core.BridgePrims
 open import Bridgy.Core.BridgeExamples
 open import Bridgy.Core.ExtentExamples
 open import Bridgy.Core.GelExamples
+open import Bridgy.Core.EquGraph
 open import Bridgy.Core.BDisc
 open import Bridgy.Core.MyPathToEquiv
 open import Bridgy.Core.List
+
 
 open import Bridgy.ROTT.Judgments
 open import Bridgy.ROTT.Param

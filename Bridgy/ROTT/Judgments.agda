@@ -3,6 +3,7 @@
 module Bridgy.ROTT.Judgments where
 
 open import Bridgy.Core.BridgePrims
+open import Bridgy.Core.EquGraph
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.Properties
@@ -26,29 +27,29 @@ _⦅_,_⦆ : ∀ {ℓ} (G : NRGraph ℓ) → G .nrg-cr → G .nrg-cr → Type �
 _⦅_,_⦆ {ℓ} G g0 g1 = G .nedge g0 g1
 
 
--- relatedness under equivalences
-module EquGraph {l : Level} {A0 A1 : Type l} where
+-- -- relatedness under equivalences
+-- module EquGraph {l : Level} {A0 A1 : Type l} where
 
-  abstract
+--   abstract
 
-    _[_]_ : A0 → A0 ≃ A1 → A1 → Type l
-    _[_]_ a0 e a1 = (equivFun e a0) ≡ a1
+--     _[_]_ : A0 → A0 ≃ A1 → A1 → Type l
+--     _[_]_ a0 e a1 = (equivFun e a0) ≡ a1
 
-    -- e a0 ≡ a1 → a0 [e] a1
-    inEquGr : (a0 : A0) → (e : A0 ≃ A1) → (a1 : A1) → 
-      (equivFun e a0) ≡ a1 → (a0 [ e ] a1)
-    inEquGr a0 e a1 prf = prf
+--     -- e a0 ≡ a1 → a0 [e] a1
+--     inEquGr : (a0 : A0) → (e : A0 ≃ A1) → (a1 : A1) → 
+--       (equivFun e a0) ≡ a1 → (a0 [ e ] a1)
+--     inEquGr a0 e a1 prf = prf
 
-    outEquGr : (a0 : A0) → (e : A0 ≃ A1) → (a1 : A1) →
-      (a0 [ e ] a1) → (equivFun e a0) ≡ a1
-    outEquGr _ _ _ prf = prf
+--     outEquGr : (a0 : A0) → (e : A0 ≃ A1) → (a1 : A1) →
+--       (a0 [ e ] a1) → (equivFun e a0) ≡ a1
+--     outEquGr _ _ _ prf = prf
 
-    -- a0 [e] a1 → a0 ≡ e^-1 a1
-    outEquGrInv : (a0 : A0) → (e : A0 ≃ A1) → (a1 : A1) →
-      (a0 [ e ] a1) → a0 ≡ invEq e a1
-    outEquGrInv a0 e a1 aprf = invEq (equivAdjointEquiv e) aprf
+--     -- a0 [e] a1 → a0 ≡ e^-1 a1
+--     outEquGrInv : (a0 : A0) → (e : A0 ≃ A1) → (a1 : A1) →
+--       (a0 [ e ] a1) → a0 ≡ invEq e a1
+--     outEquGrInv a0 e a1 aprf = invEq (equivAdjointEquiv e) aprf
 
-open EquGraph public
+-- open EquGraph public
     
 
 
