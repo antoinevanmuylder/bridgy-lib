@@ -38,36 +38,55 @@ module _ (S : Type) (Sbd : isBDisc S) (P : S → Set) (PbdP : isBDiscP S Sbd P) 
   ------------------------------------------------------------------------
   -- First, we must build X : Type ⊨ (FX → X) → X dNRG.
 
+  F : ∀ {l} → Type l → Type l
+  F X = Σ[ s ∈ S ] (P s → X)
+
 
   -- X:Type , s : S ⊨ P s dNRG
-  PdNRG : DispNRG ℓ-zero (TypeNRG ℓ-zero # bDisc-asDNRG S Sbd)
-  PdNRG = bDiscP-asDNRG (TypeNRG ℓ-zero) S Sbd P PbdP
+  PdNRG : ∀ {l} → DispNRG ℓ-zero (TypeNRG l # bDisc-asDNRG S Sbd)
+  PdNRG = bDiscP-asDNRG (TypeNRG _) S Sbd P PbdP
 
-  -- the container functor as a dNRG, i.e. X ⊨ F X dNRG, i.e. X ⊨ Σ[ s : S] P s → X dNRG
-  FdNRG : DispNRG ℓ-zero (TypeNRG ℓ-zero)
-  FdNRG =
+  -- the container functor as a dNRG, i.e. (X:Type l) ⊨ F X dNRG, i.e. X ⊨ Σ[ s : S] P s → X dNRG
+  FdNRG : ∀ {l} → DispNRG l (TypeNRG l)
+  FdNRG {l} =
     ΣForm (bDisc-asDNRG S Sbd)
-    (→Form ℓ-zero ℓ-zero
+    (→Form ℓ-zero l
       PdNRG
     -- X:Type, s:S ⊨ ElX dNRG
     (X,stuff⊨ElX (bDisc-asDNRG S Sbd)))
+    -- (X,stuff⊨ElX (bDisc-asDNRG S Sbd)))
 
   -- FdNRG is Σ[ s : S] P s → X decorated with a (dependent) relational extensionality principle
-  Fcheck : ∀ (X : Type) →
+  Fcheck : ∀ {l} (X : Type l) →
     (FdNRG .dcr X) ≡ (Σ[ s ∈ S ] (P s → X))
   Fcheck X = refl
 
-  -- X : Type ⊨ (FX → X) → X dNRG.  
-  ChurchF-dNRG : DispNRG ℓ-zero (TypeNRG ℓ-zero)
-  ChurchF-dNRG =
-   flip (→Form ℓ-zero ℓ-zero) (X⊨ElX)
-   (→Form ℓ-zero ℓ-zero (FdNRG) (X⊨ElX))
+  -- X : Type l ⊨ (FX → X) → X dNRG.  
+  ChurchF-dNRG : ∀ {l} → DispNRG l (TypeNRG l)
+  ChurchF-dNRG {l} =
+   flip (→Form l l) (X⊨ElX)
+   (→Form l l (FdNRG) (X⊨ElX))
 
   ChurchF-check : ∀ (X : Type) →
     (ChurchF-dNRG .dcr X)
     ≡
     ( ((Σ[ s ∈ S ] (P s → X)) → X) → X )
-  ChurchF-check X = refl
+  ChurchF-check X = {!!}
+
+  ------------------------------------------------------------------------
+  -- Second, we state the Church encoding
+  -- We do everything at Type₀. It's possible to do it at Type l (see specific Church encodings in Church.agda e.g.)
+  
+  data μF l : Type l where
+    foldμF : F (μF l) → μF l
+
+  genericChurch :
+    (∀ (X : Type) → ((F X → X) → X))
+    ≃
+    μF ℓ-zero
+  genericChurch = {!!}
+
+  
 
   
 
