@@ -38,20 +38,38 @@ module _ (S : Type) (Sbd : isBDisc S) (P : S → Set) (PbdP : isBDiscP S Sbd P) 
   ------------------------------------------------------------------------
   -- First, we must build X : Type ⊨ (FX → X) → X dNRG.
 
-  SNRG : NRGraph ℓ-zero
-  SNRG = bDisc-asNRG S Sbd
 
-  PdNRG : DispNRG ℓ-zero SNRG
-  PdNRG = bDiscP-asDNRG S Sbd P PbdP
+  -- X:Type , s : S ⊨ P s dNRG
+  PdNRG : DispNRG ℓ-zero (TypeNRG ℓ-zero # bDisc-asDNRG S Sbd)
+  PdNRG = bDiscP-asDNRG (TypeNRG ℓ-zero) S Sbd P PbdP
 
   -- the container functor as a dNRG, i.e. X ⊨ F X dNRG, i.e. X ⊨ Σ[ s : S] P s → X dNRG
   FdNRG : DispNRG ℓ-zero (TypeNRG ℓ-zero)
   FdNRG =
     ΣForm (bDisc-asDNRG S Sbd)
-    (flip (→Form ℓ-zero ℓ-zero)
-      {!!}
-    {!!})
+    (→Form ℓ-zero ℓ-zero
+      PdNRG
+    -- X:Type, s:S ⊨ ElX dNRG
+    (X,stuff⊨ElX (bDisc-asDNRG S Sbd)))
 
+  -- FdNRG is Σ[ s : S] P s → X decorated with a (dependent) relational extensionality principle
+  Fcheck : ∀ (X : Type) →
+    (FdNRG .dcr X) ≡ (Σ[ s ∈ S ] (P s → X))
+  Fcheck X = refl
+
+  -- X : Type ⊨ (FX → X) → X dNRG.  
+  ChurchF-dNRG : DispNRG ℓ-zero (TypeNRG ℓ-zero)
+  ChurchF-dNRG =
+   flip (→Form ℓ-zero ℓ-zero) (X⊨ElX)
+   (→Form ℓ-zero ℓ-zero (FdNRG) (X⊨ElX))
+
+  ChurchF-check : ∀ (X : Type) →
+    (ChurchF-dNRG .dcr X)
+    ≡
+    ( ((Σ[ s ∈ S ] (P s → X)) → X) → X )
+  ChurchF-check X = refl
+
+  
 
   
 
