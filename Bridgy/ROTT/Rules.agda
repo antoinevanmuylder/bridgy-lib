@@ -5,7 +5,7 @@ module Bridgy.ROTT.Rules where
 
 open import Bridgy.Core.BridgePrims
 open import Bridgy.Core.EquGraph
-open import Bridgy.Core.Cong
+open import Bridgy.Core.CubicalLemmas
 open import Bridgy.Core.MyPathToEquiv
 open import Bridgy.Core.BridgeExamples
 open import Bridgy.Core.ExtentExamples

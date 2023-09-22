@@ -3,7 +3,7 @@
 ------------------------------------------------------------------------
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
 
-module Bridgy.Core.Cong where
+module Bridgy.Core.CubicalLemmas where
 
 open import Bridgy.Core.EquGraph
 open import Cubical.Foundations.Prelude
