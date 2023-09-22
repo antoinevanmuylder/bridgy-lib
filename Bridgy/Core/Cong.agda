@@ -26,4 +26,25 @@ module _ {lA lB : Level} (A A' : Type lA) (B : A → Type lB) (B' : A' → Type 
     Σ A B ≃ Σ A' B'
   Σ-cong-equiv-2ary eA ptEqu =
     Σ-cong-equiv eA λ a →
-    ptEqu a (equivFun eA a) (inEquGr _ _ _ refl) 
+    ptEqu a (equivFun eA a) (inEquGr refl) 
+
+
+module _ {ℓ} {A : I → Type ℓ} {new0 old0 : A i0} {new1 old1 : A i1} where
+
+  change-pathp-endpoints : (p0 : new0 ≡ old0) (p1 : new1 ≡ old1) →
+                     PathP A new0 new1 → PathP A old0 old1
+  change-pathp-endpoints p0 p1 pth = transport (λ i → PathP A (p0 i) (p1 i)) pth
+
+module _ {ℓA ℓB} (A : I → Type ℓA) (B : I → Type ℓB)
+                      (a0 : A i0) (a1 : A i1) where
+
+  change-line-pathp : ( nat : (i : I) → A i → B i ) → (PathP A a0 a1) →
+              PathP B (nat i0 a0) (nat i1 a1)
+  change-line-pathp nat p = λ x → nat x (p x)
+
+
+still-equal : ∀ {l} {A : Type l} {a0 a1 : A} →
+  (p : a0 ≡ a1) → (k : I) → a0 ≡ p k
+still-equal p k = λ i → p ( i ∧ k)
+
+ 

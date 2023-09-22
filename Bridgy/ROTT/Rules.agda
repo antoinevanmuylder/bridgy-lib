@@ -92,25 +92,37 @@ _#_ Γ A .nativ (g0 , a0) (g1 , a1) =
 
 infixl 40 _#_
 
+-- a drawback of having nativeness phrased in a 2ary way is the we have to call this lemma
 nativ-lemma-# : ∀ {lΓ lA} (Γ : NRGraph lΓ) (A : DispNRG lA Γ)
   (g0 g1 : Γ .nrg-cr) (gg : Γ ⦅ g0 , g1 ⦆ ) (gbdg : Bridge (Γ .nrg-cr) g0 g1) (gprf : gg [ Γ .nativ g0 g1 ] gbdg) →
   (a0 : A .dcr g0) (a1 : A .dcr g1) (aa : A ⦅ a0 , a1 ⦆# gg) (abdg : BridgeP (λ x → A .dcr (gbdg x)) a0 a1) (aprf : aa [ A .dnativ g0 g1 gg gbdg gprf a0 a1 ] abdg ) →
   (gg , aa) [ (Γ # A) .nativ (g0 , a0) (g1 , a1) ] (λ x → gbdg x , abdg x)
 nativ-lemma-# Γ A g0 g1 gg gbdg gprf a0 a1 aa abdg aprf =
   compGr _ ΣvsBridgeP (gg , aa) (gbdg , abdg) (λ x → gbdg x , abdg x)
-  {!!}
-  (inEquGr _ _ _ refl)
-  -- inEquGr _ _ _ λ i → equivFun ΣvsBridgeP (outEquGr _ _ _ gprf i , {!!})
+  (inEquGr (ΣPathP (outEquGr gprf ,
+    change-pathp-endpoints refl (outEquGr aprf)
+    λ i x → A .dnativ g0 g1 gg (outEquGr gprf i) (to-gprf i) a0 a1 .fst aa x)))
+  (inEquGr refl)
+  
+  where
 
+    aux1 = change-line-pathp (λ i → Γ .nativ g0 g1 .fst gg ≡ outEquGr gprf i) (λ i → gg [ Γ .nativ g0 g1 ] (outEquGr gprf i))
+           refl (outEquGr gprf)
+           (λ i hyp → inEquGr hyp)
 
+    to-gprf : PathP (λ i → gg [ Γ .nativ g0 g1 ] (outEquGr gprf i)) (inEquGr refl) gprf
+    to-gprf =
+      change-pathp-endpoints refl (inOfOut gprf) (aux1
+      λ i j → outEquGr gprf (i ∧ j))
 
--- Goal: (λ x →
---          Γ .nativ g0 g1 .fst gg x ,
+-- λ i x → A .dnativ g0 g1 gg (outEquGr gprf i) (inEquGr _) a0 a1 .fst aa x 
+
+-- Goal: PathP
+--       (λ i → BridgeP (λ x → A .dcr (outEquGr gprf i x)) a0 a1)
+--       (λ x →
 --          A .dnativ g0 g1 gg (fst (Γ .nativ g0 g1) gg)
---          (inEquGr gg (Γ .nativ g0 g1) (fst (Γ .nativ g0 g1) gg)
---           (λ _ → fst (Γ .nativ g0 g1) gg))
---          a0 a1 .fst aa x)
---       ≡ (λ x → gbdg x , abdg x)
+--          (inEquGr (λ _ → fst (Γ .nativ g0 g1) gg)) a0 a1 .fst aa x)
+--       (fst (A .dnativ g0 g1 gg gbdg gprf a0 a1) aa)
 
 
 -- Ty subst
@@ -133,7 +145,7 @@ pr : ∀ {l} {Γ : NRGraph l} (lA : Level) (A : DispNRG lA Γ) →
 pr lA A .nrel0 (g , _) = g
 pr lA A .nrel1 (g0 , a0) (g1 , a1) (gg , aa) = gg
 pr lA A .nativ-rel (g0 , a0) (g1 , a1) gaa gabdg gaprf
-  = inEquGr _ _ _ λ i x → outEquGr _ _ _ gaprf i x .fst
+  = inEquGr λ i x → outEquGr gaprf i x .fst
 
 
 
@@ -171,7 +183,7 @@ El c .dcr g = c .tm0 g
 El c .dedge g0 g1 gg c0 c1 = c .tm1 g0 g1 gg c0 c1
 -- c .tm-nativ gives a ≡, displayed nativeness asks for a ≃.
 El c .dnativ g0 g1 gg gbdg gprf c0 c1 =
-  let z = (outEquGrInv _ _ _ (c .tm-nativ g0 g1 gg gbdg gprf)) in
+  let z = (outEquGrInv (c .tm-nativ g0 g1 gg gbdg gprf)) in
   mypathToEquiv (funExt⁻ (funExt⁻ z c0) c1)
 
 X⊨ElX : ∀ {l : Level} → DispNRG l (TypeNRG l)
@@ -194,8 +206,10 @@ module ΣΠForm {ℓΓ ℓA ℓB} {Γ : NRGraph ℓΓ} (A : DispNRG ℓA Γ) (B 
     flip compEquiv ΣvsBridgeP
     (Σ-cong-equiv-2ary _ _ _ _ (A .dnativ g0 g1 gg gbdg gprf a0 a1) λ aa abdg aprf →
     B .dnativ (g0 , a0) (g1 , a1) (gg , aa) (λ x → gbdg x , abdg x)
-    {!!}
+    (nativ-lemma-# Γ A g0 g1 gg gbdg gprf a0 a1 aa abdg aprf)
     b0 b1)
+  
+  -- When nativeness was phrased 1ary
   -- ΣForm =
   --   record {
   --     dcr = λ γ → Σ (A .dcr γ) (λ a → B .dcr (γ , a))  ;

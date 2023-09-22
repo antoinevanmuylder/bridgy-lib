@@ -27,7 +27,7 @@ module ParamDNRG {l l' : Level} (G : NRGraph l) (A : DispNRG l' G) where
   param f g0 g1 gg =
     let
       fwd = equivFun (G .nativ g0 g1)
-      bwd = invEq (A .dnativ g0 g1 gg (fwd gg) (inEquGr _ _ _ refl) (f g0) (f g1))
+      bwd = invEq (A .dnativ g0 g1 gg (fwd gg) (inEquGr refl) (f g0) (f g1))
     in
       bwd λ x → f ( fwd gg x )
 
