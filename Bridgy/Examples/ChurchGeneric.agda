@@ -1,3 +1,12 @@
+------------------------------------------------------------------------
+-- A proof that the (strict) initial algebra of a container functor
+-- F X := Σ[ s ∈ S ] P s → X
+-- can be church encoded, i.e.
+-- μ F ≃ ∀ X. (F X → X) → X
+-- 
+-- warning: S, and P : S → Type must be bridge-discrete.
+------------------------------------------------------------------------
+
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
 
 module Bridgy.Examples.ChurchGeneric where
@@ -22,13 +31,27 @@ open import Cubical.Foundations.Function
 -- open import Cubical.Foundations.Transport
 
 
+
 module _ (S : Type) (Sbd : isBDisc S) (P : S → Set) (PbdP : isBDiscP S Sbd P) where
+
+
+  ------------------------------------------------------------------------
+  -- First, we must build X : Type ⊨ (FX → X) → X dNRG.
 
   SNRG : NRGraph ℓ-zero
   SNRG = bDisc-asNRG S Sbd
 
   PdNRG : DispNRG ℓ-zero SNRG
   PdNRG = bDiscP-asDNRG S Sbd P PbdP
+
+  -- the container functor as a dNRG, i.e. X ⊨ F X dNRG, i.e. X ⊨ Σ[ s : S] P s → X dNRG
+  FdNRG : DispNRG ℓ-zero (TypeNRG ℓ-zero)
+  FdNRG =
+    ΣForm (bDisc-asDNRG S Sbd)
+    (flip (→Form ℓ-zero ℓ-zero)
+      {!!}
+    {!!})
+
 
   
 

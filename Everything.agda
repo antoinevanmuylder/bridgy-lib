@@ -1,5 +1,5 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
-module Everything where -- todo: generate Everything.agda by makefile
+module Everything where
 
 open import Bridgy.Core.BridgePrims
 open import Bridgy.Core.BridgeExamples

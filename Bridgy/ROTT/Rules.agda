@@ -266,6 +266,25 @@ bDisc-asDNRG A bd .dcr _ = A
 bDisc-asDNRG A bd .dedge g0 g1 gg a0 a1 = a0 ≡ a1
 bDisc-asDNRG A bd .dnativ g0 g1 gg gbdg gprf a0 a1 = isBDisc→equiv A bd a0 a1
 
+-- A, B bridge-discrete, B does not depend on Γ.
+-- ---------------------------------------------
+-- Γ # A ⊨ B dNRG
+bDiscP-asDNRG : ∀ {lΓ lA lB} (Γ : NRGraph lΓ)
+  (A : Type lA) (bdA : isBDisc A)
+  (B : A → Type lB) (bdB : isBDiscP A bdA B) → 
+  DispNRG lB (Γ # (bDisc-asDNRG A bdA))
+bDiscP-asDNRG Γ A bdA B bdB .dcr (g , a) = B a
+bDiscP-asDNRG Γ A bdA B bdB .dedge (g0 , a0) (g1 , a1) (gg , aa) b0 b1 = PathP (λ i → B (aa i)) b0 b1
+bDiscP-asDNRG Γ A bdA B bdB .dnativ (g0 , a0) (g1 , a1) (gg , aa) gbdg gprf b0 b1 =
+  bdB a0 a1 b0 b1 aa (λ x → gbdg x .snd)
+  (inEquGr {!outEquGr gprf!})
+  -- (inEquGr (fromPathP {A = λ i → BridgeP (λ _ → A) a0 (aa i)}
+  -- {!!}))
+
+
+
+
+
 -- A (closed) bridge discrete type gives rise to an NRG
 -- isBDIsc (A : Type l)
 -- --------------------
@@ -280,10 +299,13 @@ bDisc-asNRG A bd .nativ a0 a1 = isBDisc→equiv A bd a0 a1
 -- isBDisc (A : Type lA)       isBDiscP A bdA (B : A → Type lB)
 -- -------------------------------------------------------------
 -- A ⊨ B dNRG
-bDiscP-asDNRG : ∀ {lA lB} (A : Type lA) (bdA : isBDisc A) (B : A → Type lB) (bdB : isBDiscP A bdA B) → DispNRG lB (bDisc-asNRG A bdA)
-bDiscP-asDNRG A bdA B bdB .dcr = B
-bDiscP-asDNRG A bdA B bdB .dedge a0 a1 aa b0 b1 = PathP (λ i → B (aa i)) b0 b1
-bDiscP-asDNRG A bdA B bdB .dnativ a0 a1 aa abdg aprf b0 b1 = bdB a0 a1 b0 b1 aa abdg aprf
+bDiscP-asDNRG' : ∀ {lA lB} (A : Type lA) (bdA : isBDisc A) (B : A → Type lB) (bdB : isBDiscP A bdA B) → DispNRG lB (bDisc-asNRG A bdA)
+bDiscP-asDNRG' A bdA B bdB .dcr = B
+bDiscP-asDNRG' A bdA B bdB .dedge a0 a1 aa b0 b1 = PathP (λ i → B (aa i)) b0 b1
+bDiscP-asDNRG' A bdA B bdB .dnativ a0 a1 aa abdg aprf b0 b1 = bdB a0 a1 b0 b1 aa abdg aprf
+
+
+
 
 
 
