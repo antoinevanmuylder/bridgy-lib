@@ -209,7 +209,7 @@ module ΣΠForm {ℓΓ ℓA ℓB} {Γ : NRGraph ℓΓ} (A : DispNRG ℓA Γ) (B 
     (nativ-lemma-# Γ A g0 g1 gg gbdg gprf a0 a1 aa abdg aprf)
     b0 b1)
   
-  -- When nativeness was phrased 1ary
+  -- When nativeness was phrased 1ary (there was no need for nativ-lemma-#)
   -- ΣForm =
   --   record {
   --     dcr = λ γ → Σ (A .dcr γ) (λ a → B .dcr (γ , a))  ;
@@ -220,11 +220,23 @@ module ΣΠForm {ℓΓ ℓA ℓB} {Γ : NRGraph ℓΓ} (A : DispNRG ℓA Γ) (B 
   --       invEquiv (B .dnativ (γ0 , a0) (γ1 , a1) (λ x → (γbdg x , abdg x )) b0 b1) )) }
   --   }
 
-  -- -- -- Γ ⊢ A type
-  -- -- -- Γ.A ⊢ B type
-  -- -- -- --------------
-  -- -- -- Γ ⊢ Π A B type
-  -- ΠForm : DispNRG (ℓ-max ℓA ℓB) Γ
+  -- -- Γ ⊢ A type
+  -- -- Γ.A ⊢ B type
+  -- -- --------------
+  -- -- Γ ⊢ Π A B type
+  ΠForm : DispNRG (ℓ-max ℓA ℓB) Γ
+  ΠForm .dcr g = (a : A .dcr g) → B .dcr (g , a)
+  ΠForm .dedge g0 g1 gg f0 f1 = ∀ a0 a1 (aa : A ⦅ a0 , a1 ⦆# gg) → B ⦅ f0 a0 , f1 a1 ⦆# (gg , aa)
+  ΠForm .dnativ g0 g1 gg gbdg gprf f0 f1 =
+    flip compEquiv ΠvsBridgeP
+    (equivΠCod λ a0 → equivΠCod λ a1 →
+    equivΠ' (A .dnativ g0 g1 gg gbdg gprf a0 a1)
+    λ {aa abdg} aprf → 
+      B .dnativ (g0 , a0) (g1 , a1) (gg , aa) (λ x → gbdg x , abdg x)
+      (nativ-lemma-# Γ A g0 g1 gg gbdg gprf a0 a1 aa abdg (inEquGr aprf))
+      (f0 a0) (f1 a1))
+
+  -- When nativeness was phrased 1ary (there was no need for nativ-lemma-#)
   -- ΠForm = record {
   --   dcr = λ γ → ∀ (a : A .dcr γ) → B .dcr (γ , a) ;
   --   dedge = λ γ0 γ1 γγ f0 f1 → ∀ (a0 : A .dcr γ0) (a1 : A .dcr γ1) (aa : A ⦅ a0 , a1 ⦆# γγ ) → B ⦅ f0 a0 , f1 a1 ⦆# (γγ , aa) ;
