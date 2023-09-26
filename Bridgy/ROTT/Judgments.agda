@@ -4,9 +4,11 @@ module Bridgy.ROTT.Judgments where
 
 open import Bridgy.Core.BridgePrims
 open import Bridgy.Core.EquGraph
+open import Bridgy.Core.MyPathToEquiv
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.Properties
+open import Cubical.Foundations.Function
 open import Cubical.Data.Unit
 
 -- SEMANTIC CONTEXTS.
@@ -26,31 +28,6 @@ open NRGraph public
 _⦅_,_⦆ : ∀ {ℓ} (G : NRGraph ℓ) → G .nrg-cr → G .nrg-cr → Type ℓ
 _⦅_,_⦆ {ℓ} G g0 g1 = G .nedge g0 g1
 
-
--- -- relatedness under equivalences
--- module EquGraph {l : Level} {A0 A1 : Type l} where
-
---   abstract
-
---     _[_]_ : A0 → A0 ≃ A1 → A1 → Type l
---     _[_]_ a0 e a1 = (equivFun e a0) ≡ a1
-
---     -- e a0 ≡ a1 → a0 [e] a1
---     inEquGr : (a0 : A0) → (e : A0 ≃ A1) → (a1 : A1) → 
---       (equivFun e a0) ≡ a1 → (a0 [ e ] a1)
---     inEquGr a0 e a1 prf = prf
-
---     outEquGr : (a0 : A0) → (e : A0 ≃ A1) → (a1 : A1) →
---       (a0 [ e ] a1) → (equivFun e a0) ≡ a1
---     outEquGr _ _ _ prf = prf
-
---     -- a0 [e] a1 → a0 ≡ e^-1 a1
---     outEquGrInv : (a0 : A0) → (e : A0 ≃ A1) → (a1 : A1) →
---       (a0 [ e ] a1) → a0 ≡ invEq e a1
---     outEquGrInv a0 e a1 aprf = invEq (equivAdjointEquiv e) aprf
-
--- open EquGraph public
-    
 
 
 -- SEMANTIC SUBSTITUTIONS.
@@ -104,6 +81,32 @@ open DispNRG public
 
 _⦅_,_⦆#_ : ∀ {ℓ ℓ' : Level} {Γ} (A : DispNRG {ℓ = ℓ} ℓ' Γ) {γ0 γ1 : Γ .nrg-cr} (a0 : A .dcr γ0) (a1 : A .dcr γ1) (γγ : Γ ⦅ γ0 , γ1 ⦆) → Type ℓ'
 _⦅_,_⦆#_ {ℓ} {ℓ'} {Γ} A {γ0} {γ1} a0 a1 γγ = A .dedge γ0 γ1 γγ a0 a1
+
+
+module DNativ-Formulations {lΓ lA} (Γ : NRGraph lΓ)
+  (Adcr : Γ .nrg-cr → Type lA) (Adedge : ∀ (g0 g1 : Γ .nrg-cr) (gg : Γ ⦅ g0 , g1 ⦆ ) (a0 : Adcr g0) (a1 : Adcr g1) → Type lA) where
+
+  2ary-Forml = (g0 g1 : Γ .nrg-cr) →
+      (gg : Γ ⦅ g0 , g1 ⦆ ) (gbdg : Bridge (Γ .nrg-cr) g0 g1) → gg [ Γ .nativ g0 g1 ] gbdg →
+      (a0 : Adcr g0) (a1 : Adcr g1) →
+      Adedge g0 g1 gg a0 a1 ≃ BridgeP (λ x → Adcr (gbdg x)) a0 a1
+
+  ∀bdg-Forml = (g0 g1 : Γ .nrg-cr) (gbdg : Bridge (Γ .nrg-cr) g0 g1) (a0 : Adcr g0) (a1 : Adcr g1) →
+    Adedge g0 g1 (invEq (Γ .nativ g0 g1) gbdg ) a0 a1 ≃ BridgeP (λ x → Adcr (gbdg x)) a0 a1
+
+  ∀bdg→2ary : ∀bdg-Forml → 2ary-Forml
+  ∀bdg→2ary hyp g0 g1 gg gbdg gprf a0 a1 =
+    flip compEquiv (hyp g0 g1 gbdg a0 a1)
+    (mypathToEquiv λ i → Adedge g0 g1 (outEquGrInv gprf i) a0 a1)
+
+  2ary→∀bdg : 2ary-Forml → ∀bdg-Forml
+  2ary→∀bdg hyp g0 g1 gbdg a0 a1 =
+    hyp g0 g1 (invEq (Γ .nativ g0 g1) gbdg) gbdg (inEquGrInv refl) a0 a1
+
+  -- ∀bdg≤2ary : ∀ (hyp : ∀bdg-Forml) → 2ary→∀bdg (∀bdg→2ary hyp) ≡ hyp
+  -- ∀bdg≤2ary hyp = funExt λ g0 → funExt λ g1 → funExt λ gbdg → funExt λ a0 → funExt λ a1 →
+  --   equivEq  (funExt λ aa → cong (hyp g0 g1 gbdg a0 a1 .fst)
+  --   {!? ∙ ()!})
 
 
 

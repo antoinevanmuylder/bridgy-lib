@@ -1,6 +1,6 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
 
--- open import Bridgy.Core.BridgePrims
+open import Bridgy.Core.BridgePrims
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.Properties
@@ -38,6 +38,10 @@ module _ {l : Level} {A0 A1 : Type l} where
     inOfOut : ∀ {a0 : A0} {e : A0 ≃ A1} {a1 : A1} → 
       (gprf : a0 [ e ] a1) → inEquGr (outEquGr gprf) ≡ gprf
     inOfOut gprf = refl
+
+    -- outOfIn-inv : ∀ {a0 : A0} {e : A0 ≃ A1} {a1 : A1} (prf : a0 ≡ (invEq e a1)) → outEquGrInv {a0 = a0} {e = e} {a1 = a1} (inEquGrInv prf) ≡ prf
+    -- outOfIn-inv prf = λ i j → {!!}
+    
 
 
 
