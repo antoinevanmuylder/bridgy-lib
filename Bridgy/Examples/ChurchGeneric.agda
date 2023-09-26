@@ -16,6 +16,7 @@ open import Bridgy.Core.BDisc
 open import Bridgy.Core.BridgeExamples
 open import Bridgy.Core.ExtentExamples
 open import Bridgy.Core.GelExamples
+open import Bridgy.Core.CubicalLemmas
 open import Bridgy.ROTT.Judgments
 open import Bridgy.ROTT.Param
 open import Bridgy.ROTT.Rules
@@ -28,6 +29,7 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Function
+open import Cubical.Functions.FunExtEquiv
 -- open import Cubical.Foundations.Transport
 
 
@@ -104,8 +106,8 @@ module _ (S : Type) (Sbd : isBDisc S) (P : S → Set) (PbdP : isBDiscP S Sbd P) 
     μFtoChF
     μF≤ChF
     λ ch → funExt λ A → funExt λ f →
-      let auxparam = param (TypeNRG ℓ-zero) ChurchF-dNRG ch (μF ℓ-zero) A (λ x a → recμF f x ≡ a) in
-      {!auxparam foldμF f!})
+      let auxparam = param (TypeNRG ℓ-zero) ChurchF-dNRG ch (μF ℓ-zero) A (λ x a → recμF f x ≡ a) foldμF f obl in
+      {!!})
 
 -- goal recμF f (ch (μF ℓ-zero) foldμF) ≡ ch A f
 
@@ -122,7 +124,8 @@ module _ (S : Type) (Sbd : isBDisc S) (P : S → Set) (PbdP : isBDiscP S Sbd P) 
 
       obl : {A : Type ℓ-zero} {f : F A → A} → →Form ℓ-zero ℓ-zero FdNRG X⊨ElX ⦅ foldμF , f ⦆# (λ x a → recμF f x ≡ a)
       obl {f = f} (s0 , f0) (s1 , f1) (ss , ff) =
-        cong f (ΣPathP (ss , {!!})) 
+        cong f (ΣPathP (ss , funExtDep
+        λ {p0} {p1} pp → ff p0 p1 pp)) 
   
 
   

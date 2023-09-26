@@ -47,4 +47,11 @@ still-equal : ∀ {l} {A : Type l} {a0 a1 : A} →
   (p : a0 ≡ a1) → (k : I) → a0 ≡ p k
 still-equal p k = λ i → p ( i ∧ k)
 
+-- module _ {l : Level} {A : I → Type l} {B : (i : I) → A i → Type l}
+--   (f0 : (a : A i0) → B i0 a) (f1 : (a : A i1) → B i1 a) where
+
+--   funExtP-2ary :
+--     ( ∀ (a0 : A i0) (a1 : A i1) (aa : PathP (λ i → A i) a0 a1) → PathP (λ i → B i (aa i)) (f0 a0) (f1 a1) ) →
+--     PathP (λ i → (a : A i) → B i a) f0 f1
+--   funExtP-2ary hyp i a = {!!}
  
