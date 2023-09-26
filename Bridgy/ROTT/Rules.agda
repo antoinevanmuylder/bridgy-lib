@@ -11,6 +11,7 @@ open import Bridgy.Core.BridgeExamples
 open import Bridgy.Core.ExtentExamples
 open import Bridgy.Core.GelExamples
 open import Bridgy.Core.BDisc
+open import Bridgy.Core.List
 open import Bridgy.ROTT.Judgments
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
@@ -19,6 +20,7 @@ open import Cubical.Foundations.Function
 open import Cubical.Data.Unit
 open import Cubical.Data.Sigma
 open import Cubical.Data.Sigma.Properties
+open import Cubical.Data.List hiding ( [_] )
 
 
 ------------------------------------------------------------------------
@@ -354,6 +356,31 @@ bDiscP-asDNRG' A bdA B bdB .dnativ a0 a1 aa abdg aprf b0 b1 = bdB a0 a1 b0 b1 aa
 
 
 
+
+
+
+------------------------------------------------------------------------
+-- X:Type ⊨ List X dNRG
+
+ListdNRG : ∀ {l} → DispNRG l (TypeNRG l)
+ListdNRG .dcr X = List X
+ListdNRG .dedge X0 X1 XX = [List XX ] --action of List on relations.
+ListdNRG .dnativ X0 X1 XX Xbdg Xprf as0 as1 =
+  flip compEquiv (ListvsBridgeP Xbdg)
+  (ntvUnderList (help-ntv) as0 as1)
+
+  where
+
+    help-ntv : ∀ hd0 hd1 → XX hd0 hd1 ≃ BridgeP (λ x → Xbdg x) hd0 hd1
+    help-ntv hd0 hd1 = mypathToEquiv (funExt⁻ (funExt⁻ (outEquGrInv Xprf) hd0) hd1)
+
+    ntvUnderList : (∀ hd0 hd1 → XX hd0 hd1 ≃ BridgeP (λ x → Xbdg x) hd0 hd1) →
+      ∀ as0 as1 → [List XX ] as0 as1 ≃ [List (BridgeP (λ x → Xbdg x))] as0 as1
+    ntvUnderList hyp [] [] = idEquiv _
+    ntvUnderList hyp [] (hd1 ∷ tl1) = idEquiv _
+    ntvUnderList hyp (hd0 ∷ tl0) [] = idEquiv _
+    ntvUnderList hyp (hd0 ∷ tl0) (hd1 ∷ tl1) = Σ-cong-equiv (hyp hd0 hd1)
+      λ _ → ntvUnderList hyp tl0 tl1
 
 
 
