@@ -106,10 +106,8 @@ module _ (S : Type) (Sbd : isBDisc S) (P : S → Set) (PbdP : isBDiscP S Sbd P) 
     μFtoChF
     μF≤ChF
     λ ch → funExt λ A → funExt λ f →
-      let auxparam = param (TypeNRG ℓ-zero) ChurchF-dNRG ch (μF ℓ-zero) A (λ x a → recμF f x ≡ a) foldμF f obl in
-      {!!})
-
--- goal recμF f (ch (μF ℓ-zero) foldμF) ≡ ch A f
+      let auxparam = param (TypeNRG ℓ-zero) ChurchF-dNRG ch (μF ℓ-zero) A (λ x a → recμF f x ≡ a) foldμF f param-obl in
+      (μFToChF-Vs-recμF (ChFtoμF ch) A f) ∙ auxparam) -- path-compose the μFToChF-Vs-recμF lemma with a param call.
 
     where
 
@@ -122,10 +120,16 @@ module _ (S : Type) (Sbd : isBDisc S) (P : S → Set) (PbdP : isBDiscP S Sbd P) 
       μF≤ChF : (x : μF ℓ-zero) → ChFtoμF (μFtoChF x) ≡ x
       μF≤ChF (foldμF (s , vs)) = cong foldμF (cong (s ,_) (funExt λ pos → μF≤ChF (vs pos)))
 
-      obl : {A : Type ℓ-zero} {f : F A → A} → →Form ℓ-zero ℓ-zero FdNRG X⊨ElX ⦅ foldμF , f ⦆# (λ x a → recμF f x ≡ a)
-      obl {f = f} (s0 , f0) (s1 , f1) (ss , ff) =
+      param-obl : {A : Type ℓ-zero} {f : F A → A} → →Form ℓ-zero ℓ-zero FdNRG X⊨ElX ⦅ foldμF , f ⦆# (λ x a → recμF f x ≡ a)
+      param-obl {f = f} (s0 , f0) (s1 , f1) (ss , ff) =
         cong f (ΣPathP (ss , funExtDep
-        λ {p0} {p1} pp → ff p0 p1 pp)) 
+        λ {p0} {p1} pp → ff p0 p1 pp))
+
+      μFToChF-Vs-recμF : (x : μF ℓ-zero) (A : Type ℓ-zero) (f : F A → A) →
+        μFtoChF x A f ≡ recμF f x
+      μFToChF-Vs-recμF (foldμF (s , vs)) A f = cong f (ΣPathP (refl ,
+        funExt λ pos → μFToChF-Vs-recμF (vs pos) A f))
+
   
 
   
