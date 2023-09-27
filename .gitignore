@@ -49,7 +49,5 @@ _minted*
 # agda
 *.agdai
 
-NatGpd.agda
-Bridgy/test/
 
 !abstract.pdf

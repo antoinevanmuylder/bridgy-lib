@@ -3,8 +3,8 @@
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Sigma
 
-open import Bridgy.GelExamples
-open import Bridgy.BridgePrims
+open import Bridgy.Core.GelExamples
+open import Bridgy.Core.BridgePrims
 
 module Bridgy.KAry
        (Arity : Set)
