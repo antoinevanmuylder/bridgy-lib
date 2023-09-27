@@ -108,6 +108,8 @@ module DNativ-Formulations {lΓ lA} (Γ : NRGraph lΓ)
   --   equivEq  (funExt λ aa → cong (hyp g0 g1 gbdg a0 a1 .fst)
   --   {!? ∙ ()!})
 
+open DNativ-Formulations public
+
 
 
 -- SEMANTIC (OPEN) TERMS

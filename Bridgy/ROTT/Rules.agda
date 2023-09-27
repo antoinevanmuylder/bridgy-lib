@@ -70,6 +70,8 @@ _×NRG_ G H .nativ  (g0 , h0) (g1 , h1) = flip compEquiv ×vsBridgeP (≃-× (G 
 
 
 
+
+
 ------------------------------------------------------------------------
 -- Some native relators
 
@@ -381,6 +383,7 @@ ListdNRG .dnativ X0 X1 XX Xbdg Xprf as0 as1 =
     ntvUnderList hyp (hd0 ∷ tl0) [] = idEquiv _
     ntvUnderList hyp (hd0 ∷ tl0) (hd1 ∷ tl1) = Σ-cong-equiv (hyp hd0 hd1)
       λ _ → ntvUnderList hyp tl0 tl1
+
 
 
 
