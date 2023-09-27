@@ -17,18 +17,4 @@ open import Bridgy.ROTT.Rules
 
 open import Bridgy.Examples.Church
 open import Bridgy.Examples.ChurchGeneric
--- open import Bridgy.NativeReflGraphRelator
--- open import Bridgy.ParamNativeRelator
--- open import Bridgy.NRGRelRecord
--- open import Bridgy.Param
--- open import Bridgy.List
--- open import Bridgy.SimpleParam
--- open import Bridgy.SystemF
--- open import Bridgy.BDisc
--- open import Bridgy.Drads
--- open import Bridgy.TypePreMonad
-
--- open import Bridgy.ChurchCircle
--- open import Bridgy.KAry
--- open import Bridgy.HPropHSetNRG
--- open import Bridgy.MonadNRGwithDSL
+open import Bridgy.Examples.AListFreeThm
