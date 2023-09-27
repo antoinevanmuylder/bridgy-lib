@@ -27,7 +27,7 @@ To get the latter cubical library to work:
   #+end_src
 - If you don't have a ~libraries~ file yet, create one. You might have to add ~cubical~ to your defaults. see [[https://agda.readthedocs.io/en/v2.6.2.1/tools/package-system.html][agda lib management]].
 *** Enjoy
-Try opening ~Bridgy/BridgePrims.agda~ with emacs, and load with ~C-c C-l~.
+Try opening ~Bridgy/Core/BridgePrims.agda~ with emacs, and load with ~C-c C-l~.
 other emacs commands:
   https://agda.readthedocs.io/en/v2.6.2.1/tools/emacs-mode.html
 *** Get rid of warnings in emacs

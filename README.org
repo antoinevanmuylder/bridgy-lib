@@ -1,20 +1,17 @@
 This repo contains internal parametricity experiments, coded in ~agda --bridges~. The ~--bridges~ branch can be found here https://github.com/antoinevanmuylder/agda/tree/bridges. It implements the parametricity primitives of Cavallo-Harper (CH) from https://arxiv.org/pdf/2005.11290.pdf. See ~INSTALL.org~ for instructions.
 *** Quick tour of some files
-Check out the ~Bridgy/~ directory or ~./Everything.agda~.
-- ~Bridgy.Core/~ contains the CH primitives declarations and raw commutation principles (i.e. relational extensionality principles) for important type formers:
+Check out ~Everything.agda~.
+- ~Bridgy.Core/~ :  ~Agda --bridges~ primitive declarations, raw relational extensionality principles, useful lemmas/definitions. 
   - ~BridgePrims.agda~: declares the CH primitives.
   - ~BridgeExamples.agda~: basic bridge behaviour + commutation principles for ~Bridge~ vs ~Bridge, Path, Σ, ×~.
   - ~ExtentExamples.agda~: commutation ~Bridge~ vs ~Π~.
   - ~GelExamples.agda~: commutation with equivalences, and the universe ("relativity").
-  - ~List.adga~: commutation ~Bridge~ vs ~List~.
-- ~Bridgy.ROTT~ contains our relational observational type theory (ROTT), which is a shallowly embedeed DTT used to build types satisfying the SRP (i.e. having composite commutation principles).
+- ~Bridgy.ROTT/~ contains our relational observational type theory (ROTT), a DSL to build SRP proofs and use internal parametricity in a modular way.
   - ~Judgments.agda~ defines types of: semantic contexts (native reflexive graphs or NRG), semantic substitutions (native relators), semantic types (displayed native reflexive graphs i.e. dNRGs) and semantic terms.
   - ~Param.agda~ is our internal observational parametricity theorem, defined for dNRGs.
   - ~Rules.agda~ contains semantic rules to build composite dNRGs.
-# - ~NRGRelRecord.agda~: native reflexive graphs and relators, needed to state parametricity.
-# - ~Param.agda~: general parametricity theorem: ~param~.
-# - ~SimpleParam.agda~: proofs of simple Church encodings with ~param~.
-# - ~SystemF.agda~: shallow embedding of system F where each semantic term is parametric thanks to ~param~.
+- ~Bridgy.Examples/~: examples of free theorems, proved using ROTT.
+- ~Bridgy.Experimental/~: things that are poorly coded or do not work yet.
 *** Comparison with other internally parametric systems
 A previous experimental implementation by Cavallo ("ptt") exists [[https://github.com/ecavallo/ptt][here]].
 | criterion            | this impl        | ptt impl           |
