@@ -8,9 +8,11 @@ module Bridgy.Core.CubicalLemmas where
 open import Bridgy.Core.EquGraph
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Isomorphism
 open import Cubical.Data.Sigma
 open import Cubical.Data.Sigma.Properties
 open import Cubical.Data.Unit
+
 
 module _ {lA lB : Level} (A A' : Type lA) (B : A → Type lB) (B' : A' → Type lB) where
 
@@ -55,3 +57,11 @@ still-equal p k = λ i → p ( i ∧ k)
 --     PathP (λ i → (a : A i) → B i a) f0 f1
 --   funExtP-2ary hyp i a = {!!}
  
+
+module ChangeLineEquiv {l : Level} (A A' : I → Type l) (AtoA' : (i : I) → A i ≡ A' i)
+  {a0 : A i0} {a1 : A i1} {a0' : A' i0} {a1' : A' i1} (hyp0 : PathP (λ j → AtoA' i0 j) a0 a0') (hyp1 : PathP (λ j → AtoA' i1 j) a1 a1') where
+
+  PathP≡PathP : PathP (λ i → A i) a0 a1 ≡ PathP (λ i → A' i) a0' a1'
+  PathP≡PathP = λ k → PathP (λ i → AtoA' i k) (hyp0 k) (hyp1 k)
+
+open ChangeLineEquiv public

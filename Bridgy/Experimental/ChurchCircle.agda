@@ -5,6 +5,8 @@ module Bridgy.Experimental.ChurchCircle where
 open import Bridgy.Core.BridgePrims
 open import Bridgy.Core.EquGraph
 open import Bridgy.Core.BridgeExamples
+open import Bridgy.Core.MyPathToEquiv
+open import Bridgy.Core.CubicalLemmas
 -- open import Bridgy.Core.GelExamples
 open import Bridgy.ROTT.Judgments
 open import Bridgy.ROTT.Rules
@@ -12,6 +14,7 @@ open import Bridgy.ROTT.Param
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Function
 open import Cubical.Data.Unit
 
 
@@ -54,7 +57,11 @@ PathdNRG .dcr ((X , x) , y) = x ≡ y
 PathdNRG .dedge ((X0 , x0) , y0) ((X1 , x1) , y1) ((XX , xx) , yy) p0 p1 =
   PathP (λ i → XX (p0 i) (p1 i)) xx yy
 PathdNRG .dnativ ((X0 , x0) , y0) ((X1 , x1) , y1) ((XX , xx) , yy) Xxy-bdg Xxy-prf p0 p1 =
-  {!PathPvsBridgeP !}
+  flip compEquiv (PathPvsBridgeP (λ x i → Xxy-bdg x .fst .fst) {a00 = x0} {a10 = x1} {a01 = y0} {a11 = y1})
+  (mypathToEquiv
+  (PathP≡PathP (λ i → XX (p0 i) (p1 i)) (λ i → BridgeP (λ x → Xxy-bdg x .fst .fst) (p0 i) (p1 i))
+    (λ i → funExt⁻ (funExt⁻ (outEquGrInv Xxy-prf-fst-fst) (p0 i)) (p1 i))
+  {!!} {!!})) -- XX x0 x1 ≡ BridgeP (λ x → Xxy-bdg x .fst .fst) x0 x1
 
   where
 

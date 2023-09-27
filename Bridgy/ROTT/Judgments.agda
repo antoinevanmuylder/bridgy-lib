@@ -11,6 +11,7 @@ open import Cubical.Foundations.Equiv.Properties
 open import Cubical.Foundations.Function
 open import Cubical.Data.Unit
 
+------------------------------------------------------------------------
 -- SEMANTIC CONTEXTS.
 -- A native reflexive graph is a type equipped with a relation equivalent to its Bridge relation.
 record NRGraph ℓ : Type (ℓ-suc ℓ) where
@@ -29,7 +30,7 @@ _⦅_,_⦆ : ∀ {ℓ} (G : NRGraph ℓ) → G .nrg-cr → G .nrg-cr → Type �
 _⦅_,_⦆ {ℓ} G g0 g1 = G .nedge g0 g1
 
 
-
+------------------------------------------------------------------------
 -- SEMANTIC SUBSTITUTIONS.
 -- A native relator is a morphism of native reflexive graphs.
 -- It asks for this square between nativeness of G and H:
@@ -61,7 +62,7 @@ module NativeRelator {ℓG ℓH} (G : NRGraph ℓG) (H : NRGraph ℓH) where
 
 open NativeRelator public
 
-
+------------------------------------------------------------------------
 -- SEMANTIC (DEPENDENT) TYPES
 -- a Γ-displayed NRG (or NRG displayed over Γ) is basically a NRG whose every operation is indexed using the operations of Gamma
 record DispNRG {ℓ} (ℓ' : Level) (Γ : NRGraph ℓ) : Type (ℓ-max ℓ (ℓ-suc ℓ')) where
@@ -83,6 +84,10 @@ _⦅_,_⦆#_ : ∀ {ℓ ℓ' : Level} {Γ} (A : DispNRG {ℓ = ℓ} ℓ' Γ) {γ
 _⦅_,_⦆#_ {ℓ} {ℓ'} {Γ} A {γ0} {γ1} a0 a1 γγ = A .dedge γ0 γ1 γγ a0 a1
 
 
+
+-- alternative formulations for displayed nativeness.
+-- each formulation has its advantages and flaws...
+-- to use the conversion maps see module UseFormulations
 module DNativ-Formulations {lΓ lA} (Γ : NRGraph lΓ)
   (Adcr : Γ .nrg-cr → Type lA) (Adedge : ∀ (g0 g1 : Γ .nrg-cr) (gg : Γ ⦅ g0 , g1 ⦆ ) (a0 : Adcr g0) (a1 : Adcr g1) → Type lA) where
 
@@ -108,7 +113,43 @@ module DNativ-Formulations {lΓ lA} (Γ : NRGraph lΓ)
   --   equivEq  (funExt λ aa → cong (hyp g0 g1 gbdg a0 a1 .fst)
   --   {!? ∙ ()!})
 
-open DNativ-Formulations public
+-- open DNativ-Formulations public
+
+-- the above maps, packaged into more practical combinators.
+module UseFormulations where
+
+  open DNativ-Formulations
+
+  module Use2ary {lΓ} {lA} {Γ : NRGraph lΓ} (A : DispNRG lA Γ) where
+
+    use2ary : ∀bdg-Forml Γ (A .dcr) (A .dedge)
+    use2ary = 2ary→∀bdg Γ  (A .dcr) (A .dedge) (A .dnativ)
+
+  open Use2ary public
+
+
+  record PreDispNRG {ℓ} (ℓ' : Level) (Γ : NRGraph ℓ) : Type (ℓ-max ℓ (ℓ-suc ℓ')) where
+    no-eta-equality
+    field
+      -- displayed carriers
+      predcr : Γ .nrg-cr → Type ℓ'
+      -- displayed edges
+      prededge : ∀ (g0 g1 : Γ .nrg-cr) (gg : Γ ⦅ g0 , g1 ⦆ ) (a0 : predcr g0) (a1 : predcr g1) → Type ℓ'
+
+  open PreDispNRG public
+
+  module Use∀bdg {lΓ} {lA} {Γ : NRGraph lΓ} (preA : PreDispNRG lA Γ) where
+
+    use∀bdg : (∀bdg-Forml Γ (preA .predcr) (preA .prededge)) → 2ary-Forml Γ (preA .predcr) (preA .prededge)
+    use∀bdg = ∀bdg→2ary Γ (preA .predcr) (preA .prededge)
+
+  open Use∀bdg public
+open UseFormulations public
+
+
+
+
+
 
 
 
