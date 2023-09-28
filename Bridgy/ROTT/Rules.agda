@@ -77,10 +77,14 @@ _×NRG_ G H .nativ  (g0 , h0) (g1 , h1) = flip compEquiv ×vsBridgeP (≃-× (G 
 
 
 
-
+------------------------------------------------------------------------
 ------------------------------------------------------------------------
 -- Rules of ROTT
 
+
+
+------------------------------------------------------------------------
+-- ~structural
 
 -- Γ ctx
 -- Γ ⊢ A type
@@ -173,6 +177,21 @@ todNRG Γ A .dcr γ = A .nrg-cr
 todNRG Γ A .dedge g0 g1 gg a0 a1 = A .nedge a0 a1
 todNRG Γ A .dnativ g0 g1 gg gbdg gprf a0 a1 = A .nativ a0 a1
 
+
+-- (Γ), X:Type l  ⊨ X dNRG (l)
+lastType : ∀ {lΓ l : Level} {Γ : NRGraph lΓ} → DispNRG l (Γ # todNRG Γ (TypeNRG l))
+lastType {Γ = Γ}  .dcr (g , X) = X
+lastType {Γ = Γ} .dedge (g0 , X0) (g1 , X1) (gg , XX) = XX
+lastType {Γ = Γ} .dnativ (g0 , X0) (g1 , X1) (gg , XX) gXbdg gXprf x0 x1 =
+  let aux = nativ-#-proj2 Γ (todNRG Γ (TypeNRG _)) g0 g1 gg (λ z → gXbdg z .fst) X0 X1 XX (λ z → gXbdg z .snd) gXprf in
+  mypathToEquiv (funExt⁻ (funExt⁻ (outEquGrInv aux) x0) x1)
+
+
+
+
+
+
+
 -- Ty subst
 -- σ : Γ → Δ    Δ ⊢ A type
 -- ------------------------
@@ -195,6 +214,25 @@ pr lA A .nrel1 (g0 , a0) (g1 , a1) (gg , aa) = gg
 pr lA A .nativ-rel (g0 , a0) (g1 , a1) gaa gabdg gaprf
   = inEquGr λ i x → outEquGr gaprf i x .fst
 
+
+-- weakening
+-- Γ ⊢ A type
+-- Γ ⊢ W type
+-- ----------
+-- Γ.W ⊢ A type
+wkn : ∀ {lΓ lA lW} {Γ : NRGraph lΓ} {W : DispNRG lW Γ} (A : DispNRG lA Γ) →
+  DispNRG lA (Γ # W)
+wkn {Γ = Γ} {W = W} A =
+  tySubst (Γ # W) Γ (pr _ W) A
+
+
+
+
+
+
+
+------------------------------------------------------------------------
+-- type formers
 
 
 -- Γ ⊢ A type   Γ ⊢ B type
