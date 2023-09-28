@@ -164,6 +164,15 @@ open Nativ-#-Lemmas public
   
 
 
+-- Γ NRG     A NRG
+-- ---------------
+-- Γ ⊨ A dNRG
+todNRG : ∀ {lΓ lA} (Γ : NRGraph lΓ) →
+  NRGraph lA → DispNRG lA Γ
+todNRG Γ A .dcr γ = A .nrg-cr
+todNRG Γ A .dedge g0 g1 gg a0 a1 = A .nedge a0 a1
+todNRG Γ A .dnativ g0 g1 gg gbdg gprf a0 a1 = A .nativ a0 a1
+
 -- Ty subst
 -- σ : Γ → Δ    Δ ⊢ A type
 -- ------------------------
