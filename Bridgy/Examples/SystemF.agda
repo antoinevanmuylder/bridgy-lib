@@ -1,6 +1,6 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-} -- --no-termination-check
 
-module Bridgy.Experimental.SystemF where
+module Bridgy.Examples.SystemF where
 
 
 open import Bridgy.Core.BridgePrims
@@ -83,7 +83,7 @@ module SysFParam (Θ : FKCtx) (lτ : ℕ) (τ : FType Θ lτ) where
     (f : (g : ⟦ Θ ⟧kctx .nrg-cr) → ⟦ τ ⟧type .dcr g)
     (g0 g1 : ⟦ Θ ⟧kctx .nrg-cr) (gg : ⟦ Θ ⟧kctx ⦅ g0 , g1 ⦆) →
     ⟦ τ ⟧type ⦅ f g0 , f g1 ⦆# gg
-  sysf-param f g0 g1 gg = param ⟦ Θ ⟧kctx ⟦ τ ⟧type _ _ _ _ 
+  sysf-param f g0 g1 gg = param ⟦ Θ ⟧kctx ⟦ τ ⟧type _ _ _ _
 
 
 
