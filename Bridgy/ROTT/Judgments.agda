@@ -62,6 +62,39 @@ module NativeRelator {ℓG ℓH} (G : NRGraph ℓG) (H : NRGraph ℓH) where
 
 open NativeRelator public
 
+
+module UseNativRelFormulations where
+
+  record PreNRelator {ℓG ℓH} (G : NRGraph ℓG) (H : NRGraph ℓH) : Type (ℓ-max ℓG ℓH) where
+    no-eta-equality
+    field
+      prenrel0 : G .nrg-cr  → H .nrg-cr --action on 0cells in G
+      prenrel1 : (g0 g1 : G .nrg-cr) → G .nedge g0 g1 → H .nedge (prenrel0 g0) (prenrel0 g1) --action on 1cells in G
+
+  open PreNRelator public
+
+  module UseSquares {ℓG ℓH} {G : NRGraph ℓG} {H : NRGraph ℓH} (F : PreNRelator G H) where
+
+    ∀bdgNRelForml = ∀ g0 g1 →
+      (F .prenrel1 g0 g1 ∘ (invEq (G .nativ g0 g1)))
+      ≡
+      (invEq (H .nativ (F .prenrel0 g0) (F .prenrel0 g1))) ∘ (λ gbdg x → F .prenrel0 (gbdg x))
+
+    2aryNRelForml = ∀ g0 g1 → (gg : G ⦅ g0 , g1 ⦆ ) (gbdg : BridgeP (λ _ → G .nrg-cr) g0 g1) →
+        gg [ G .nativ g0 g1 ] gbdg →
+        (F .prenrel1 g0 g1 gg) [ H .nativ (F .prenrel0 g0) (F .prenrel0 g1) ] (λ x → F .prenrel0 (gbdg x))
+
+    use∀bdgNRel : ∀bdgNRelForml → 2aryNRelForml
+    use∀bdgNRel hyp g0 g1 gg gbdg gprf =
+      inEquGrInv (flip _∙_ (funExt⁻ (hyp g0 g1) gbdg) (cong (F .prenrel1 g0 g1) (outEquGrInv gprf))) -- 
+
+  open UseSquares public
+
+open UseNativRelFormulations public
+
+      
+
+
 ------------------------------------------------------------------------
 -- SEMANTIC (DEPENDENT) TYPES
 -- a Γ-displayed NRG (or NRG displayed over Γ) is basically a NRG whose every operation is indexed using the operations of Gamma

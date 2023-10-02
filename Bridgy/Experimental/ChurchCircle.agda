@@ -49,9 +49,7 @@ X,x,y-NRG l = _#_
   (Type⋆NRG l)
   (X,stuff⊨ElX (X⊨ElX))
 
-smth : ∀ (l : Level) → Unit
-smth l = {!X,x,y-NRG l .nrg-cr!}
-
+-- X:Type, x:X, y:X ⊨ x ≡ y dNRG
 PathdNRG : ∀ {l} → DispNRG l (X,x,y-NRG l)
 PathdNRG .dcr ((X , x) , y) = x ≡ y
 PathdNRG .dedge ((X0 , x0) , y0) ((X1 , x1) , y1) ((XX , xx) , yy) p0 p1 =
@@ -59,9 +57,10 @@ PathdNRG .dedge ((X0 , x0) , y0) ((X1 , x1) , y1) ((XX , xx) , yy) p0 p1 =
 PathdNRG .dnativ ((X0 , x0) , y0) ((X1 , x1) , y1) ((XX , xx) , yy) Xxy-bdg Xxy-prf p0 p1 =
   flip compEquiv (PathPvsBridgeP (λ x i → Xxy-bdg x .fst .fst) {a00 = x0} {a10 = x1} {a01 = y0} {a11 = y1})
   (mypathToEquiv
-  (PathP≡PathP (λ i → XX (p0 i) (p1 i)) (λ i → BridgeP (λ x → Xxy-bdg x .fst .fst) (p0 i) (p1 i))
-    (λ i → funExt⁻ (funExt⁻ (outEquGrInv Xxy-prf-fst-fst) (p0 i)) (p1 i))
-  {!!} {!!})) -- XX x0 x1 ≡ BridgeP (λ x → Xxy-bdg x .fst .fst) x0 x1
+    (PathP≡PathP (λ i → XX (p0 i) (p1 i)) (λ i → BridgeP (λ x → Xxy-bdg x .fst .fst) (p0 i) (p1 i))
+    ((λ i → funExt⁻ (funExt⁻ (outEquGrInv Xxy-prf-fst-fst) (p0 i)) (p1 i))) -- XX x0 x1 ≡ BridgeP (λ x → Xxy-bdg x .fst .fst) x0 x1
+      (symP (toPathP (sym (outEquGrInv (Xxy-prf-fst-snd)) )))
+    (symP ((toPathP (sym (outEquGrInv (Xxy-prf-snd))))))))
 
   where
 
@@ -75,7 +74,15 @@ PathdNRG .dnativ ((X0 , x0) , y0) ((X1 , x1) , y1) ((XX , xx) , yy) Xxy-bdg Xxy-
     Xxy-prf-fst-snd = nativ-#-proj2 (TypeNRG _) (X⊨ElX) X0 X1 XX (λ z → Xxy-bdg z .fst .fst) x0 x1 xx (λ z → Xxy-bdg z .fst .snd) Xxy-prf-fst
 
     -- Xxy-prf-snd ~: yy [ dnativ ...] (λ z → Xxy-bdg z .snd)
-    Xxy-prf-snd = nativ-#-proj2 (Type⋆NRG _) (X,stuff⊨ElX (X⊨ElX)) (X0 , x0) (X1 , x1) (XX , xx) (λ z → Xxy-bdg z .fst) y0 y1 yy (λ z → Xxy-bdg z .snd) Xxy-prf -- 
+    Xxy-prf-snd = nativ-#-proj2 (Type⋆NRG _) (X,stuff⊨ElX (X⊨ElX)) (X0 , x0) (X1 , x1) (XX , xx) (λ z → Xxy-bdg z .fst) y0 y1 yy (λ z → Xxy-bdg z .snd) Xxy-prf
+
+
+
+    
+
+
+-- X : Type, x:X ⊨ x ≡ x dNRG
+-- ΩdNRG
     
 
 

@@ -103,7 +103,7 @@ infixl 40 _#_
 module Nativ-#-Lemmas where
 
   -- Having nativeness phrased in a 2ary fashion
-  -- seems to generate the need for the following lemmas (not trivial)
+  -- creates the need for the following lemmas (not trivial)
 
   nativ-#-split : ∀ {lΓ lA} (Γ : NRGraph lΓ) (A : DispNRG lA Γ)
     (g0 g1 : Γ .nrg-cr) (gg : Γ ⦅ g0 , g1 ⦆ ) (gbdg : Bridge (Γ .nrg-cr) g0 g1) (gprf : gg [ Γ .nativ g0 g1 ] gbdg) →
@@ -164,6 +164,7 @@ module Nativ-#-Lemmas where
       to-gprf = λ i j x → outEquGr gaprf (i ∧ j) x .fst
 
 
+
 open Nativ-#-Lemmas public
   
 
@@ -183,8 +184,11 @@ lastType : ∀ {lΓ l : Level} {Γ : NRGraph lΓ} → DispNRG l (Γ # todNRG Γ 
 lastType {Γ = Γ}  .dcr (g , X) = X
 lastType {Γ = Γ} .dedge (g0 , X0) (g1 , X1) (gg , XX) = XX
 lastType {Γ = Γ} .dnativ (g0 , X0) (g1 , X1) (gg , XX) gXbdg gXprf x0 x1 =
-  let aux = nativ-#-proj2 Γ (todNRG Γ (TypeNRG _)) g0 g1 gg (λ z → gXbdg z .fst) X0 X1 XX (λ z → gXbdg z .snd) gXprf in
   mypathToEquiv (funExt⁻ (funExt⁻ (outEquGrInv aux) x0) x1)
+
+  where
+
+    aux = nativ-#-proj2 Γ (todNRG Γ (TypeNRG _)) g0 g1 gg (λ z → gXbdg z .fst) X0 X1 XX (λ z → gXbdg z .snd) gXprf
 
 
 
@@ -224,8 +228,6 @@ wkn : ∀ {lΓ lA lW} {Γ : NRGraph lΓ} {W : DispNRG lW Γ} (A : DispNRG lA Γ)
   DispNRG lA (Γ # W)
 wkn {Γ = Γ} {W = W} A =
   tySubst (Γ # W) Γ (pr _ W) A
-
-
 
 
 
