@@ -31,38 +31,36 @@ preDiag .prenrel0 (X , x) = (X , x) , x
 preDiag .prenrel1 (X0 , x0) (X1 , x1) (XX , xx) = ( XX , xx ) , xx
 
 diag : ∀ {l} →  NRelator (Type⋆NRG l) (X,x,y-NRG l)
-diag {l} .nrel0 (X , x) = preDiag .prenrel0 (X , x)
-diag {l} .nrel1 (X0 , x0) (X1 , x1) (XX , xx) = preDiag .prenrel1 (X0 , x0) (X1 , x1) (XX , xx)
-diag {l} .nativ-rel = {!!} 
+diag {l} .nrel0 (X , x) = (X , x) , x
+diag {l} .nrel1 (X0 , x0) (X1 , x1) (XX , xx) = ( XX , xx ) , xx
+diag {l} .nativ-rel (X0 , x0) (X1 , x1) (XX , xx) Xxbdg Xxprf = {!hlp1!}
 
-Have
-  _[_]_ {ℓ-suc l}
-  {Σ {ℓ-suc l} {l}
-   (Σ {ℓ-suc l} {l} (X0 → X1 → Type l)
-    (λ v → _⦅_,_⦆#_ (X⊨ElX {l}) {X0} {X1} x0 x1 v))
-   (_⦅_,_⦆#_ (X,stuff⊨ElX {l} {l} (X⊨ElX {l})) {X0 , x0} {X1 , x1} x0
-    x1)}
-  {BridgeP {ℓ-max (ℓ-suc l) l}
-   (λ _ →
-      nrg-cr
-      (_#_ {ℓ-suc l} {l} (Type⋆NRG l) (X,stuff⊨ElX {l} {l} (X⊨ElX {l}))))
-   ((X0 , x0) , x0) ((X1 , x1) , x1)}
-  ((XX , xx) , xx) (sameEquivs i1) (λ x → Xxbdg x , Xxbdg x .snd)
+-- Have
+--   _[_]_ {ℓ-suc l}
+--   {Σ {ℓ-suc l} {l}
+--    (Σ {ℓ-suc l} {l} (X0 → X1 → Type l)
+--     (λ v → _⦅_,_⦆#_ (X⊨ElX {l}) {X0} {X1} x0 x1 v))
+--    (_⦅_,_⦆#_ (X,stuff⊨ElX {l} {l} (X⊨ElX {l})) {X0 , x0} {X1 , x1} x0
+--     x1)}
+--   {BridgeP {ℓ-max (ℓ-suc l) l}
+--    (λ _ →
+--       nrg-cr
+--       (_#_ {ℓ-suc l} {l} (Type⋆NRG l) (X,stuff⊨ElX {l} {l} (X⊨ElX {l}))))
+--    ((X0 , x0) , x0) ((X1 , x1) , x1)}
+--   ((XX , xx) , xx) (sameEquivs i1) (λ x → Xxbdg x , Xxbdg x .snd)
 
 
-Goal: _[_]_ {ℓ-suc l}
-      {X,x,y-NRG l .nedge ((X0 , x0) , x0) ((X1 , x1) , x1)}
-      {BridgeP {ℓ-suc l} (λ _ → nrg-cr (X,x,y-NRG l)) ((X0 , x0) , x0)
-       ((X1 , x1) , x1)}
-      ((XX , xx) , xx)
-      (X,x,y-NRG l .nativ ((X0 , x0) , x0) ((X1 , x1) , x1))
-      (λ x → (fst (Xxbdg x) , snd (Xxbdg x)) , snd (Xxbdg x))
+-- Goal: _[_]_ {ℓ-suc l}
+--       {X,x,y-NRG l .nedge ((X0 , x0) , x0) ((X1 , x1) , x1)}
+--       {BridgeP {ℓ-suc l} (λ _ → nrg-cr (X,x,y-NRG l)) ((X0 , x0) , x0)
+--        ((X1 , x1) , x1)}
+--       ((XX , xx) , xx)
+--       (X,x,y-NRG l .nativ ((X0 , x0) , x0) ((X1 , x1) , x1))
+--       (λ x → (fst (Xxbdg x) , snd (Xxbdg x)) , snd (Xxbdg x))
 
 
 
   where
-
-    -- thing = X,x,y-NRG _ .nativ ((X0 , x0) , x0) ((X1 , x1) , x1)
 
     hlp0 : 
       xx [ X,stuff⊨ElX X⊨ElX .dnativ (X0 , x0) (X1 , x1) (XX , xx) Xxbdg Xxprf x0 x1 ] (λ z → Xxbdg z .snd) →
@@ -70,6 +68,7 @@ Goal: _[_]_ {ℓ-suc l}
     hlp0 = nativ-#-split (Type⋆NRG l) (X,stuff⊨ElX (X⊨ElX)) (X0 , x0) (X1 , x1) (XX , xx)
       Xxbdg Xxprf x0 x1 xx (λ z → Xxbdg z .snd)
 
+    hlp1 : XX [ relativity ] (λ z → Xxbdg z .fst)
     hlp1 = nativ-#-proj1 (TypeNRG l) X⊨ElX X0 X1 XX (λ z → Xxbdg z .fst) x0 x1 xx (λ z → Xxbdg z .snd) Xxprf
 
     hlp2 : xx [ X,stuff⊨ElX X⊨ElX .dnativ (X0 , x0) (X1 , x1) (XX , xx) Xxbdg Xxprf x0 x1 ] (λ z → Xxbdg z .snd)
@@ -87,16 +86,3 @@ Goal: _[_]_ {ℓ-suc l}
       ≡
       X,x,y-NRG l .nativ ((X0 , x0) , x0) ((X1 , x1) , x1)
     sameEquivs = equivEq refl
-      
-
-    -- sameEquivs :
-    --   X,stuff⊨ElX X⊨ElX .dnativ (X0 , x0) (X1 , x1) (XX , xx) Xxbdg Xxprf x0 x1
-    --   ≡ 
-    --   X⊨ElX .dnativ X0 X1 XX (λ z → Xxbdg z .fst)
-    --   (nativ-#-proj1 (TypeNRG _) X⊨ElX X0 X1 XX (λ z → Xxbdg z .fst) x0
-    --    x1 xx (λ z → Xxbdg z .snd) Xxprf)
-    --   x0 x1
-    -- sameEquivs =
-    --   equivEq refl
-
-    -- hlp2' = (transport (λ i → xx [ sameEquivs (~ i) ] (λ z → Xxbdg z .snd)) hlp2)
