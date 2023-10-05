@@ -28,6 +28,12 @@ To get the latter cubical library to work:
   <...>/cubical/cubical.agda-lib # where cubical/ is stored in <...>
   #+end_src
 - If you don't have a ~libraries~ file yet, create one. You might have to add ~cubical~ to your defaults. see [[https://agda.readthedocs.io/en/v2.6.2.1/tools/package-system.html][agda lib management]].
+*** (Optional) Typecheck the cubical library with the  ~Agda --bridges~ binary
+#+begin_src shell
+cd <...>/cubical/
+stack exec -- make everythings
+# then typecheck Cubical.README
+#+end_src
 *** Enjoy
 Try opening ~Bridgy/Core/BridgePrims.agda~ with emacs, and load with ~C-c C-l~.
 other emacs commands:
