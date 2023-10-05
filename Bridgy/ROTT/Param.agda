@@ -20,13 +20,16 @@ open import Bridgy.Core.MyPathToEquiv
 
 -- The following is the param theorem stated for dNRGs.
 -- it says that "dependent functions preserve logical relations"
-module ParamDNRG {l l' : Level} (G : NRGraph l) (A : DispNRG l' G) where
+module ParamDNRG {l l' : Level} (Γ : NRGraph l) (A : DispNRG l' Γ) where
 
-  param : (f : ∀ g → A .dcr g) (g0 g1 : G .nrg-cr)
-    (gg : G ⦅ g0 , g1 ⦆ ) → A ⦅ f g0 , f g1 ⦆# gg
+  -- Γ NRG    Γ ⊨ A dNRG   f:∀ g → A g    g0,g1:Γ   gg:Γ ⦅ g0 , g1 ⦆
+  -- ----------------------------------------------------------------
+  -- param Γ A f g0 g1 gg : A ⦅ f g0 , f g1 ⦆# gg
+  param : (f : ∀ g → A .dcr g) (g0 g1 : Γ .nrg-cr)
+    (gg : Γ ⦅ g0 , g1 ⦆ ) → A ⦅ f g0 , f g1 ⦆# gg
   param f g0 g1 gg =
     let
-      fwd = equivFun (G .nativ g0 g1)
+      fwd = equivFun (Γ .nativ g0 g1)
       bwd = invEq (A .dnativ g0 g1 gg (fwd gg) (inEquGr refl) (f g0) (f g1))
     in
       bwd λ x → f ( fwd gg x )
