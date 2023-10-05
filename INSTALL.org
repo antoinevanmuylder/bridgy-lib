@@ -21,6 +21,7 @@ The present library (bridgy-lib):
 
 To get the latter cubical library to work:
 - Clone the appropriate repo: https://github.com/agda/cubical.
+- Revert to this commit: ~git checkout 3dc3cd12579544c8~ (28 Apr 2023).
 - Once this is done, add the following line to your =~/.agda/libraries= config file:
   #+begin_src shell
   <...>/cubical/cubical.agda-lib # where cubical/ is stored in <...>
