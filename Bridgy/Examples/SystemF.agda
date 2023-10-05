@@ -87,7 +87,6 @@ module SysFParam (Θ : FKCtx) (lτ : ℕ) (τ : FType Θ lτ) where
 
 open SysFParam public
 
--- empty theta!
 
 
 module Expl where
