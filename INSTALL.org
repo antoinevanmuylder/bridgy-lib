@@ -31,7 +31,7 @@ To get the latter cubical library to work:
 *** (Optional) Typecheck the cubical library with the  ~Agda --bridges~ binary
 #+begin_src shell
 cd <...>/cubical/
-stack exec -- make everythings
+stack exec -- make gen-everythings
 # then typecheck Cubical.README
 #+end_src
 *** Use ~Agda --bridges~
