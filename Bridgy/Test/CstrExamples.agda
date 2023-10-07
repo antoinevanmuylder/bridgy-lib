@@ -1,11 +1,11 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce -v tc.def.fun:40 -v tc.fun.def:40 -v tc.lhs.top:30 -v tc.lhs.split:40  -v tc.constr:30 -v tc.sys.cover:30 -v tc.conv.bdgfaces:50 -v tc.conv.substctx:50  -v conv.forall:20 -v tc.lhs.split.partial:10 #-}
-module Bridgy.CstrExamples where
+module Bridgy.Test.CstrExamples where
 
 
 open import Agda.Builtin.Nat
 open import Agda.Builtin.Unit -- renaming (Unit to ⊤)
 open import Cubical.Foundations.Prelude
-open import Bridgy.BridgePrims
+open import Bridgy.Core.BridgePrims
 
 module BCSTR (@tick x : BI) (@tick y : BI) where
 
