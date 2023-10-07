@@ -8,7 +8,7 @@ cd agda-bridges/
 git checkout bridges
 sudo curl -sSL https://get.haskellstack.org/ | sh #if you don't have stack
 stack update
-cp stack-<version>.yaml stack.yaml # choose version of haskell compiler (e.g. 9.0.2)
+cp stack-<version>.yaml stack.yaml # choose version of haskell compiler (tested with ghc 9.0.2)
 sudo apt install zlib1g-dev libncurses5-dev gcc #agda prerequisites.
 stack install # builds and copies agda binary to ~/.local/bin/
               # alternatively: `stack install --fast`     (slower agda binary though)
