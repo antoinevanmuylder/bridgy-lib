@@ -1,8 +1,7 @@
 ------------------------------------------------------------------------
 -- In this file we prove the church encoding for booleans in a
 -- low level style, as done in theorem 3.1 of the CH paper
--- https://lmcs.episciences.org/8651/. This is to compare with our
--- churchBool theorem from Bridgy.Examples.Church.
+-- https://lmcs.episciences.org/8651/. 
 ------------------------------------------------------------------------
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
 
@@ -18,7 +17,13 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Data.Bool
 
 
-
+-- This is to compare with our churchBool theorem from Bridgy.Examples.Church.
+-- In particular our simple param call (1line + 2lines for defining X⊨X → X → X dNRG with ROTT)
+-- is replaced with the more involved CH-inverse-cond module below (18 lines)
+-- 
+-- Of course, the difference between ROTT/Param.agda and low level proofs gets worse
+-- when the complexity of the type family at hand (here λ X:Type → X → X → X) grows.
+-- For a justification of this fact, see section 3 of our article.
 lowChurchBool : ∀ {l} → ( ∀ (X : Type l) → X → X → X ) ≃ Bool
 lowChurchBool {l} = isoToEquiv (iso
   chToBool
