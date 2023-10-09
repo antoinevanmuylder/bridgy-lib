@@ -1,4 +1,6 @@
-This repo contains internal parametricity experiments, coded in ~agda --bridges~. The ~--bridges~ branch can be found here https://github.com/antoinevanmuylder/agda/tree/bridges. It implements the parametricity primitives of Cavallo-Harper (CH) from https://arxiv.org/pdf/2005.11290.pdf. See ~INSTALL.org~ for instructions.
+Installation instructions for both ~Agda --bridges~ and this library: ~INSTALL.org~
+
+This repo contains internal parametricity experiments, coded in ~agda --bridges~. The ~--bridges~ branch can be found here https://github.com/antoinevanmuylder/agda/tree/bridges. It implements the parametricity primitives of Cavallo-Harper (CH) from https://arxiv.org/pdf/2005.11290.pdf.
 *** Quick tour of some files
 Check out ~Everything.agda~.
 - ~Bridgy.Core/~ :  ~Agda --bridges~ primitive declarations, raw relational extensionality principles, useful lemmas/definitions. 
