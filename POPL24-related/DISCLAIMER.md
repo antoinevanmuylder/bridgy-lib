@@ -1,0 +1,2 @@
+- This folder contains the README file of our artifact submitted at POPL24 (see README.md)
+- The artifact is stored on [Zenodo](https://zenodo.org/record/8417700) (check for latest version).
