@@ -1,4 +1,4 @@
-Installation instructions for both ~Agda --bridges~ and this library: ~INSTALL.org~
+Installation instructions for both ~Agda --bridges~ and this library: [[https://github.com/antoinevanmuylder/bridgy-lib/blob/main/INSTALL.org][~INSTALL.org~]]
 
 This repo contains internal parametricity experiments, coded in ~agda --bridges~. The ~--bridges~ branch can be found here https://github.com/antoinevanmuylder/agda/tree/bridges. It implements the parametricity primitives of Cavallo-Harper (CH) from https://arxiv.org/pdf/2005.11290.pdf.
 *** Quick tour of some files
