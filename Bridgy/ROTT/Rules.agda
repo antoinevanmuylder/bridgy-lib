@@ -75,6 +75,18 @@ _×NRG_ G H .nativ  (g0 , h0) (g1 , h1) = flip compEquiv ×vsBridgeP (≃-× (G 
 ------------------------------------------------------------------------
 -- Some native relators
 
+idNrel : ∀ {l} (Γ : NRGraph l) → NRelator Γ Γ
+idNrel Γ .nrel0 g = g
+idNrel Γ .nrel1 g0 g1 gg = gg
+idNrel Γ .nativ-rel g0 g1 gg gbdg gprf = gprf
+
+compNrel : ∀ {lG lH lK} {G : NRGraph lG} (H : NRGraph lH) {K : NRGraph lK}
+  (F1 : NRelator G H) (F2 : NRelator H K) → NRelator G K
+compNrel {G = G} H {K = K} F1 F2 .nrel0 g = F2 .nrel0 (F1 .nrel0 g)
+compNrel {G = G} H {K = K} F1 F2 .nrel1 g0 g1 gg = F2 .nrel1 _ _ (F1 .nrel1 _ _ gg)
+compNrel {G = G} H {K = K} F1 F2 .nativ-rel g0 g1 gg gbdg gprf =
+  F2 .nativ-rel (F1 .nrel0 g0) (F1 .nrel0 g1) (F1 .nrel1 _ _ gg) (λ x → F1 .nrel0 (gbdg x))
+  (F1 .nativ-rel g0 g1 gg gbdg gprf)
 
 
 ------------------------------------------------------------------------
