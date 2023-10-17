@@ -1,6 +1,6 @@
 # POPL24, artifact 37: Agda --bridges
 
-This artifact follows the POPL24 [author recommandations](https://popl24.sigplan.org/track/POPL-2024-artifact-evaluation#Author-Recommendations) for artifact submission.
+This artifact follows the POPL24 [author recommendations](https://popl24.sigplan.org/track/POPL-2024-artifact-evaluation#Author-Recommendations) for artifact submission.
 
 ## 0. High-level description
 
@@ -37,7 +37,7 @@ This section contains detailed installation instructions.
 |--------------------------|-----------------------------------------------|
 | CUP (thread)             | 2                                             |
 | RAM                      | 4096MB                                        |
-| MAC address policy       | Include only NAT network adapter MAC adresses |
+| MAC address policy       | Include only NAT network adapter MAC addresses |
 | Import hard drive as VDI | ticked box                                    |
 
 Click on Finish. The VM should start importing (this could take a minute).
@@ -83,15 +83,15 @@ Within the VM, when 2048MB of memory and 2CPU threads are allocated, on a 3years
 
 This can take quite a while (see above table) but can be stopped at any time (abort typechecking emacs shortcut: `C-c C-x C-a`).
 
-- Go the cubical library repo `cd ~/cubical-lib/`
+- Go to the cubical library repo `cd ~/cubical-lib/`
 
 - Type `stack exec -- make gen-everythings`
 
 - With emacs, load the file `~/cubical-lib/Cubical/README.agda`
   
-### (Optional) Re-compiling the Agda --bridges implementation
+### (Optional) Recompilation of the Agda --bridges implementation
 
-- Before re-compiling agda --bridges from source, we remark that a copy of the original optimized binaries appears in `~/Desktop/save-bins/`.
+- Before recompiling agda --bridges from source, we remark that a copy of the original optimized binaries appears in `~/Desktop/save-bins/`.
 
 - Go to `agda-fork/`. To delete the build products, run `stack clean`. Alternatively modifying the implementation of agda --bridges (typically files like `agda-fork/src/full/Agda/TypeChecking/<...>.hs`) will trigger recompilation upon next compile command.
 
@@ -111,7 +111,7 @@ We list the claims made in the paper along with the associated fragments of the 
 Some remarks:
 
 
-- This correspondance is using the first submitted version of our paper, not the camera-ready version.
+- This correspondence is using the first submitted version of our paper, not the camera-ready version.
 
 - We acknowledge that the Agda --bridges implementation is not in an entirely satisfactory state (although a functioning state; see later) . It could use some refactoring, bug fixing, documentation, ... . The Agda code base is not small and thus further improving our implementation takes time.
 
@@ -119,7 +119,7 @@ Some remarks:
   1. We have (semi)freshness typechecking constraints, while CH have a context restriction operation.
   2. We have a different logic of face constraints (extending the face logic of agda --cubical).
 
-- In accordance with the artifact recommandations, we follow the paper structure to list our claims.
+- In accordance with the artifact recommendations, we follow the paper structure to list our claims.
 
 
 
@@ -128,7 +128,7 @@ Some remarks:
 | line | claim                                                                                     | place in the artifact                          | evaluation                                 |
 |------|-------------------------------------------------------------------------------------------|------------------------------------------------|--------------------------------------------|
 | 114  | Agda --bridges implements the parametricity primitives of CH                              | lots                                           | see 3.1 and below                          |
-| 116  | Agda --bridges succesfully compiles the full Agda --cubical standard library              | `cubical-lib/`                                 | see sec.1                                  |
+| 116  | Agda --bridges successfully compiles the full Agda --cubical standard library              | `cubical-lib/`                                 | see sec.1                                  |
 | 118  | We  benefit from strong extensionality principles like the univalence and funext theorems | e.g. `bridgy-lib/Bridgy/Core/GelExamples.agda` | relativity uses univalence, e.g.           |
 | 121  | We prove relativity                                                                       | `bridgy-lib/Bridgy/Core/GelExamples.agda`      | this file typechecks. See also 3.4         |
 | 137  | Our param theorem. (Note: see section 3.2.2 and not 4.1)                                  | `bridgy-lib/Bridgy/ROTT/Param.agda`            | See `bridgy-lib/Bridgy/Examples`           |
@@ -221,16 +221,16 @@ From `TC/Rules/Application.hs` (l876):
 let c = Just $ Abs "t" (CheckLockedVars (Var 0 []) (raise 1 sFun) (raise 1 $ Arg info' u) (raise 1 binterval))
 ```
 
-Intuitively, what gets checked when raising the above typechecking constraint `c` is the premisse "fresh f,r" of the tick-app rule (line 409 in paper).
-More concretly, in the implementation, the following function (checking freshness of free variables) gets called when constraints like `c` are being investigated by the typechecker :`TC/Lock.hs > isTimeless'`.
+Intuitively, what gets checked when raising the above typechecking constraint `c` is the premise "fresh f,r" of the tick-app rule (line 409 in paper).
+More concretely, in the implementation, the following function (checking freshness of free variables) gets called when constraints like `c` are being investigated by the typechecker :`TC/Lock.hs > isTimeless'`.
 
-To see that this "fresh" premisse is correctly implemented on an example, uncomment `no-destr-bdg` in `bridgy-lib/Bridgy/Core/BridgeExamples.agda and try to typecheck. This will result in an error as expected.
+To see that this "fresh" premise is correctly implemented on an example, uncomment `no-destr-bdg` in `bridgy-lib/Bridgy/Core/BridgeExamples.agda and try to typecheck. This will result in an error as expected.
 
 ## 3.3 extent
 
 - To see that extent works properly (up to a minor normalisation bug which does not affect our examples), typecheck `/bridgy-lib/Bridgy/Core/BridgePrims.agda`,  `/bridgy-lib/Bridgy/Core/ExtentExamples.agda`. The latter contains the extentEquiv  theorem (l453 of the paper) under the name ΠvsBridgeP.
 
-- The extent primitive is mostly implemented here: `TC/Primitive/Bridges.hs > primExtent'`. The latter program specificies the type of extent (`TC/Primitive/Bridges.hs > extentType`) and how it weak-head-normal reduces (beta rule). In particular capturing occurs (see where function `captureIn`) under a semi-freshness constraint (see `semiFreshForFvars` call).
+- The extent primitive is mostly implemented here: `TC/Primitive/Bridges.hs > primExtent'`. The latter program specifies the type of extent (`TC/Primitive/Bridges.hs > extentType`) and how it weak-head-normal reduces (beta rule). In particular capturing occurs (see where function `captureIn`) under a semi-freshness constraint (see `semiFreshForFvars` call).
 
 ## 3.4 Gel
 
@@ -270,7 +270,7 @@ Overall we have relatively good confidence in the soundness of our implementatio
 
 - Agda --bridges typechecks the entire cubical-library (see sec. 1). When the --bridges flag is active, an `hcomp` call reduces to a `mhocom` call instead (see `TC/Primitive/Cubical.hs > primHComp'`), and reduction rules for `mhocom` are used (we wrote those) instead of the ones for `hcomp` (that the --cubical developers wrote). This indicates that `mhocom` behaves as expected, at least in the case where its ζ and u argument come from a --cubical invocation of hcomp, i.e. contain trivial bridge information.
 
-- Agda --bridges typechecks the bridgy library. Each time a `transp` reduces at a line of types like `BridgeP/Gel/mhocom`, the "bridge-ful" fragment of the reduction clauses we wrote for `transp` and, in turn, `mhocom` get called. In our view, it is unlikely (though not impossible) that these reduction clauses are unsound since typechecking errors would occur quite quickly otherwise. Such errors have occured in the past and we fixed them. What is more possible is a lack of completeness w.r.t the reduction behaviour of transp/mhocom in CH. In other words it could be that some definitional equalities involving transp/hcomp are obtainable in CH but not in Agda --bridges. Experimenting with Agda --bridges on more complex examples of internal free theorems (future work) could reveal such defects.
+- Agda --bridges typechecks the bridgy library. Each time a `transp` reduces at a line of types like `BridgeP/Gel/mhocom`, the "bridge-ful" fragment of the reduction clauses we wrote for `transp` and, in turn, `mhocom` get called. In our view, it is unlikely (though not impossible) that these reduction clauses are unsound since typechecking errors would occur quite quickly otherwise. Such errors have occurred in the past and we fixed them. What is more possible is a lack of completeness w.r.t the reduction behaviour of transp/mhocom in CH. In other words it could be that some definitional equalities involving transp/hcomp are obtainable in CH but not in Agda --bridges. Experimenting with Agda --bridges on more complex examples of internal free theorems (future work) could reveal such defects.
 
 
 We now explain our implementation of transp/mhocom in more details.
@@ -279,7 +279,7 @@ Before explaining where to find the equations for `primTransp` and `primMHComp` 
 ### Mixed face constraints (MCstr)
 
 In the --cubical case, the `hcomp` primitive is used to modify a term (u0 : A) that contains path variables `i,j,k,...` into a term `hcomp {l} {A} {φ} u u0` that computes more pleasingly.
-Specifically, contrary to `u0`, the latter term is definitionally equal to `u (i1)` when the φ constraint is found satifiable.
+Specifically, contrary to `u0`, the latter term is definitionally equal to `u (i1)` when the φ constraint is found satisfiable.
 The φ face constraint restricts what values `i,j,k,...` can possibly take. Since agda --cubical uses a rich path interval structure (De Morgan), specifying such a constraint can simply be done by stating
 a single equation like
 ```agda
@@ -296,9 +296,9 @@ Since the bridge interval does not admit any operations besides having endpoints
 
 To remain logically sound w.r.t. to a denotational model (specifically: `psh (DeMorgan-cube × Affine-cube)`) we pin pointed the following definition:
 
-1. First, we define what a "pure" bridge constraint is, i.e. a constraint like ζ saying nothing about path variables. See `BCstr` and module `BCstrPrims` in `bridgy-lib/Bridgy/Core/BridgePrims.agda`. Such a bridge constraint ψ : BCstr can be unsatisfiable (see `bno`), OR vaccuous (see `byes`) OR a disjunction of atomic assertions like `x = bi1` or `x = bi0`. Examples of `ψ : BCstr` can be found in `bridgy-lib/Bridgy/Test/CstrExamples.agda`.
+1. First, we define what a "pure" bridge constraint is, i.e. a constraint like ζ saying nothing about path variables. See `BCstr` and module `BCstrPrims` in `bridgy-lib/Bridgy/Core/BridgePrims.agda`. Such a bridge constraint ψ : BCstr can be unsatisfiable (see `bno`), OR vacuous (see `byes`) OR a disjunction of atomic assertions like `x = bi1` or `x = bi0`. Examples of `ψ : BCstr` can be found in `bridgy-lib/Bridgy/Test/CstrExamples.agda`.
 
-2. Second we define the type of mixed face constraints `ζ : MCstr`. Intuitively, ζ can be a union (see `_m∨_`) of a bridge constraint `ψ:BCstr` and of a path constraint `φ:I`, OR a vaccuous mixed constraint (see `myes`), OR a false one (see `mno`). This is what the quotient on line 1074 of our submission tells. The implementation of the `_m∨_` "constructor" of MCstr can be found here: `TC/Primitive/Bridges.hs > primMkmc'`. Non trivial mixed constraints `ζ` can be specified using the `_∨∨_ : MCstr -> MCstr -> MCstr` primitive which is implemented here `TC/Primitive/Bridges.hs > primMixedOr'`.
+2. Second we define the type of mixed face constraints `ζ : MCstr`. Intuitively, ζ can be a union (see `_m∨_`) of a bridge constraint `ψ:BCstr` and of a path constraint `φ:I`, OR a vacuous mixed constraint (see `myes`), OR a false one (see `mno`). This is what the quotient on line 1074 of our submission tells. The implementation of the `_m∨_` "constructor" of MCstr can be found here: `TC/Primitive/Bridges.hs > primMkmc'`. Non trivial mixed constraints `ζ` can be specified using the `_∨∨_ : MCstr -> MCstr -> MCstr` primitive which is implemented here `TC/Primitive/Bridges.hs > primMixedOr'`.
 
 3. In --cubical there exists a primitive type former called `IsOne` to assert truth for path constraints. Its only constructor is `itIsOne : IsOne i1`. Hence the only way for a path constraint φ to be satisfiable is for it to reduce to `i1` (in a certain context). Similarly, Agda --bridges features an analogous primitive predicate about *mixed* constraints, called `MHolds`. Its only constructor is `MitHolds : MHolds myes`. Hence the only way for a mixed constraint ζ to be satisfiable is for it to reduce to `myes`.
 
