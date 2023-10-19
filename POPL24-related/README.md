@@ -33,6 +33,7 @@ This section contains detailed installation instructions.
 - Windows 10
 
 *Importing the VM.* We follow the steps described in the VirtualBox [user manual](https://www.virtualbox.org/manual/UserManual.html#ovf-import-appliance). Go to `File > Import appliance`. Select the VM file `<...>/popl24-artifact37-VM.ova`. An "Appliance settings" window is shown. The default values should be fine; in particular:
+
 | Option                   | Value                                         |
 |--------------------------|-----------------------------------------------|
 | CUP (thread)             | 2                                             |
@@ -73,21 +74,21 @@ Within the VM, when 2048MB of memory and 2CPU threads are allocated, on a 3years
 | X compiles/typechecks | Y                            | in ... | comment                                              |
 |-----------------------|------------------------------|--------|------------------------------------------------------|
 | ghc 9.0.2             | Agda dependencies            | 9 min  | not a --fast install (i.e. optimized binary)         |
-| ghc 9.0.2             | Agda sources                 | 29min  | not a --fast install (i.e. optimized binary)         |
-| ghc 9.0.2             | Agda sources                 | ~6min  | --fast install                                       |
-| agda --bridges        | cubical lib (README.agda)    | 41min  | with the original `agda` binary (properly optimized) |
-| agda --bridges        | bridgy-lib (Everything.agda) | ~1min  | with the original `agda` binary (properly optimized) |
+| ghc 9.0.2             | Agda sources                 | 29 min | not a --fast install (i.e. optimized binary)         |
+| ghc 9.0.2             | Agda sources                 | ~6 min | --fast install                                       |
+| agda --bridges        | cubical lib (README.agda)    | 41 min | with the original `agda` binary (properly optimized) |
+| agda --bridges        | bridgy-lib (Everything.agda) | ~1 min | with the original `agda` binary (properly optimized) |
 
   
 ### (Optional) Typechecking the entire cubical library with Agda --bridges
 
 This can take quite a while (see above table) but can be stopped at any time (abort typechecking emacs shortcut: `C-c C-x C-a`).
 
-- Go to the cubical library repo `cd ~/cubical-lib/`
+- Go to the cubical library repo `cd ~/Desktop/cubical-lib/`
 
 - Type `stack exec -- make gen-everythings`
 
-- With emacs, load the file `~/cubical-lib/Cubical/README.agda`
+- With emacs, load the file `cubical-lib/Cubical/README.agda`
   
 ### (Optional) Recompilation of the Agda --bridges implementation
 
