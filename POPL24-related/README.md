@@ -57,7 +57,7 @@ Click on Finish. The VM should start importing (this could take a minute).
 
 - In order to typecheck some internal parametricity proofs with agda --bridges:
 
-  - Make sure to get our latest additions by running `git pull` in the `/Desktop/bridgy-lib/` repository.
+  - Make sure to get our latest additions by running `git pull` in the `~/Desktop/bridgy-lib/` repository.
 
   - Open a terminal. Type `emacs &`.
   
@@ -69,7 +69,7 @@ In the rest of this section we provide a table of approximate compiling/typechec
 
 ### Compiling/typechecking times.
 
-Within the VM, when 2048MB of memory and 2CPU threads are allocated, on a 3years old 16GB RAM/8cores work laptop:
+Within the VM, when 2048MB of memory and 2 CPU threads are allocated, on a 3 years old work laptop with 16GB RAM and 8cores:
 
 | X compiles/typechecks | Y                            | in ... | comment                                              |
 |-----------------------|------------------------------|--------|------------------------------------------------------|
@@ -77,7 +77,7 @@ Within the VM, when 2048MB of memory and 2CPU threads are allocated, on a 3years
 | ghc 9.0.2             | Agda sources                 | 29 min | not a --fast install (i.e. optimized binary)         |
 | ghc 9.0.2             | Agda sources                 | ~6 min | --fast install                                       |
 | agda --bridges        | cubical lib (README.agda)    | 41 min | with the original `agda` binary (properly optimized) |
-| agda --bridges        | bridgy-lib (Everything.agda) | ~1 min | with the original `agda` binary (properly optimized) |
+| agda --bridges        | bridgy lib (Everything.agda) | ~1 min | with the original `agda` binary (properly optimized) |
 
   
 ### (Optional) Typechecking the entire cubical library with Agda --bridges
