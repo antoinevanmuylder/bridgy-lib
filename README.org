@@ -2,9 +2,9 @@ Installation instructions for both ~Agda --bridges~ and this library: [[https://
 
 - This repo contains internal parametricity experiments, coded in ~agda --bridges~.
 
-- The implementation of ~agda --bridges~ can be found [[https://github.com/antoinevanmuylder/agda/tree/bridges][here]]. ~Agda --bridges~ implements the parametricity primitives of [[https://lmcs.episciences.org/8651][Cavallo-Harper]] (CH) on top of ~agda --cubical~. A high-level description of the implementation appears [[https://github.com/antoinevanmuylder/bridgy-lib/blob/main/POPL24-related/README.md][here]].
+- The implementation of ~agda --bridges~ can be found [[https://github.com/antoinevanmuylder/agda/tree/bridges][in another repo]]. The ~agda --bridges~ proof assistant implements the parametricity primitives of [[https://lmcs.episciences.org/8651][Cavallo-Harper]] (CH) on top of ~agda --cubical~. A high-level description of the implementation appears [[https://github.com/antoinevanmuylder/bridgy-lib/blob/main/POPL24-related/README.md][here]].
 
-*** Quick tour of some files
+*** Quick tour of some files in this repo
 Check out ~Everything.agda~.
 - ~Bridgy.Core/~ :  ~Agda --bridges~ primitive declarations, raw relational extensionality principles, useful lemmas/definitions. 
   - ~BridgePrims.agda~: declares the CH primitives.
