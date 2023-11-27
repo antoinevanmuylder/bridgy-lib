@@ -14,9 +14,6 @@
 
 module GraphEmbedding where
 
-
-open 
-
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.Fiberwise
