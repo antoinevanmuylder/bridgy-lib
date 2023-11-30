@@ -3,9 +3,9 @@
 In order to typecheck files of the present library, installing ~agda --bridges~ and the ~cubical~ library is required.
 
 *** Install ghcup (recommended), or just stack
-~ghcup~ is a program capable of installing and managing different versions of the Haskell Glasgow Compiler (GHC) as well as Haskell package managers ~cabal~ and ~stack~. GHC is needed to install agda --bridges from source.
+~ghcup~ is a program capable of installing and managing different versions of the Haskell Glasgow Compiler (GHC) as well as Haskell package managers ~cabal~ and ~stack~. GHC is needed to compile ~agda --bridges~.
 
-From [[https://www.haskell.org/ghcup/install/][ghcup]]:
+To install ~ghcup~ (from [[https://www.haskell.org/ghcup/install/][ghcup]]):
 #+begin_src shell
 curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 #+end_src
@@ -26,7 +26,7 @@ stack install # builds and copies agda binary to ~/.local/bin/
               # `stack install` may take a while to get started
 agda-mode compile && agda-mode setup #add hook to emacs init file
 #+end_src
-Make sure to add ~~/.local/bin/~ to your PATH.
+Make sure to add =~/.local/bin/= to your PATH.
 To navigate the the implementation with TAGS, see the end of this file
 *** Download the cubical library and register it in =~/.agda/libraries=
 The present library (bridgy-lib):
