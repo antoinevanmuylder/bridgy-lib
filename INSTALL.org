@@ -3,12 +3,14 @@
 In order to typecheck files of the present library, installing ~agda --bridges~ and the ~cubical~ library is required.
 
 *** Install ghcup (recommended), or just stack
+~ghcup~ is a program capable of installing and managing different versions of the Haskell Glasgow Compiler (GHC) as well as Haskell package managers ~cabal~ and ~stack~. GHC is needed to install agda --bridges from source.
+
 From [[https://www.haskell.org/ghcup/install/][ghcup]]:
 #+begin_src shell
 curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 #+end_src
 Follow the ghcup install procedure. Answer yes whenever asked, and ~sudo apt install <...>~ the dependencies required by the script.
-After a successful install, restart your terminal
+After a successful install, restart your terminal.
 *** Install ~agda --bridges~
 #+begin_src shell
 stack update # stack comes with ghcup
