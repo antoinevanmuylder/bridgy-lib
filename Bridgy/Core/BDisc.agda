@@ -7,9 +7,6 @@ open import Bridgy.Core.EquGraph
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Data.Unit
-open import Cubical.Functions.Embedding
-open import Cubical.Foundations.Equiv.Fiberwise
-
 
 
 lsen : ∀ {ℓ} {A : Type ℓ} {a0 a1 : A} → (a0 ≡ a1) → BridgeP (λ _ → A) a0 a1
@@ -34,6 +31,4 @@ isBDiscP A bd B =
   PathP (λ i → B (aa i)) b0 b1 ≃ BridgeP (λ x → B (abdg x)) b0 b1
 
 
--- lsen-embedding : ∀ {ℓ} {A : Type ℓ} (a0 a1 : A) → (a0 ≡ a1) ↪ (Bridge A a0 a1)
--- lsen-embedding {l} {A} a0 a1 = lsen ,
---   {!!}
+

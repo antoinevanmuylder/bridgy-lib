@@ -1,21 +1,30 @@
-In order to typecheck files of this library...
-*** Install ~agda --bridges~
 ~agda --bridges~ is an extension of cubical agda which add parametricity primitives to cubical type theory, as discussed in Cavallo-Harper (CH): https://arxiv.org/pdf/2005.11290.pdf. The implementation can be found here (bridges branch): https://github.com/antoinevanmuylder/agda/tree/bridges.
-To install with stack:
+
+In order to typecheck files of this library...
+*** Install ghcup (recommended), or just stack
+From [[https://www.haskell.org/ghcup/install/][ghcup]]:
 #+begin_src shell
+curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+#+end_src
+Follow the ghcup install procedure. Answer yes whenever asked, and ~sudo apt install <...>~ the dependencies required by the script.
+After a successful install, restart your terminal
+*** Install ~agda --bridges~
+#+begin_src shell
+stack update # stack comes with ghcup
+sudo apt install zlib1g-dev libncurses5-dev gcc #agda prerequisites.
+sudo apt install emacs # if you don't have emacs
+
 git clone https://github.com/antoinevanmuylder/agda/ agda-bridges/
 cd agda-bridges/
 git checkout bridges
-sudo curl -sSL https://get.haskellstack.org/ | sh #if you don't have stack
-stack update
-cp stack-<version>.yaml stack.yaml # choose version of haskell compiler (tested with ghc 9.0.2)
-sudo apt install zlib1g-dev libncurses5-dev gcc #agda prerequisites.
+cp stack-<version>.yaml stack.yaml # choose version of haskell compiler (tested with ghc 9.4.3)
 stack install # builds and copies agda binary to ~/.local/bin/
               # alternatively: `stack install --fast`     (slower agda binary though)
               # `stack install` may take a while to get started
 agda-mode compile && agda-mode setup #add hook to emacs init file
 #+end_src
-To navigate the library with TAGS, see the end of this file
+Make sure to add ~~/.local/bin/~ to your PATH.
+To navigate the the implementation with TAGS, see the end of this file
 *** Download the cubical library and register it in =~/.agda/libraries=
 The present library (bridgy-lib):
 - compiles with ~agda --bridges~ (see instruction above)
