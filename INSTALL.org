@@ -1,6 +1,7 @@
 ~agda --bridges~ is an extension of cubical agda which add parametricity primitives to cubical type theory, as discussed in Cavallo-Harper (CH): https://arxiv.org/pdf/2005.11290.pdf. The implementation can be found here (bridges branch): https://github.com/antoinevanmuylder/agda/tree/bridges.
 
-In order to typecheck files of this library...
+In order to typecheck files of the present library, installing ~agda --bridges~ and the ~cubical~ library is required.
+
 *** Install ghcup (recommended), or just stack
 From [[https://www.haskell.org/ghcup/install/][ghcup]]:
 #+begin_src shell
