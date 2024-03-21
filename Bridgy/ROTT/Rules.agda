@@ -17,6 +17,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Function
+open import Cubical.Foundations.Path
 open import Cubical.Data.Unit
 open import Cubical.Data.Sigma
 open import Cubical.Data.Sigma.Properties
@@ -392,6 +393,27 @@ module ΣΠForm {ℓΓ ℓA ℓB} {Γ : NRGraph ℓΓ} (A : DispNRG ℓA Γ) (B 
   --     (invEquiv (B .dnativ (γ0 , a0) (γ1 , a1) (λ x → (γbdg x , abdg x)) (f0 a0) (f1 a1))) ) )
   --   }
 open ΣΠForm public
+
+
+-- Path type former in ROTT
+-- Γ ⊨ A dNRG
+-- Γ ⊨ a : A    Γ ⊨ b : A 
+-- ------------------------
+-- Γ ⊨ a ≡ b dNRG
+≡Form : ∀ {l lA} → (Γ : NRGraph l) (A : DispNRG lA Γ) →
+  (a : TermDNRG Γ A) (b : TermDNRG Γ A) →
+  DispNRG lA Γ
+≡Form Γ A a b = record {
+  dcr = λ g → (a .tm0 g) ≡ (b .tm0 g) ;
+  -- a logical relation between paths is a path between logical relations
+  dedge = λ g0 g1 gg ab0 ab1 → PathP (λ i → A ⦅ ab0 i , ab1 i ⦆# gg) (a .tm1 g0 g1 gg) (b .tm1 g0 g1 gg) ;
+  dnativ = λ g0 g1 gg gbdg gprf ab0 ab1 →
+    flip compEquiv (PathPvsBridgeP (λ x i → A .dcr (gbdg x)) {left = ab0} {right = ab1} {down = λ x → a .tm0 (gbdg x)} {up = λ x → b .tm0 (gbdg x)})
+    (compEquiv (congPathEquiv (λ i → A .dnativ g0 g1 gg gbdg gprf (ab0 i) (ab1 i)) {a₀ = a .tm1 g0 g1 gg} {a₁ = b .tm1 g0 g1 gg})
+    let anativ = outEquGr (a .tm-nativ g0 g1 gg gbdg gprf) in
+    let bnativ = outEquGr (b .tm-nativ g0 g1 gg gbdg gprf) in
+    mypathToEquiv λ i → PathP (λ i → BridgeP (λ x → A .dcr (gbdg x)) (ab0 i) (ab1 i)) (anativ i) (bnativ i))
+  }
 
 
 

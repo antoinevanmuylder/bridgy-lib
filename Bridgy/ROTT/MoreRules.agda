@@ -19,6 +19,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Function
+open import Cubical.Foundations.Path
 open import Cubical.Data.Unit
 open import Cubical.Data.Sigma
 open import Cubical.Data.Sigma.Properties
