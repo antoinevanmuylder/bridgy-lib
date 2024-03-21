@@ -26,17 +26,20 @@ open import Cubical.Data.List hiding ( [_] )
 
 -- temp file for writing new ROTT rules
 
-
--- -- variable rule (last variable)
--- -- Γ NRG     Γ ⊨ A dNRG
--- -- ---------------------
--- -- Γ , X : A ⊨ X : A
--- var0 : ∀ {l lA} → (Γ : NRGraph l) → (A : DispNRG lA Γ) → TermDNRG (Γ # A) (wkn A)
--- var0 Γ A =
---   record {
---     tm0 = λ ga → ga .snd;
---     tm1 = λ ga0 ga1 gaa → gaa .snd ;
---     tm-nativ = λ ga0 ga1 gaa gaBdg gaPrf →
---       nativ-#-proj2 Γ A (ga0 .fst) (ga1 .fst) (gaa .fst) (λ x → gaBdg x .fst) (ga0 .snd) (ga1 .snd) (gaa .snd) (λ x → gaBdg x .snd) gaPrf
---     }
+-- app rule
+-- Γ ⊨ f : A → B      Γ ⊨ a : A
+-- -------------------------------
+-- Γ ⊨ f a : B
+app : ∀ {l lA lB} →
+  (Γ : NRGraph l) (A : DispNRG lA Γ) (B : DispNRG lB Γ) 
+  (f : TermDNRG Γ (→Form _ _ A B))
+  (a : TermDNRG Γ A) →
+  TermDNRG Γ B
+app Γ A B f a =
+  record {
+    tm0 = λ g → f .tm0 g (a .tm0 g) ;
+    tm1 = λ g0 g1 gg →  f .tm1 g0 g1 gg (a .tm0 g0) (a .tm0 g1) (a .tm1 g0 g1 gg) ;
+    tm-nativ = λ g0 g1 gg gbdg gprf →
+      {!!}
+  }
 

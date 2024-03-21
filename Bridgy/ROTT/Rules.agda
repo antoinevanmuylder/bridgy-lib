@@ -259,7 +259,19 @@ var0 Γ A =
     }
 
 
-
+-- variable-like rule (essentially not stateable in normal type thy)
+-- Γ NRG     Γ ⊨ A dNRG
+-- ---------------------
+-- (g : Γ) , a : A ⊨ g : todNRG(Γ)
+var1-ctx : ∀ {l lA} → (Γ : NRGraph l) → (A : DispNRG lA Γ) →
+  TermDNRG (Γ # A) (todNRG (Γ # A) Γ)
+var1-ctx Γ A =
+  record {
+    tm0 = λ ga → ga .fst ;
+    tm1 = λ ga0 ga1 gaa → gaa .fst ;
+    tm-nativ = λ ga0 ga1 gaa gaBdg gaPrf →
+      nativ-#-proj1 Γ A (ga0 .fst) (ga1 .fst) (gaa .fst) (λ x → gaBdg x .fst) (ga0 .snd) (ga1 .snd) (gaa .snd) (λ x → gaBdg x .snd) gaPrf
+  }
 
 
 
