@@ -210,11 +210,6 @@ lastType {Γ = Γ} .dnativ (g0 , X0) (g1 , X1) (gg , XX) gXbdg gXprf x0 x1 =
     aux = nativ-#-proj2 Γ (todNRG Γ (TypeNRG _)) g0 g1 gg (λ z → gXbdg z .fst) X0 X1 XX (λ z → gXbdg z .snd) gXprf
 
 
-
-
-
-
-
 -- Ty subst
 -- σ : Γ → Δ    Δ ⊢ A type
 -- ------------------------
@@ -247,6 +242,22 @@ wkn : ∀ {lΓ lA lW} {Γ : NRGraph lΓ} {W : DispNRG lW Γ} (A : DispNRG lA Γ)
   DispNRG lA (Γ # W)
 wkn {Γ = Γ} {W = W} A =
   tySubst (Γ # W) Γ (pr _ W) A
+
+
+
+-- variable rule (last variable)
+-- Γ NRG     Γ ⊨ A dNRG
+-- ---------------------
+-- Γ , X : A ⊨ X : A
+var0 : ∀ {l lA} → (Γ : NRGraph l) → (A : DispNRG lA Γ) → TermDNRG (Γ # A) (wkn A)
+var0 Γ A =
+  record {
+    tm0 = λ ga → ga .snd;
+    tm1 = λ ga0 ga1 gaa → gaa .snd ;
+    tm-nativ = λ ga0 ga1 gaa gaBdg gaPrf →
+      nativ-#-proj2 Γ A (ga0 .fst) (ga1 .fst) (gaa .fst) (λ x → gaBdg x .fst) (ga0 .snd) (ga1 .snd) (gaa .snd) (λ x → gaBdg x .snd) gaPrf
+    }
+
 
 
 
