@@ -67,6 +67,13 @@ _×NRG_ G H .nrg-cr = G .nrg-cr × H .nrg-cr
 _×NRG_ G H .nedge (g0 , h0) (g1 , h1)  = G .nedge g0 g1 × H .nedge h0 h1
 _×NRG_ G H .nativ  (g0 , h0) (g1 , h1) = flip compEquiv ×vsBridgeP (≃-× (G .nativ g0 g1) (H .nativ h0 h1))
 
+-- NRG closed under →
+_→NRG_ : ∀{ℓG ℓH} (G : NRGraph ℓG) (H : NRGraph ℓH) → NRGraph (ℓ-max ℓG ℓH)
+_→NRG_ G H .nrg-cr = G .nrg-cr → H .nrg-cr
+_→NRG_ G H .nedge = λ f0 f1 → ∀ g0 g1 (gg : G ⦅ g0 , g1 ⦆ ) → H .nedge (f0 g0) (f1 g1)
+_→NRG_ G H .nativ = λ f0 f1 → flip compEquiv ΠvsBridgeP
+  (equivΠCod λ g0 → equivΠCod λ g1 →
+  equivΠ' (G .nativ _ _) λ _ → H .nativ _ _)
 
 
 
