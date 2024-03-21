@@ -395,6 +395,37 @@ open ΣΠForm public
 
 
 
+------------------------------------------------------------------------
+-- for terms
+
+
+-- app rule
+-- Γ ⊨ f : A → B      Γ ⊨ a : A
+-- -------------------------------
+-- Γ ⊨ f a : B
+app : ∀ {l lA lB} →
+  (Γ : NRGraph l) (A : DispNRG lA Γ) (B : DispNRG lB Γ) 
+  (f : TermDNRG Γ (→Form _ _ A B))
+  (a : TermDNRG Γ A) →
+  TermDNRG Γ B
+app Γ A B f a =
+  record {
+    tm0 = λ g → f .tm0 g (a .tm0 g) ;
+    tm1 = λ g0 g1 gg →  f .tm1 g0 g1 gg (a .tm0 g0) (a .tm0 g1) (a .tm1 g0 g1 gg) ;
+    tm-nativ = λ g0 g1 gg gbdg gprf →
+      let thingf = outEquGrInv (f .tm-nativ g0 g1 gg gbdg gprf) in
+      let thingf2 = funExt⁻ {f = f .tm1 g0 g1 gg} thingf (a .tm0 g0) in
+      let thingf3 = funExt⁻ {f = tm1 f g0 g1 gg (a .tm0 g0)} thingf2 (a .tm0 g1) in
+      let thingf4 = funExt⁻ {f = tm1 f g0 g1 gg (a .tm0 g0) (a .tm0 g1)} thingf3 (a .tm1 g0 g1 gg) in
+      inEquGrInv (thingf4 ∙
+         cong (invEq (B .dnativ g0 g1 gg gbdg gprf (f .tm0 g0 (a .tm0 g0)) (f .tm0 g1 (a .tm0 g1))))
+         let thing-a = outEquGr (a .tm-nativ g0 g1 gg gbdg gprf) in
+         λ i x → f .tm0 (gbdg x) (thing-a i x))
+
+
+  }
+
+
 
 ------------------------------------------------------------------------
 -- Bridge discrete types
