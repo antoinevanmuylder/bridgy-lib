@@ -28,6 +28,3 @@ open import Cubical.Data.List hiding ( [_] )
 -- temp file for writing new ROTT rules
 
 
-
-
-

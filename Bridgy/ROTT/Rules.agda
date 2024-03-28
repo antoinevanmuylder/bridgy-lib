@@ -275,6 +275,31 @@ var1-ctx Γ A =
   }
 
 
+-- last last variable.
+-- Γ NRG   Γ ⊨ A dNRG  (Γ # A) ⊨ B dNRG
+-- -------------------------------------
+-- Γ , (a : A) , (b : B) ⊨ a : A
+var1 : ∀ {l lA lB} {Γ : NRGraph l} →
+  (A : DispNRG lA Γ) (B : DispNRG lB (Γ # A)) →
+  TermDNRG (Γ # A # B) (wkn (wkn A))
+var1 {Γ = Γ} A B =
+  record {
+    tm0 = λ gab → gab .fst .snd ;
+    tm1 = λ gab0 gab1 gabb → gabb .fst .snd ;
+    tm-nativ = λ gab0 gab1 gabb gabBdg gabPrf →
+    let
+      np1 : gabb .fst [ (Γ # A) .nativ (gab0 .fst) (gab1 .fst) ] (λ x → gabBdg x .fst)
+      np1 = nativ-#-proj1 (Γ # A) B (gab0 .fst) (gab1 .fst) (gabb .fst) (λ x → gabBdg x .fst) (gab0 .snd) (gab1 .snd) (gabb .snd) (λ x → gabBdg x .snd) gabPrf in
+    nativ-#-proj2 Γ A
+      (gab0 .fst .fst) (gab1 .fst .fst) (gabb .fst .fst) (λ x → gabBdg x .fst .fst)
+      (gab0 .fst .snd) (gab1 .fst .snd) (gabb .fst .snd) (λ x → gabBdg x .fst .snd)
+      np1
+  }
+
+
+
+
+
 
 ------------------------------------------------------------------------
 -- type formers
