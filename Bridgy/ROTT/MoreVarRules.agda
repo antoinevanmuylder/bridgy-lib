@@ -26,6 +26,9 @@ open import Cubical.Data.Sigma.Properties
 open import Cubical.Data.List hiding ( [_] )
 
 
+
+-- replacing placeholders with the actual values will speed up typechecking
+
 -- last last last variable.
 -- Γ NRG
 -- Γ ⊨ A dNRG
@@ -34,9 +37,9 @@ open import Cubical.Data.List hiding ( [_] )
 -- -------------------------------------
 -- Γ , (a : A) , (b : B), (c : C) ⊨ a : A
 var2 : ∀ {l lA lB lC} {Γ : NRGraph l} →
-  {A : DispNRG lA Γ} (B : DispNRG lB (Γ # A)) (C : DispNRG lC (Γ # A # B)) →
+  {A : DispNRG lA Γ} {B : DispNRG lB (Γ # A)} {C : DispNRG lC (Γ # A # B)} →
   TermDNRG (Γ # A # B # C) (wkn (wkn (wkn A)))
-var2 {Γ = Γ} {A = A} B C =
+var2 {Γ = Γ} {A = A} {B = B} {C = C} =
   record {
     tm0 = λ gabc → gabc .fst .fst .snd ;
     tm1 = λ gabc0 gabc1 gabcc → gabcc .fst .fst .snd ;
@@ -46,4 +49,27 @@ var2 {Γ = Γ} {A = A} B C =
       nativ-#-proj2 Γ A _ _ _ _ _ _ _ _ fsfs
   }
 
+
+-- Γ NRG
+-- Γ ⊨ A dNRG
+-- (Γ # A) ⊨ B dNRG
+-- Γ # A # B ⊨ C dNRG
+-- Γ # A # B # D ⊨ D dNRG
+-- -------------------------------------
+-- Γ , (a : A) , (b : B), (c : C), (d : D) ⊨ a : A
+var3 : ∀ {l lA lB lC lD} {Γ : NRGraph l} →
+  {A : DispNRG lA Γ} {B : DispNRG lB (Γ # A)} {C : DispNRG lC (Γ # A # B)} {D : DispNRG lD (Γ # A # B # C)} →
+  TermDNRG (Γ # A # B # C # D) (wkn (wkn (wkn (wkn A))))
+var3 {Γ = Γ} {A = A} {B = B} {C = C} {D = D} =
+  record {
+    tm0 = λ gabcd → gabcd .fst .fst .fst .snd ;
+    tm1 = λ gabcd0 gabcd1 gabcdd → gabcdd .fst .fst .fst .snd ;
+    tm-nativ = λ gabcd0 gabcd1 gabcdd gabcdBdg gabcdPrf →
+      let
+        fs = nativ-#-proj1 (Γ # A # B # C) D _ _ _ _ _ _ _ _ gabcdPrf
+        fsfs = nativ-#-proj1 (Γ # A # B) C _ _ _ _ _ _ _ _ fs
+        fsfsfs = nativ-#-proj1 (Γ # A) B _ _ _ _ _ _ _ _ fsfs
+      in
+      nativ-#-proj2 Γ A _ _ _ _ _ _ _ _ fsfsfs 
+  }
 
