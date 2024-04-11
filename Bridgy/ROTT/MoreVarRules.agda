@@ -55,10 +55,10 @@ nativ-#-proj2' Γ A ga0 ga1 gaa gaBdg gaprf =
 -- Γ # A # B ⊨ C dNRG
 -- -------------------------------------
 -- Γ , (a : A) , (b : B), (c : C) ⊨ a : A
-var2 : ∀ {l lA lB lC} {Γ : NRGraph l} →
-  {A : DispNRG lA Γ} (B : DispNRG lB (Γ # A)) (C : DispNRG lC (Γ # A # B)) →
+var2 : ∀ {l lA lB lC} (Γ : NRGraph l) →
+  (A : DispNRG lA Γ) (B : DispNRG lB (Γ # A)) (C : DispNRG lC (Γ # A # B)) →
   TermDNRG (Γ # A # B # C) (wkn (wkn (wkn A)))
-var2 {Γ = Γ} {A = A} B C =
+var2 Γ A B C =
   record {
     tm0 = λ gabc → gabc .fst .fst .snd ;
     tm1 = λ gabc0 gabc1 gabcc → gabcc .fst .fst .snd ;
@@ -79,10 +79,10 @@ var2 {Γ = Γ} {A = A} B C =
 -- Γ # A # B # D ⊨ D dNRG
 -- -------------------------------------
 -- Γ , (a : A) , (b : B), (c : C), (d : D) ⊨ a : A
-var3 : ∀ {l lA lB lC lD} {Γ : NRGraph l} →
-  {A : DispNRG lA Γ} (B : DispNRG lB (Γ # A)) (C : DispNRG lC (Γ # A # B)) (D : DispNRG lD (Γ # A # B # C)) →
+var3 : ∀ {l lA lB lC lD} (Γ : NRGraph l) →
+  (A : DispNRG lA Γ) (B : DispNRG lB (Γ # A)) (C : DispNRG lC (Γ # A # B)) (D : DispNRG lD (Γ # A # B # C)) →
   TermDNRG (Γ # A # B # C # D) (wkn (wkn (wkn (wkn A))))
-var3 {Γ = Γ} {A = A} B C D =
+var3 Γ A B C D =
   record {
     tm0 = λ gabcd → gabcd .fst .fst .fst .snd ;
     tm1 = λ gabcd0 gabcd1 gabcdd → gabcdd .fst .fst .fst .snd ;

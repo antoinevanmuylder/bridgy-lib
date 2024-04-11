@@ -319,6 +319,25 @@ var1 {Γ = Γ} A B =
   equivΠ' (A .dnativ g0 g1 gg gbdg gprf a0 a1) λ {aa} {abdg} aprf →
   B .dnativ g0 g1 gg gbdg gprf (f0 a0) (f1 a1) )
 
+
+
+-- Γ ⊢ A type   Γ ⊢ B type
+-- ------------------------
+-- Γ ⊢ A × B type
+×Form : ∀ {ℓ} {Γ : NRGraph ℓ} (lA : Level) (lB : Level)
+   (A : DispNRG lA Γ) (B : DispNRG lB Γ) → 
+  DispNRG (ℓ-max lA lB) Γ
+×Form lA lB A B =
+  record {
+    dcr = λ g → A .dcr g × B .dcr g ;
+    dedge = λ g0 g1 gg ab0 ab1 → (A .dedge g0 g1 gg (ab0 .fst) (ab1 .fst)) × (B .dedge g0 g1 gg (ab0 .snd) (ab1 .snd)) ;
+    dnativ = λ g0 g1 gg gbdg gprf ab0 ab1 →
+      flip compEquiv (ΣvsBridgeP)
+      (≃-×
+        (A .dnativ g0 g1 gg gbdg gprf (ab0 .fst) (ab1 .fst))
+        (B .dnativ g0 g1 gg gbdg gprf (ab0 .snd) (ab1 .snd)))
+    }
+
 -- Theres a difference btw this and simply U ∈ NRG. 
 --
 -- -----------------
