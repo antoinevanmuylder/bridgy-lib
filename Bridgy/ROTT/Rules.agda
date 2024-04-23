@@ -18,6 +18,7 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Path
+open import Cubical.Foundations.Univalence
 open import Cubical.Data.Unit
 open import Cubical.Data.Sigma
 open import Cubical.Data.Sigma.Properties
@@ -491,6 +492,18 @@ app Γ A B f a =
 
   }
 
+-- Γ ⊨ A dNRG
+-- -----------
+-- Γ ⊨ code A : U
+code : ∀ {l} {Γ : NRGraph l} {lC} → DispNRG lC Γ → TermDNRG Γ (UForm lC)
+code A =
+  record {
+    tm0 = λ g → A .dcr g ;
+    tm1 = λ g0 g1 gg a0 a1 → A .dedge g0 g1 gg a0 a1 ;
+    tm-nativ = λ g0 g1 gg gbdg gprf →
+      inEquGrInv (funExt λ a0 → funExt λ a1 → ua (A .dnativ g0 g1 gg gbdg gprf a0 a1))
+  }
+
 
 
 ------------------------------------------------------------------------
@@ -573,5 +586,23 @@ ListdNRG .dnativ X0 X1 XX Xbdg Xprf as0 as1 =
       λ _ → ntvUnderList hyp tl0 tl1
 
 
+-- Γ ⊨ Z dNRG
+-- ---------------
+-- Γ ⊨ List Z dNRG
+ListdNRG' : ∀ {l lz} {Γ : NRGraph l} → 
+  DispNRG lz Γ → DispNRG lz Γ
+ListdNRG' {Γ = Γ} Z =
+  record {
+    dcr = λ g → List (Z .dcr g) ;
+    dedge = λ g0 g1 gg zs0 zs1 → ListRCover (Z .dedge g0 g1 gg) zs0 zs1 ;
+    dnativ = λ g0 g1 gg gbdg gprf zs0 zs1 → --uses ua. possible to povide equiv directly instead
+      flip compEquiv (ListvsBridgeP (λ x → Z .dcr (gbdg x)))
+      (mypathToEquiv
+      let
+         eqrel : (Z .dedge g0 g1 gg) ≡ BridgeP (λ x → Z .dcr (gbdg x))
+         eqrel = (funExt λ z0 → funExt λ z1 → ua (Z .dnativ g0 g1 gg gbdg gprf z0 z1))
+      in
+      λ i → ListRCover (eqrel i) zs0 zs1)
+  }
 
 
