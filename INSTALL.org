@@ -1,4 +1,4 @@
-~agda --bridges~ is an extension of cubical agda which adds parametricity primitives to cubical type theory, as discussed in [[https://lmcs.episciences.org/8651][Cavallo-Harper (CH)]]. The implementation can be found [[https://github.com/antoinevanmuylder/agda/tree/bridges][here]] (bridges branch).
+~agda --bridges~ is an extension of cubical agda which adds parametricity primitives to cubical type theory, as discussed in [[https://lmcs.episciences.org/8651][Cavallo-Harper (CH)]]. The implementation can be found [[https://github.com/antoinevanmuylder/agda/tree/bridges-with-2.6.4][here]] (bridges-with-2.6.4 branch).
 
 In order to typecheck files of the present library, installing ~agda --bridges~ and the ~cubical~ library is required.
 
@@ -17,10 +17,10 @@ stack update # stack comes with ghcup
 sudo apt install zlib1g-dev libncurses5-dev gcc #agda prerequisites.
 sudo apt install emacs # if you don't have emacs
 
-git clone https://github.com/antoinevanmuylder/agda/ agda-bridges/
+git clone https://github.com/antoinevanmuylder/agda/agda-bridges/
 cd agda-bridges/
-git checkout bridges
-cp stack-<version>.yaml stack.yaml # choose version of haskell compiler (tested with ghc 9.4.3)
+git checkout bridges-with-2.6.4
+cp stack-<version>.yaml stack.yaml # choose version of haskell compiler (tested with ghc 9.8.1)
 stack install # builds and copies agda binary to ~/.local/bin/
               # alternatively: `stack install --fast`     (slower agda binary though)
               # `stack install` may take a while to get started
@@ -31,11 +31,11 @@ To navigate the the implementation with TAGS, see the end of this file
 *** Download the cubical library and register it in =~/.agda/libraries=
 The present library (bridgy-lib):
 - compiles with ~agda --bridges~ (see instruction above)
-- depends on the v0.5 version of the cubical library (which may be master, or a dedicated tag in the future).
+- depends on the the cubical library at a10e25a8.
 
 To get the latter cubical library to work:
 - Clone the appropriate repo: https://github.com/agda/cubical.
-- Revert to this commit: ~git checkout 3dc3cd12579544c8~ (28 Apr 2023).
+- Revert to this commit: ~git checkout a10e25a8~.
 - Once this is done, add the following line to your =~/.agda/libraries= config file:
   #+begin_src shell
   <...>/cubical/cubical.agda-lib # where cubical/ is stored in <...>
