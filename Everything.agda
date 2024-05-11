@@ -16,6 +16,9 @@ open import Bridgy.Core.GraphEmbedding
 open import Bridgy.ROTT.Judgments
 open import Bridgy.ROTT.Param
 open import Bridgy.ROTT.Rules
+open import Bridgy.ROTT.MoreRules
+open import Bridgy.ROTT.MoreVarRules
+open import Bridgy.ROTT.WknPresTypeFormers
 
 open import Bridgy.Examples.LowLevel
 open import Bridgy.Examples.Church
