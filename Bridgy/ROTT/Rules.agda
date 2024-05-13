@@ -20,6 +20,7 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Path
 open import Cubical.Foundations.Univalence
+open import Cubical.Foundations.HLevels
 open import Cubical.Data.Unit
 open import Cubical.Data.Sigma
 open import Cubical.Data.Sigma.Properties
@@ -599,6 +600,9 @@ ListdNRG' {Γ = Γ} Z =
   }
 
 
+------------------------------------------------------------------------
+-- Nat
+
 -- Γ ⊨ Nat dNRG
 NatForm : ∀ {l} {Γ : NRGraph l} → DispNRG ℓ-zero Γ
 NatForm = record {
@@ -606,5 +610,54 @@ NatForm = record {
   dedge = λ _ _ _ → codeℕ ;
   dnativ = λ _ _ _ _ _ → SRP-Nat
   }
+
+-- Γ ⊨ z : Nat
+zeroTerm : ∀ {l} {Γ : NRGraph l} →  TermDNRG Γ NatForm
+zeroTerm = record {
+  tm0 = λ g → zero ;
+  tm1 = λ _ _ _ → tt ;
+  tm-nativ = λ _ _ _ _ _ → inEquGr refl
+  }
+
+
+-- n natural number of agda bridges
+-- ----------------
+-- Γ ⊨ n : Nat
+cstNatTerm :  ∀ {l} {Γ : NRGraph l} → ℕ → TermDNRG Γ NatForm
+cstNatTerm n = record {
+  tm0 = λ g → n ;
+  tm1 = λ _ _ _ → codeℕrefl n ;
+  tm-nativ = λ _ _ _ _ _ →
+    inEquGrInv (isOfHLevelRespectEquiv 1 (≡ℕ≃Codeℕ n n) (isSetℕ n n) _ _)
+  }
+
+-- Γ ⊨ suc : Nat → Nat
+sucTerm  : ∀ {l} {Γ : NRGraph l} → TermDNRG Γ  (→Form _ _ NatForm NatForm)
+sucTerm = record {
+  tm0 = λ _ n → suc n ;
+  tm1 = λ _ _ _ → λ n0 n1 nn → nn ;
+  tm-nativ = λ _ _ _ _ _ →
+    inEquGrInv (funExt λ n0 → funExt λ n1 → funExt λ nn →
+    let isPropCode = isOfHLevelRespectEquiv 1 (≡ℕ≃Codeℕ n0 n1) (isSetℕ n0 n1) in
+    isPropCode _ _)
+  }
+
+-- Γ , n ⊨ suc n : Nat
+-- in practice the one above is preferable because this one can only be used through term substitution
+-- which is a meta theoretical operation
+sucTerm'  : ∀ {l} {Γ : NRGraph l} → TermDNRG (Γ # NatForm) NatForm
+sucTerm' = record {
+  tm0 = λ gn → suc (gn .snd) ;
+  tm1 = λ gn0 gn1 gnn → gnn .snd;
+  tm-nativ =
+    λ gn0 gn1 gnn gnbdg gnprf →
+    -- we use the fact that Nat is a set.
+    -- didn't think how to prove it otherwise
+    let isPropCode = isOfHLevelRespectEquiv 1 (≡ℕ≃Codeℕ (gn0 .snd) (gn1 .snd)) (isSetℕ (gn0 .snd) (gn1 .snd))
+    in inEquGrInv (isPropCode _ _)
+  }
+
+
+
 
 

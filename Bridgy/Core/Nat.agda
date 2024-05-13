@@ -88,7 +88,6 @@ SRP-Nat' n0 n1 = compEquiv (≡ℕ≃Codeℕ _ _) (SRP-Nat _ _)
 --the latter requires that a specific function ≡ → Bdg is an equivalence.
 
 
-
-
-
-
+codeℕrefl : ∀ n → codeℕ n n
+codeℕrefl 0 = tt
+codeℕrefl (suc n) = codeℕrefl n
