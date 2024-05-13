@@ -39,15 +39,6 @@ funExt2⁻ x y eq = λ i → eq i x y
 ------------------------------------------------------------------------
 -- Some NRGs
 
-topBdgDiscrLemma : (q : BridgeP (λ _ → Unit) tt tt) → (λ _ → tt) ≡ q
-topBdgDiscrLemma q = λ i x → isContrUnit .snd (q x) i
-
-topBdgDiscrEquiv : Unit ≃ BridgeP (λ _ → Unit) tt tt
-topBdgDiscrEquiv  = isoToEquiv (iso
-                      (λ _ _ → tt)
-                      (λ _ → tt)
-                      (λ q → topBdgDiscrLemma q)
-                      λ where tt → refl)
 
 topNRG : NRGraph ℓ-zero
 topNRG .nrg-cr = Unit

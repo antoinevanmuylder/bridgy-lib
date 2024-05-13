@@ -6,6 +6,7 @@ open import Bridgy.Core.BridgePrims
 open import Bridgy.Core.EquGraph
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Isomorphism
 open import Cubical.Data.Unit
 
 
@@ -32,3 +33,12 @@ isBDiscP A bd B =
 
 
 
+topBdgDiscrLemma : (q : BridgeP (λ _ → Unit) tt tt) → (λ _ → tt) ≡ q
+topBdgDiscrLemma q = λ i x → isContrUnit .snd (q x) i
+
+topBdgDiscrEquiv : Unit ≃ BridgeP (λ _ → Unit) tt tt
+topBdgDiscrEquiv  = isoToEquiv (iso
+                      (λ _ _ → tt)
+                      (λ _ → tt)
+                      (λ q → topBdgDiscrLemma q)
+                      λ where tt → refl)
