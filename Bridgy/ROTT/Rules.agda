@@ -12,6 +12,7 @@ open import Bridgy.Core.ExtentExamples
 open import Bridgy.Core.GelExamples
 open import Bridgy.Core.BDisc
 open import Bridgy.Core.List
+open import Bridgy.Core.Nat
 open import Bridgy.ROTT.Judgments
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
@@ -23,6 +24,7 @@ open import Cubical.Data.Unit
 open import Cubical.Data.Sigma
 open import Cubical.Data.Sigma.Properties
 open import Cubical.Data.List hiding ( [_] )
+open import Cubical.Data.Nat
 
 
 ------------------------------------------------------------------------
@@ -594,6 +596,15 @@ ListdNRG' {Γ = Γ} Z =
          eqrel = (funExt λ z0 → funExt λ z1 → ua (Z .dnativ g0 g1 gg gbdg gprf z0 z1))
       in
       λ i → ListRCover (eqrel i) zs0 zs1)
+  }
+
+
+-- Γ ⊨ Nat dNRG
+NatForm : ∀ {l} {Γ : NRGraph l} → DispNRG ℓ-zero Γ
+NatForm = record {
+  dcr = λ _ → ℕ ;
+  dedge = λ _ _ _ → codeℕ ;
+  dnativ = λ _ _ _ _ _ → SRP-Nat
   }
 
 

@@ -21,62 +21,14 @@ open import Bridgy.Core.MyPathToEquiv
 
 
 
--- Nat≃List1 : ℕ ≃ List Unit
--- Nat≃List1 = isoToEquiv (iso
---   natToList
---   length
---   List1<=Nat
---   Nat<=List1)
-
---   where
---     natToList : ℕ → List Unit
---     natToList zero = []
---     natToList (suc n) = tt ∷ natToList n
-
---     Nat<=List1 : ∀ n → length (natToList n) ≡ n
---     Nat<=List1 0 = refl
---     Nat<=List1 (suc n) = cong suc (Nat<=List1 n)
-
---     List1<=Nat : ∀ us → natToList (length us) ≡ us
---     List1<=Nat [] = refl
---     List1<=Nat (tt ∷ us) = cong (_∷_ tt) (List1<=Nat us)
-
--- BridgeNat≡BridgeList1 : ∀ n0 n1 →
---   Bridge ℕ n0 n1 ≡
---   Bridge (List Unit) (equivFun Nat≃List1 n0) (equivFun Nat≃List1 n1)
--- BridgeNat≡BridgeList1 n0 n1 =
---   change-line-path
---     (λ _ → ℕ) (λ _ → List Unit) n0 n1
---     (equivFun Nat≃List1 n0) (equivFun Nat≃List1 n1)
---     (λ _ → ua Nat≃List1)
---     (transportRefl _)
---     (transportRefl _)
-
--- -- can compse this with the SIP at Nat which characterize
--- -- ≡_nat as an inductive relation based on the shape of nat
--- SRP-Nat' : ∀ n0 n1 → (n0 ≡ n1) ≃ Bridge ℕ n0 n1
--- SRP-Nat' n0 n1 =
---   flip compEquiv
---   (mypathToEquiv (sym (BridgeNat≡BridgeList1 n0 n1)))
---   (flip compEquiv (ListvsBridge {A = Unit})
---   {![List BridgeP (λ _ → Unit) ]!})
-
---   where
-  
---     hlp : ∀ us0 us1 →
---       (length us0 ≡ length us1)  ≃ [List BridgeP (λ _ → Unit) ] us0 us1
---     hlp = {!!}
-    
-
-
 
 -- see Bridgy.Core.List for explanation of this kind of proof
 
 -- codeℕ is observational equality of nat in cubical lib
-decodeBdgNat : ∀ n0 n1 → codeℕ n0 n1 → Bridge ℕ n0 n1
-decodeBdgNat zero zero tt = λ _ → zero
-decodeBdgNat (suc n0) (suc n1) prf =
-  λ x → suc (decodeBdgNat n0 n1 prf x)
+loosenBdgNat : ∀ n0 n1 → codeℕ n0 n1 → Bridge ℕ n0 n1
+loosenBdgNat zero zero tt = λ _ → zero
+loosenBdgNat (suc n0) (suc n1) prf =
+  λ x → suc (loosenBdgNat n0 n1 prf x)
 
 
 zbdg : BridgeP (λ x → primGel _ _ codeℕ x) zero zero
@@ -87,13 +39,53 @@ sucbdg =
   equivFun (ΠvsBridgeP) λ n0 n1 nn →
   λ y → prim^gel {R = codeℕ} (suc n0) (suc n1) (prim^ungel {R = codeℕ} (λ x → nn x)) y
 
-idbdg : BridgeP (λ x → ℕ → primGel _ _ codeℕ x) (idfun ℕ) (idfun ℕ)
-idbdg x zero = zbdg x
-idbdg x (suc n) = sucbdg x (idbdg x n)
+tightenBdgNat0 : BridgeP (λ x → ℕ → primGel _ _ codeℕ x) (idfun ℕ) (idfun ℕ)
+tightenBdgNat0 x zero = zbdg x
+tightenBdgNat0 x (suc n) = sucbdg x (tightenBdgNat0 x n)
+
+tightenBdgNat :  ∀ n0 n1 → Bridge ℕ n0 n1 → codeℕ n0 n1
+tightenBdgNat n0 n1 nn = prim^ungel {R = codeℕ} (λ x → tightenBdgNat0 x (nn x))
 
 
+apred : (@tick x : BI) → ℕ → Type
+apred x n =
+  (primExtent {A = λ _ → ℕ} {B = λ _ _ → ℕ} (idfun _) (idfun _)
+  (λ n0 n1 → loosenBdgNat n0 n1 ∘ tightenBdgNat n0 n1) x n)
+  ≡ n
+
+apred-z : BridgeP (λ x → apred x zero) refl refl
+apred-z x = refl
+
+apred-suc : BridgeP (λ x → (n : ℕ) → apred x n → apred x (suc n))
+  (λ n → cong suc) (λ n → cong suc)
+apred-suc =
+  equivFun (ΠvsBridgeP) λ n0 n1 nn →
+  λ x → cong suc
+
+auxnateq : BridgeP (λ x → (n : ℕ) → apred x n) (λ _ → refl) λ _ → refl
+auxnateq x zero = apred-z x
+auxnateq x (suc n) = apred-suc x n (auxnateq x n)
+
+codeℕ<=Bdg : ∀ n0 n1 (nn : codeℕ n0 n1) →
+  tightenBdgNat n0 n1 (loosenBdgNat n0 n1 nn) ≡ nn
+codeℕ<=Bdg zero zero tt = refl
+codeℕ<=Bdg zero (suc n) ctr = rec ctr
+codeℕ<=Bdg (suc n) zero ctr = rec ctr
+codeℕ<=Bdg (suc n0) (suc n1) pf = codeℕ<=Bdg n0 n1 pf
 
 
+SRP-Nat : ∀ n0 n1 → codeℕ n0 n1 ≃ Bridge ℕ n0 n1
+SRP-Nat n0 n1 = isoToEquiv (iso
+  (loosenBdgNat n0 n1)
+  (tightenBdgNat n0 n1)
+  (λ nn → λ i x → auxnateq x (nn x) i)
+  (codeℕ<=Bdg n0 n1))
+
+
+SRP-Nat' : ∀ n0 n1 → (n0 ≡ n1) ≃ Bridge ℕ n0 n1
+SRP-Nat' n0 n1 = compEquiv (≡ℕ≃Codeℕ _ _) (SRP-Nat _ _)
+--note: not *exactly* the same than being bridge discrete
+--the latter requires that a specific function ≡ → Bdg is an equivalence.
 
 
 
