@@ -1,6 +1,6 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
 
-module Bridgy.Experimental.VecChurch where
+module Bridgy.Examples.VecChurch where
 
 
 open import Bridgy.Core.BridgePrims
