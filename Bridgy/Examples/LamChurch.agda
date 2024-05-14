@@ -34,9 +34,9 @@ _my<_ : ℕ → ℕ → Bool
 (suc n) my< (suc m) = n my< m
 
 data Lam : ℕ → Type where
-  va : ∀ n i → (i my< n ≡ true) → Lam n
-  la : ∀ n → Lam (suc n) → Lam n
-  ap : ∀ n → Lam n → Lam n → Lam n
+  var : ∀ n i → (i my< n ≡ true) → Lam n
+  lam : ∀ n → Lam (suc n) → Lam n
+  appl : ∀ n → Lam n → Lam n → Lam n
 
 ------------------------------------------------------------------------
 -- lemmas
@@ -92,10 +92,47 @@ varDNRG = ΠForm (NatForm) (ΠForm (NatForm)
     ctx13  = (topNRG # →Form ℓ-zero (ℓ-suc ℓ-zero) NatForm (UForm ℓ-zero) # NatForm)
     ctx23 = topNRG # →Form ℓ-zero (ℓ-suc ℓ-zero) NatForm (UForm ℓ-zero)
 
+-- (∀ n → L (suc n) → L n)
+lamDNRG : DispNRG ℓ-zero (topNRG # (→Form _ _ (NatForm) (UForm ℓ-zero)))
+lamDNRG = ΠForm NatForm (
+  let
+    n = var0 ctx12 NatForm
+    L = var1 {Γ = topNRG} (→Form ℓ-zero (ℓ-suc ℓ-zero) NatForm (UForm ℓ-zero)) NatForm
+  in
+  →Form _ _
+  -- L (suc n)
+  (El (app ctx02 NatForm (UForm ℓ-zero)
+    (record { tm0 = L .tm0 ; tm1 = L .tm1 ; tm-nativ = L .tm-nativ })
+    (app _ _ _ sucTerm (record { tm0 = n .tm0 ; tm1 = n .tm1 ; tm-nativ = n .tm-nativ }))))
+
+  -- L n
+  (El (app ctx02 NatForm (UForm ℓ-zero)
+    (record { tm0 = L .tm0 ; tm1 = L .tm1 ; tm-nativ = L .tm-nativ })
+    (record { tm0 = n .tm0 ; tm1 = n .tm1 ; tm-nativ = n .tm-nativ }))))
+
+  where
+
+    ctx12 = (topNRG # →Form ℓ-zero (ℓ-suc ℓ-zero) NatForm (UForm ℓ-zero))
+    ctx02 = topNRG # →Form ℓ-zero (ℓ-suc ℓ-zero) NatForm (UForm ℓ-zero) # NatForm
 
 
 
--- topNRG #
--- →Form ℓ-zero (ℓ-suc ℓ-zero) NatForm (UForm ℓ-zero) #
--- NatForm #
--- NatForm
+-- (∀ n → Lam n → Lam n → Lam n)
+applDNRG : DispNRG ℓ-zero (topNRG # (→Form _ _ (NatForm) (UForm ℓ-zero)))
+applDNRG = ΠForm NatForm
+  let
+    n = var0 ctx12 NatForm
+    L = var1 {Γ = topNRG} (→Form ℓ-zero (ℓ-suc ℓ-zero) NatForm (UForm ℓ-zero)) NatForm
+    localApp' = app ctx02 NatForm (UForm ℓ-zero)
+    localApp = (El (localApp' (record { tm0 = L .tm0 ; tm1 = L .tm1 ; tm-nativ = L .tm-nativ }) (record { tm0 = n .tm0 ; tm1 = n .tm1 ; tm-nativ = n .tm-nativ })))
+  in
+  →Form _ _ localApp (→Form _ _ localApp localApp)
+
+  where
+    ctx12 = (topNRG # →Form ℓ-zero (ℓ-suc ℓ-zero) NatForm (UForm ℓ-zero))
+    ctx02 = topNRG # →Form ℓ-zero (ℓ-suc ℓ-zero) NatForm (UForm ℓ-zero) # NatForm
+
+      
+-- _:1 , L : ℕ → Type ⊨ (∀ n i → (i my< n ≡ true) → L n) × (∀ n → L (suc n) → L n) × (∀ n → Lam n → Lam n → Lam n)
+LamPres : DispNRG ℓ-zero (topNRG # (→Form _ _ (NatForm) (UForm ℓ-zero)))
+LamPres = ×Form _ _ varDNRG (×Form _ _ lamDNRG applDNRG) 
