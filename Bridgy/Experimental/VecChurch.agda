@@ -7,13 +7,21 @@ open import Bridgy.Core.BridgePrims
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Function
 open import Cubical.Data.Nat
 open import Cubical.Data.Sigma
 open import Cubical.Data.Vec
+open import Cubical.Data.Empty
 
+open import Bridgy.Core.Nat
 open import Bridgy.Core.BDisc
 open import Bridgy.ROTT.Judgments
 open import Bridgy.ROTT.Rules
+open import Bridgy.ROTT.Param
+
+
+-- see VecChurch
+
 
 module _ {l : Level} (A : Type l) (isbA : isBDisc A) where
 
@@ -46,6 +54,15 @@ module _ {l : Level} (A : Type l) (isbA : isBDisc A) where
   ModTVecNRG : NRGraph (ℓ-suc l)
   ModTVecNRG = topNRG # (→Form _ _ (NatForm) (UForm l)) # VecpDNRG
 
+  famOf : (M : ModTVecNRG .nrg-cr) → ℕ → Type l
+  famOf M = M .fst .snd
+
+  nilOf : (M : ModTVecNRG .nrg-cr) → famOf M 0
+  nilOf M = M .snd .fst
+
+  consOf : (M : ModTVecNRG .nrg-cr) → ∀ n → A → famOf M n → famOf M (suc n)
+  consOf M = M .snd .snd
+
 
 
   -- for each n of Agda bridges, the dNRG
@@ -56,41 +73,59 @@ module _ {l : Level} (A : Type l) (isbA : isBDisc A) where
     (cstNatTerm n))
 
 
-  
+  --registering Vec A as a model
+  VecAsMod : ModTVecNRG .nrg-cr
+  VecAsMod = (tt , (λ n → Lift {j = ℓ-zero} (Vec A n) )) ,
+             lift [] ,
+             λ n a as → lift (a ∷ (as .lower))
 
-  -- -- being a model of the theory of vectors.
-  -- -- see signature of Vec.
-  -- Vecp : (ℕ → Type l) → Type l
-  -- Vecp V = V 0 × (∀ n → A → V n → V (suc n))
+  -- recursion principle with heterogeneous indices (n0, n1)
+  VecRec : (M : ModTVecNRG .nrg-cr) (n0 n1 : ℕ) → codeℕ n0 n1 → Lift {j = ℓ-zero} (Vec A n0) → snd (fst M) n1
+  VecRec M 0 (suc n1) ctr = rec ctr
+  VecRec M (suc n0) 0 ctr = rec ctr
+  VecRec M 0 0 _ (lift []) = nilOf M
+  VecRec M (suc n0) (suc n1) prf (lift (a ∷ as)) = consOf M n1 a (VecRec M n0 n1 prf (lift as))
 
-  -- ModTVec = Σ (ℕ → Type l) Vecp
+  -- how does VecRec relates to idxCarrier?
 
-  -- nilOf : (M : ModTVec) → M .fst 0
-  -- nilOf M = M .snd .fst
+  --registering the graph of the above recursor as a logical relation of models
+  grRecLrel : ∀ (M : ModTVecNRG .nrg-cr) → ModTVecNRG ⦅  VecAsMod , M ⦆
+  grRecLrel M =
+    (tt , λ n0 n1 prf as asm → VecRec _ _ _ prf as ≡ asm ) ,
+    refl ,
+    rec-cons
 
-  -- consOf : (M : ModTVec) → (∀ n → A → M .fst n → M .fst (suc n))
-  -- consOf M = M .snd .snd
+    where
 
-  -- -- from syntax to semantics. Note the indexing.
-  -- toSem : ∀ n → Vec A n → ((M : ModTVec) → M .fst n)
-  -- toSem 0 nil M = nilOf M
-  -- toSem (suc n) (a ∷ as)  M = consOf M n a (toSem n as M)
+      rec-cons : (n0 n1 : ℕ) (nn : codeℕ n0 n1) (a0 a1 : A) (aa : a0 ≡ a1)
+        (v0 : Lift (Vec A n0)) (m1 : famOf M n1) (ingr : VecRec M n0 n1 nn v0 ≡ m1) →
+        consOf M n1 a0 (VecRec M n0 n1 nn v0) ≡ consOf M n1 a1 m1
+      rec-cons n0 n1 nn a0 a1 aa v0 m1 ingr =
+        λ i → consOf M n1 (aa i) (ingr i)
 
-  -- -- from semantics to syntax. need to register Vec as a model
-  -- VecAsMod : ModTVec
-  -- VecAsMod = Vec A , [] , λ n → _∷_  
+  -- simplified recursor
+  VecSimpleRec : (M : ModTVecNRG .nrg-cr) (n : ℕ) → Vec A n → famOf M n
+  VecSimpleRec M n v = VecRec M n n (codeℕrefl n) (lift v)
 
-  -- toSyn : ∀ n → ((M : ModTVec) → M .fst n) → Vec A n
-  -- toSyn n op = op VecAsMod
+  toChurch : ∀ n → Vec A n → (M : ModTVecNRG .nrg-cr) → famOf M n
+  toChurch n v M = VecSimpleRec M n v
 
-  -- -- syntax <= semantics
-  -- syn<=sem : ∀ n (v : Vec A n) → toSyn n (toSem n v) ≡ v
-  -- syn<=sem 0 [] = refl
-  -- syn<=sem (suc n) (a ∷ as) = cong (_∷_ a) (syn<=sem n as)
+  fromChurch : ∀ n → ((M : ModTVecNRG .nrg-cr) → famOf M n) → Vec A n
+  fromChurch n op = (op VecAsMod) .lower
 
-  -- -- sem <= syntax. need parametricity.
-  -- sem<=syn : ∀ n (op : (M : ModTVec) → M .fst n) → toSem n (toSyn n op) ≡ op
-  -- sem<=syn 0 op = funExt λ M → {!!}
+  --note the indexed induction in syn<=sem
+  VecChurch : ∀ n → Vec A n ≃ ((M : ModTVecNRG .nrg-cr) → famOf M n)
+  VecChurch n = isoToEquiv (iso
+    (toChurch n)
+    (fromChurch n)
+    (λ op → funExt λ M → (param ModTVecNRG (idxCarrier n) op _ _ (grRecLrel M)))
+    (syn<=sem n))
+
+    where
+      syn<=sem : ∀ n v → fromChurch n (toChurch n v) ≡ v
+      syn<=sem 0 [] = refl
+      syn<=sem (suc n) (a ∷ as) = cong (_∷_ a) (syn<=sem n as)
+
   
 
   
