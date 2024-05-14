@@ -14,6 +14,7 @@ open import Cubical.Foundations.HLevels
 open import Cubical.Data.Empty
 open import Cubical.Data.Nat
 open import Cubical.Data.Bool
+open import Cubical.Data.Unit
 
 
 
@@ -72,7 +73,6 @@ my<Term = record {
     tm1my< (suc n0) (suc n1) nn zero zero mm = tt
     tm1my< (suc n0) (suc n1) nn (suc m0) (suc m1) mm =
       tm1my< n0 n1 nn m0 m1 mm
-
 
 
     
@@ -179,7 +179,8 @@ LamRec M (suc n) 0 ctr = rec ctr
 LamRec M 0 0 tt (var .zero i ctr) = rec (not<0 i ctr)
 LamRec M 0 0 tt (lam .zero body) = lamOf M 0 (LamRec M 1 1 tt body )
 LamRec M 0 0 tt (appl .zero t1 t2) = applOf M 0 (LamRec M 0 0 tt t1) (LamRec M 0 0 tt t2)
-LamRec M (suc n0) (suc n1) prf (var .(suc n0) i small) = varOf M (suc n1) i ( _∙_ (λ j → (i my< suc (decodeℕ n0 n1 prf (~ j)))) small)
+LamRec M (suc n0) (suc n1) prf (var .(suc n0) i small) = varOf M (suc n1) i (transport (λ j → (i my< suc (decodeℕ n0 n1 prf j)) ≡ true) small)
+-- ( _∙_ (λ j → (i my< suc (decodeℕ n0 n1 prf (~ j)))) small)
 LamRec M (suc n0) (suc n1) prf (lam .(suc n0) body) =
   -- why does this pass termination checker?
   let Mbody = LamRec M (suc (suc n0)) (suc (suc n1)) prf body in
@@ -188,12 +189,23 @@ LamRec M (suc n0) (suc n1) prf (appl .(suc n0) t1 t2) =
   let Mt = LamRec M (suc n0) (suc n1) prf in
   applOf M (suc n1) (Mt t1) (Mt t2)
 
-
-
--- data Lam : ℕ → Type where
---   var : ∀ n i → (i my< n ≡ true) → Lam n
---   lam : ∀ n → Lam (suc n) → Lam n
---   appl : ∀ n → Lam n → Lam n → Lam n
-
-
+--registering the graph of the above recursor as a logical relation of models
+grLamRecLrel : (M : ModLamPresNRG .nrg-cr) → ModLamPresNRG ⦅ LamAsMod , M ⦆
+grLamRecLrel M =
+  (tt , (λ n0 n1 nn t0 m1 → LamRec M _ _ nn t0 ≡ m1)) ,
+  {!!} , {!!} , {!!}
+  where
+    -- the recursor pres. variables
+    varCompat : varDNRG ⦅  varOf LamAsMod ,  varOf M ⦆# (tt , (λ n0 n1 nn t0 m1 → LamRec M n0 n1 nn t0 ≡ m1))
+    varCompat 0 (suc n) ctr = rec ctr
+    varCompat (suc n) 0 ctr = rec ctr
+    varCompat _ _ _ 0 (suc n) ctr = rec ctr
+    varCompat _ _ _ (suc n) 0 ctr = rec ctr
+    varCompat 0 0 tt (suc m0) (suc m1) mm ctr = rec (false≢true ctr)
+    varCompat 0 0 tt 0 0 tt ctr = rec (false≢true ctr)
+    varCompat (suc n0) (suc n1) nn 0 0 tt _ _ _ =
+      cong (varOf M (suc n1) 0) (isSetBool true true _ _)
+    varCompat (suc n0) (suc n1) nn (suc m0) (suc m1) mm small0 small1 _ =
+      {!(transp (λ i → (m0 my< decodeℕ n0 n1 nn i) ≡ true) i0 small0)!}
+    
 
