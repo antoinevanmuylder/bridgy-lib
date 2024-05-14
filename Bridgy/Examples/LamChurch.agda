@@ -42,6 +42,14 @@ data Lam : ℕ → Type where
 -- lemmas
 
 
+not<0' : ∀ i → (i my< 0) ≡ false
+not<0' 0 = refl
+not<0' (suc n) = refl
+
+not<0 : ∀ i → ((i my< 0) ≡ true) → ⊥
+not<0 i ctr = false≢true (sym (not<0' i) ∙ ctr) 
+
+
 
 -- turn the above into a term of ROTT (in an arbitrary context)
 -- Γ ⊨ < : nat → nat → Bool
@@ -134,5 +142,55 @@ applDNRG = ΠForm NatForm
 
       
 -- _:1 , L : ℕ → Type ⊨ (∀ n i → (i my< n ≡ true) → L n) × (∀ n → L (suc n) → L n) × (∀ n → Lam n → Lam n → Lam n)
-LamPres : DispNRG ℓ-zero (topNRG # (→Form _ _ (NatForm) (UForm ℓ-zero)))
-LamPres = ×Form _ _ varDNRG (×Form _ _ lamDNRG applDNRG) 
+LamPresDNRG : DispNRG ℓ-zero (topNRG # (→Form _ _ (NatForm) (UForm ℓ-zero)))
+LamPresDNRG = ×Form _ _ varDNRG (×Form _ _ lamDNRG applDNRG)
+
+
+-- the models of lambda calculus,
+-- more precisely of LamPres
+-- these are the families L : ℕ → Type equipped with operations var, lam, appl
+ModLamPresNRG : NRGraph (ℓ-suc ℓ-zero)
+ModLamPresNRG = topNRG # (→Form _ _ (NatForm) (UForm ℓ-zero)) # LamPresDNRG
+
+module _ (M : ModLamPresNRG .nrg-cr) where
+  famOf = M .fst .snd
+  varOf = M .snd .fst
+  lamOf = M .snd .snd .fst
+  applOf = M .snd .snd .snd
+
+
+-- for each n of Agda bridges, the dNRG
+-- tt:1, V : ℕ → Type, V0 ×  ∀ n. A → V n → V (suc n)    ⊨    V n
+idxCarrier : ℕ → DispNRG _ ModLamPresNRG
+idxCarrier n = El (app ModLamPresNRG (NatForm) (UForm ℓ-zero)
+  ((let v = var1 {Γ = topNRG} (→Form _ _ (NatForm) (UForm ℓ-zero)) LamPresDNRG in record { tm0 = v .tm0 ; tm1 = v .tm1 ; tm-nativ = v .tm-nativ })) 
+  (cstNatTerm n))
+
+
+-- registering Lam as a model
+LamAsMod : ModLamPresNRG .nrg-cr
+LamAsMod = (tt , Lam) , var , lam , appl
+
+
+-- recursion principle with heterogeneous indices
+LamRec : (M : ModLamPresNRG .nrg-cr) (n0 n1 : ℕ) → codeℕ n0 n1 → Lam n0 → (famOf M n1)
+LamRec M 0 (suc n) ctr = rec ctr
+LamRec M (suc n) 0 ctr = rec ctr
+LamRec M 0 0 tt (var .zero i ctr) = rec (not<0 i ctr)
+LamRec M 0 0 tt (lam .zero body) = lamOf M 0 (LamRec M 1 1 tt body )
+LamRec M 0 0 tt (appl .zero t1 t2) = applOf M 0 (LamRec M 0 0 tt t1) (LamRec M 0 0 tt t2)
+LamRec M (suc n0) (suc n1) prf (var .(suc n0) i small) = {!LamRec M n0 n1 prf!}
+  -- varOf M  (suc n0) i small : |M| n0
+  -- LamRec M n0 n1 prf : Lam n0 → |M| n1
+LamRec M (suc n0) (suc n1) prf (lam .(suc n0) body) = {!!}
+LamRec M (suc n0) (suc n1) prf (appl .(suc n0) t1 t2) = {!!}
+
+
+
+-- data Lam : ℕ → Type where
+--   var : ∀ n i → (i my< n ≡ true) → Lam n
+--   lam : ∀ n → Lam (suc n) → Lam n
+--   appl : ∀ n → Lam n → Lam n → Lam n
+
+
+
