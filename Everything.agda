@@ -25,4 +25,4 @@ open import Bridgy.Examples.Church
 open import Bridgy.Examples.ChurchGeneric
 open import Bridgy.Examples.AListFreeThm
 open import Bridgy.Examples.SystemF
-
+open import Bridgy.Examples.VecChurch
