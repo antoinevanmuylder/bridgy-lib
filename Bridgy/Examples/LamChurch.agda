@@ -160,7 +160,7 @@ module _ (M : ModLamPresNRG .nrg-cr) where
 
 
 -- for each n of Agda bridges, the dNRG
--- tt:1, V : ℕ → Type, V0 ×  ∀ n. A → V n → V (suc n)    ⊨    V n
+-- tt:1, L : ℕ → Type, ...   ⊨  L n
 idxCarrier : ℕ → DispNRG _ ModLamPresNRG
 idxCarrier n = El (app ModLamPresNRG (NatForm) (UForm ℓ-zero)
   ((let v = var1 {Γ = topNRG} (→Form _ _ (NatForm) (UForm ℓ-zero)) LamPresDNRG in record { tm0 = v .tm0 ; tm1 = v .tm1 ; tm-nativ = v .tm-nativ })) 
@@ -179,10 +179,9 @@ LamRec M (suc n) 0 ctr = rec ctr
 LamRec M 0 0 tt (var .zero i ctr) = rec (not<0 i ctr)
 LamRec M 0 0 tt (lam .zero body) = lamOf M 0 (LamRec M 1 1 tt body )
 LamRec M 0 0 tt (appl .zero t1 t2) = applOf M 0 (LamRec M 0 0 tt t1) (LamRec M 0 0 tt t2)
-LamRec M (suc n0) (suc n1) prf (var .(suc n0) i small) = {!LamRec M n0 n1 prf!}
-  -- varOf M  (suc n0) i small : |M| n0
-  -- LamRec M n0 n1 prf : Lam n0 → |M| n1
-LamRec M (suc n0) (suc n1) prf (lam .(suc n0) body) = {!!}
+LamRec M (suc n0) (suc n1) prf (var .(suc n0) i small) = varOf M (suc n1) i ( _∙_ (λ j → (i my< suc (decodeℕ n0 n1 prf (~ j)))) small)
+LamRec M (suc n0) (suc n1) prf (lam .(suc n0) body) =
+  {!!}
 LamRec M (suc n0) (suc n1) prf (appl .(suc n0) t1 t2) = {!!}
 
 
