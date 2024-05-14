@@ -181,8 +181,12 @@ LamRec M 0 0 tt (lam .zero body) = lamOf M 0 (LamRec M 1 1 tt body )
 LamRec M 0 0 tt (appl .zero t1 t2) = applOf M 0 (LamRec M 0 0 tt t1) (LamRec M 0 0 tt t2)
 LamRec M (suc n0) (suc n1) prf (var .(suc n0) i small) = varOf M (suc n1) i ( _∙_ (λ j → (i my< suc (decodeℕ n0 n1 prf (~ j)))) small)
 LamRec M (suc n0) (suc n1) prf (lam .(suc n0) body) =
-  {!!}
-LamRec M (suc n0) (suc n1) prf (appl .(suc n0) t1 t2) = {!!}
+  -- why does this pass termination checker?
+  let Mbody = LamRec M (suc (suc n0)) (suc (suc n1)) prf body in
+  lamOf M (suc n1) Mbody
+LamRec M (suc n0) (suc n1) prf (appl .(suc n0) t1 t2) =
+  let Mt = LamRec M (suc n0) (suc n1) prf in
+  applOf M (suc n1) (Mt t1) (Mt t2)
 
 
 
