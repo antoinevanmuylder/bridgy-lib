@@ -13,8 +13,10 @@ open import Bridgy.Core.GelExamples
 open import Bridgy.Core.BDisc
 open import Bridgy.Core.List
 open import Bridgy.Core.Nat
+open import Bridgy.Core.Bool
 open import Bridgy.ROTT.Judgments
 open import Bridgy.ROTT.Rules
+
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
@@ -28,8 +30,10 @@ open import Cubical.Data.Sigma
 open import Cubical.Data.Sigma.Properties
 open import Cubical.Data.List hiding ( [_] )
 open import Cubical.Data.Nat
+open import Cubical.Data.Bool
 
 -- temp file for writing rules
+
 
 
 

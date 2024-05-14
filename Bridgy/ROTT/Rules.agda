@@ -13,6 +13,7 @@ open import Bridgy.Core.GelExamples
 open import Bridgy.Core.BDisc
 open import Bridgy.Core.List
 open import Bridgy.Core.Nat
+open import Bridgy.Core.Bool
 open import Bridgy.ROTT.Judgments
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
@@ -26,6 +27,7 @@ open import Cubical.Data.Sigma
 open import Cubical.Data.Sigma.Properties
 open import Cubical.Data.List hiding ( [_] )
 open import Cubical.Data.Nat
+open import Cubical.Data.Bool
 
 
 ------------------------------------------------------------------------
@@ -482,9 +484,24 @@ app Γ A B f a =
          cong (invEq (B .dnativ g0 g1 gg gbdg gprf (f .tm0 g0 (a .tm0 g0)) (f .tm0 g1 (a .tm0 g1))))
          let thing-a = outEquGr (a .tm-nativ g0 g1 gg gbdg gprf) in
          λ i x → f .tm0 (gbdg x) (thing-a i x))
-
-
   }
+
+
+
+-- double app
+-- Γ ⊨ f : X → Y → Z
+-- Γ ⊨ x : X         Γ ⊨ y : Y
+-- ---------------------------
+-- Γ ⊨ f x y : Z
+app2 : ∀ {l lX lY lZ} {Γ : NRGraph l} →
+  {X : DispNRG lX Γ} {Y : DispNRG lY Γ} {Z : DispNRG lZ Γ}
+  (f : TermDNRG Γ (→Form _ _ X (→Form _ _ Y Z)))
+  (x : TermDNRG Γ X) (y : TermDNRG Γ Y) →
+  TermDNRG Γ Z
+app2 {Γ = Γ} {X = X} {Y = Y} {Z = Z} f x y = app Γ Y Z (app Γ X (→Form _ _ Y Z) f x) y
+
+
+
 
 -- Γ ⊨ A dNRG
 -- -----------
@@ -658,6 +675,23 @@ sucTerm' = record {
   }
 
 
+------------------------------------------------------------------------
+-- Γ ⊨ Bool dNRG
+BoolForm : ∀ {l} {Γ : NRGraph l} → DispNRG ℓ-zero Γ
+BoolForm = record {
+  dcr = λ _ → Bool ;
+  dedge = λ _ _ _ → Bool~ ;
+  dnativ = λ _ _ _ _ _ → SRP-Bool
+  }
 
 
-
+-- Γ ⊨ true, false : Bool
+boolCons : Bool → ∀ {l} {Γ : NRGraph l} → TermDNRG Γ (BoolForm)
+boolCons true = record {
+  tm0 = λ _ → true ;
+  tm1 = λ _ _ _ → tt ;
+  tm-nativ = λ _ _ _ _ _ → inEquGrInv refl}
+boolCons false = record {
+  tm0 = λ _ → false ;
+  tm1 = λ _ _ _ → tt ;
+  tm-nativ = λ _ _ _ _ _ → inEquGrInv refl}
