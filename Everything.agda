@@ -9,6 +9,7 @@ open import Bridgy.Core.EquGraph
 open import Bridgy.Core.BDisc
 open import Bridgy.Core.MyPathToEquiv
 open import Bridgy.Core.List
+open import Bridgy.Core.Nat
 open import Bridgy.Core.CubicalLemmas
 open import Bridgy.Core.Hlevels
 open import Bridgy.Core.GraphEmbedding
