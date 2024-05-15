@@ -193,9 +193,11 @@ LamRec M (suc n0) (suc n1) prf (appl .(suc n0) t1 t2) =
 grLamRecLrel : (M : ModLamPresNRG .nrg-cr) → ModLamPresNRG ⦅ LamAsMod , M ⦆
 grLamRecLrel M =
   (tt , (λ n0 n1 nn t0 m1 → LamRec M _ _ nn t0 ≡ m1)) ,
-  {!!} , {!!} , {!!}
+  -- Semantic operations varOf M, lamOf M, applOf M preserve the property of being in the image of the recursor (1ary param reading)
+  -- Alternatively: they preserve the graph of LamRec (written right above)
+  varCompat , lamCompat , {!!}
   where
-    -- the recursor pres. variables
+    -- if vm is in the
     varCompat : varDNRG ⦅  varOf LamAsMod ,  varOf M ⦆# (tt , (λ n0 n1 nn t0 m1 → LamRec M n0 n1 nn t0 ≡ m1))
     varCompat 0 (suc n) ctr = rec ctr
     varCompat (suc n) 0 ctr = rec ctr
@@ -206,6 +208,17 @@ grLamRecLrel M =
     varCompat (suc n0) (suc n1) nn 0 0 tt _ _ _ =
       cong (varOf M (suc n1) 0) (isSetBool true true _ _)
     varCompat (suc n0) (suc n1) nn (suc m0) (suc m1) mm small0 small1 _ =
+      --need: `my<` is displayed bridge-discrete over ℕ (twice ie bidisplayed)
       {!(transp (λ i → (m0 my< decodeℕ n0 n1 nn i) ≡ true) i0 small0)!}
+
+    -- if mbody is in the image of the recursor, then so is lamOf M _ mbody
+    lamCompat : lamDNRG ⦅  lamOf LamAsMod ,  lamOf M ⦆# (tt , (λ n0 n1 nn t0 m1 → LamRec M n0 n1 nn t0 ≡ m1))
+    lamCompat 0 (suc n) ctr = rec ctr
+    lamCompat (suc n) 0 ctr = rec ctr
+    lamCompat 0 0 tt body0 mbody1 bodyy = cong (lamOf M 0) bodyy
+    lamCompat (suc n0) (suc n1) nn body0 mbody1 bodyy = cong (lamOf M (suc n1)) bodyy
+
+    smth : Unit
+    smth = {!varCompat!}
     
 
