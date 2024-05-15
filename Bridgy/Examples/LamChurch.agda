@@ -10,22 +10,27 @@ open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
---open import Cubical.Data.FinData.Base
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Functions.FunExtEquiv
+
 open import Cubical.Data.Empty
 open import Cubical.Data.Nat
 open import Cubical.Data.Bool
 open import Cubical.Data.Unit
-
+open import Cubical.Data.Sigma
 
 
 open import Bridgy.Core.EquGraph
 open import Bridgy.Core.MyPathToEquiv
 open import Bridgy.Core.Bool
+open import Bridgy.Core.Nat
 
 open import Bridgy.ROTT.Judgments
 open import Bridgy.ROTT.Rules
 open import Bridgy.ROTT.MoreRules
 open import Bridgy.ROTT.MoreVarRules
+open import Bridgy.ROTT.Param
 
 
 _my<_ : ℕ → ℕ → Bool
@@ -48,7 +53,11 @@ not<0' 0 = refl
 not<0' (suc n) = refl
 
 not<0 : ∀ i → ((i my< 0) ≡ true) → ⊥
-not<0 i ctr = false≢true (sym (not<0' i) ∙ ctr) 
+not<0 i ctr = false≢true (sym (not<0' i) ∙ ctr)
+
+
+propAux : ∀ i n → isProp ((i my< n) ≡ true)
+propAux i n = isSetBool (i my< n) true 
 
 
 
@@ -192,6 +201,7 @@ LamRec M (suc n0) (suc n1) prf (appl .(suc n0) t1 t2) =
 -- "hard" part
 -- Registering the graph of the above recursor as a logical relation of models
 -- Doing this is as hard as explaining how the recursor computes
+-- ie LamPresDNRG ⦅ var,lam,app   ,  varM,lamM,applM ⦆# (graph of LamRrec) expresses the beta rule (?) of Lam
 grLamRecLrel : (M : ModLamPresNRG .nrg-cr) → ModLamPresNRG ⦅ LamAsMod , M ⦆
 grLamRecLrel M =
   (tt , (λ n0 n1 nn t0 m1 → LamRec M _ _ nn t0 ≡ m1)) ,
@@ -210,8 +220,13 @@ grLamRecLrel M =
     varCompat (suc n0) (suc n1) nn 0 0 tt _ _ _ =
       cong (varOf M (suc n1) 0) (isSetBool true true _ _)
     varCompat (suc n0) (suc n1) nn (suc m0) (suc m1) mm small0 small1 _ =
-      --need: `my<` is displayed bridge-discrete over ℕ (twice ie bidisplayed)
-      {!(transp (λ i → (m0 my< decodeℕ n0 n1 nn i) ≡ true) i0 small0)!}
+      -- peculiar. may be related to the fact that m< is displayed bridge-discrete over ℕ × ℕ
+      let
+        g : (Σ ℕ λ m → (m my< (suc n1)) ≡ true) → famOf M (suc n1)
+        g pr = varOf M (suc n1) (pr .fst) (pr .snd)
+        meq = decodeℕ m0 m1 mm
+      in
+      cong g (ΣPathP (cong suc meq , toPathP (propAux m1 n1 _ small1)))
 
     -- if mbody is in the image of the recursor, then so is lamOf M _ mbody
     lamCompat : lamDNRG ⦅  lam ,  lamOf M ⦆# (tt , (λ n0 n1 nn t0 m1 → LamRec M n0 n1 nn t0 ≡ m1))
@@ -220,8 +235,42 @@ grLamRecLrel M =
     lamCompat 0 0 tt body0 mbody1 bodyy = cong (lamOf M 0) bodyy
     lamCompat (suc n0) (suc n1) nn body0 mbody1 bodyy = cong (lamOf M (suc n1)) bodyy
 
+    -- if t1, t2 come from the syntax then so does `applOf M .. t1 t2`
     applCompat : applDNRG ⦅  appl  ,  applOf M ⦆# (tt , (λ n0 n1 nn t0 m1 → LamRec M n0 n1 nn t0 ≡ m1))
     applCompat 0 (suc n) ctr = rec ctr
     applCompat (suc n) 0 ctr = rec ctr
     applCompat 0 0 tt s0 sm1 eqs t0 tm1 eqt = cong₂ (applOf M _) eqs eqt
+    applCompat (suc n0) (suc n1) nn s0 sm1 eqs t0 tm1 eqt = cong₂ (applOf M _) eqs eqt
+
+
+-- simplified recursor
+LamSimpleRec : (M : ModLamPresNRG .nrg-cr) (n : ℕ) → Lam n → famOf M n
+LamSimpleRec M n = LamRec M n n (codeℕrefl n)
+
+toChurch : ∀ n → Lam n → (M : ModLamPresNRG .nrg-cr) → famOf M n
+toChurch n t M = LamSimpleRec M n t
+
+fromChurch : ∀ n → ((M : ModLamPresNRG .nrg-cr) → famOf M n) → Lam n
+fromChurch n op = op LamAsMod
+
+
+
+-- soundness-completeness
+LamChurch : ∀ n → Lam n ≃ ((M : ModLamPresNRG .nrg-cr) → famOf M n)
+LamChurch n = isoToEquiv (iso
+  (toChurch n)
+  (fromChurch n)
+  (λ op → funExt λ M → param ModLamPresNRG (idxCarrier n) op LamAsMod M (grLamRecLrel M))
+  (syn<=sem n))
+
+  where
+    syn<=sem : ∀ n t → fromChurch n (toChurch n t) ≡ t
+    syn<=sem 0 (var .zero i ctr) = rec (not<0 i ctr)
+    syn<=sem 0 (lam _ (var .1 i prf)) = cong (lam 0) (cong (var 1 i) (propAux i 1 _ _))
+    syn<=sem 0 (lam _ (lam .1 body)) = cong (lam 0) (cong (lam 1) (syn<=sem 2 body))
+    syn<=sem 0 (lam _ (appl .1 u v)) = cong (lam 0) (cong₂ (appl 1) (syn<=sem 1 u) (syn<=sem 1 v))
+    syn<=sem 0 (appl .0 u v) = cong₂ (appl 0) (syn<=sem _ u) (syn<=sem _ v)
+    syn<=sem (suc n) (var .(suc n) i prf) = cong (var (suc n) i) (propAux i (suc n) _ _)
+    syn<=sem (suc n) (lam .(suc n) body) = cong (lam (suc n)) (syn<=sem _ body)
+    syn<=sem (suc n) (appl .(suc n) u v) = cong₂ (appl (suc n)) (syn<=sem _ u) (syn<=sem _ v)
 
