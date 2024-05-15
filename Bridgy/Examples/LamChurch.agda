@@ -256,6 +256,8 @@ fromChurch n op = op LamAsMod
 
 
 -- soundness-completeness
+-- Lam is *observationally equal* to the ∀' M. (n ↦ |M| n) where ∀'
+-- denotes parametric limits internal to ℕ → Type.
 LamChurch : ∀ n → Lam n ≃ ((M : ModLamPresNRG .nrg-cr) → famOf M n)
 LamChurch n = isoToEquiv (iso
   (toChurch n)
