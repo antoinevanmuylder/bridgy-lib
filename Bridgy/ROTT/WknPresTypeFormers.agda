@@ -62,3 +62,15 @@ wknVsU unus =
   }
 
 
+-- Γ . W1 . W2 ⊨ wkn (wkn (UForm _))
+-- --------------------------
+-- Γ . W1 . W2 ⊨ UForm _
+wknWknVsU : ∀ {lΓ l1 l2 l} {Γ : NRGraph lΓ} {W1 : DispNRG l1 Γ} {W2 : DispNRG l2 (Γ # W1)} →
+  (unus : TermDNRG (Γ # W1 # W2) (wkn (wkn (UForm l)))) →
+  TermDNRG (Γ # W1 # W2) (UForm l)
+wknWknVsU unus =
+  record {
+    tm0 = unus .tm0 ; tm1 = unus .tm1 ; tm-nativ = unus .tm-nativ
+  }
+
+
