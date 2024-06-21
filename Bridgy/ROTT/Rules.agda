@@ -74,7 +74,12 @@ _→NRG_ G H .nativ = λ f0 f1 → flip compEquiv ΠvsBridgeP
   equivΠ' (G .nativ _ _) λ _ → H .nativ _ _)
 
 
-
+trivNRG : ∀ {l} (A : Type l) → NRGraph l
+trivNRG A =
+  record {
+    nrg-cr = A ;
+    nedge = Bridge A ;
+    nativ = λ a0 a1 → idEquiv _ }
 
 
 ------------------------------------------------------------------------
