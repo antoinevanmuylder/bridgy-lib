@@ -1,6 +1,6 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
 
-module Magma where
+module Bridgy.Examples.Magma where
 
 open import Bridgy.Core.BDisc
 

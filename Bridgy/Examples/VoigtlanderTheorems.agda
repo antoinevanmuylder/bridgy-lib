@@ -1,6 +1,6 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce  #-}
 
-module VoigtlanderTheorems where
+module Bridgy.Examples.VoigtlanderTheorems where
 
 open import Bridgy.Core.BridgePrims
 open import Bridgy.Core.List
