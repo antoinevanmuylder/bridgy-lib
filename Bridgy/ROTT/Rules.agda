@@ -506,7 +506,23 @@ app2 : ∀ {l lX lY lZ} {Γ : NRGraph l} →
 app2 {Γ = Γ} {X = X} {Y = Y} {Z = Z} f x y = app Γ Y Z (app Γ X (→Form _ _ Y Z) f x) y
 
 
-
+-- Γ.A ⊨ b : B
+-- -----------------λ
+-- Γ ⊨ λ(b) : Π A B
+lamm : ∀ {lΓ lA lB : Level}
+  {Γ : NRGraph lΓ} → (A : DispNRG lA Γ) (B : DispNRG lB (Γ # A)) →
+  (b : TermDNRG (Γ # A) B) →
+  TermDNRG Γ (ΠForm A B)
+lamm A B b = record {
+  tm0 = λ g a → b .tm0 (g , a) ;
+  tm1 = λ g0 g1 gg a0 a1 aa → b .tm1 (g0 , a0) (g1 , a1) (gg , aa)  ;
+  tm-nativ = λ g0 g1 gg gbdg gprf →
+    inEquGrInv
+    (funExt λ a0 → funExt λ a1 → funExt λ aa →
+    outEquGrInv (b .tm-nativ (g0 , a0) (g1 , a1) (gg , aa)  (λ x → gbdg x , equivFun (A .dnativ g0 g1 gg gbdg gprf a0 a1) aa x)
+    (nativ-#-split _ A g0 g1 gg gbdg gprf a0 a1 aa (equivFun (A .dnativ g0 g1 gg gbdg gprf a0 a1) aa)
+    (inEquGr refl))))
+  }
 
 -- Γ ⊨ A dNRG
 -- -----------
