@@ -111,8 +111,11 @@ module ProofReprod where
       trick0 j n u0 u1 (trel .fst) ,
       trick0 j n w0 w1 (trel .snd)
 
-    trick : (j : ℕ) (t : ∀ V → Vec V j → PhoasD V) → ∀ n → [PhoasD]₁ ℕ (flip _<''_ (n + j)) (t ℕ (revδℕ j))
-    trick j t n =
+    descope₁ : (j : ℕ) (t : ∀ V → Vec V j → PhoasD V) → PhoasD ℕ
+    descope₁ j t = t ℕ (revδℕ j)
+
+    descope₂ : (j : ℕ) (t : ∀ V → Vec V j → PhoasD V) → ∀ n → [PhoasD]₁ ℕ (flip _<''_ (n + j)) (t ℕ (revδℕ j))
+    descope₂ j t n =
       trick0 j n
         (t (Fin (n + j)) (revδF n j)) -- need (j-1,..,0 : Fin n+j)
         (t ℕ (revδℕ j))
@@ -120,39 +123,40 @@ module ProofReprod where
         (auxparam-rev n j t)
     
 
-    
+    -- rescope
+    --
     -- tnr is supposed to be a t ℕ (revδℕ j)
     -- i.e., tnr = t ℕ [j-1, ..., 1, 0]
-    toLam' : (tnr : PhoasD ℕ) (j : ℕ) {- (env : Vec ℕ j) -} (hyp : ∀ n → [PhoasD]₁ ℕ (flip _<''_ (n + j)) tnr)  → Lam j
-    toLam' (vvar v) j hyp = var (<''ToFin j (j ∸ (suc v) , ∸-compl v j (hyp 0))) --vvar v ↦ var j (j - v+1)
-    toLam' (vapp u w) j hyp = app (toLam' u j λ n → hyp n .fst) ((toLam' w j λ n → hyp n .snd))
-    toLam' (vlam f) j hyp =
-      lam (toLam' (f j) (suc j) λ n →
+    rescope : (tnr : PhoasD ℕ) (j : ℕ) {- (env : Vec ℕ j) -} (hyp : ∀ n → [PhoasD]₁ ℕ (flip _<''_ (n + j)) tnr)  → Lam j
+    rescope (vvar v) j hyp = var (<''ToFin j (j ∸ (suc v) , ∸-compl v j (hyp 0))) --vvar v ↦ var j (j - v+1)
+    rescope (vapp u w) j hyp = app (rescope u j λ n → hyp n .fst) ((rescope w j λ n → hyp n .snd))
+    rescope (vlam f) j hyp =
+      lam (rescope (f j) (suc j) λ n →
       subst (λ blk → [PhoasD]₁ ℕ (flip _<''_ blk) (f j)) (sym (+-suc n j)) --just a subst
       (hyp (suc n) j (j<''sucn+j j n)))
 
     
     -- t:  ∀ V (env : Vec V j) (N : U) (vvar : V → N) (vapp : N² → N) (vlam : (V → N) → N). N
     toLam : ∀ j → (t : ∀ V → Vec V j → PhoasD V) → Lam j
-    toLam j t = toLam' (t ℕ (revδℕ j)) j (trick j t)
+    toLam j t = rescope (t ℕ (revδℕ j)) j (descope₂ j t)
 
     -- def seems flawed for open terms
-    toLam'Alt : (j : ℕ) (tnd : PhoasD ℕ) (tck : ∀ n → [PhoasD]₁ ℕ (λ v → v <'' (n + j)) tnd) →
+    rescopeAlt : (j : ℕ) (tnd : PhoasD ℕ) (tck : ∀ n → [PhoasD]₁ ℕ (λ v → v <'' (n + j)) tnd) →
                    Lam j
-    toLam'Alt j (vvar v) tck =
+    rescopeAlt j (vvar v) tck =
       var (<''→Fin j v (tck 0))
-    toLam'Alt j (vapp u w) tck = app (toLam'Alt j u (λ n → tck n .fst)) (toLam'Alt j w (λ n → tck n .snd))
-    toLam'Alt j (vlam f) tck =
-      lam (toLam'Alt (suc j) (f j) λ n →
+    rescopeAlt j (vapp u w) tck = app (rescopeAlt j u (λ n → tck n .fst)) (rescopeAlt j w (λ n → tck n .snd))
+    rescopeAlt j (vlam f) tck =
+      lam (rescopeAlt (suc j) (f j) λ n →
         subst (λ blk → [PhoasD]₁ ℕ (λ v → v <'' blk) (f j)) (sym (+-suc n j))
         (tck (suc n) j (j<''sucn+j j n)))
 
-    toLam'cong : ∀ j (tnr0 tnr1 : PhoasD ℕ) (tnreq : tnr0 ≡ tnr1)
+    rescopecong : ∀ j (tnr0 tnr1 : PhoasD ℕ) (tnreq : tnr0 ≡ tnr1)
       (hyp0 : ∀ n → [PhoasD]₁ ℕ (flip _<''_ (n + j)) tnr0) (hyp1 : ∀ n → [PhoasD]₁ ℕ (flip _<''_ (n + j)) tnr1)
       (hypeq : ∀ n → PathP (λ i → [PhoasD]₁ ℕ (flip _<''_ (n + j)) (tnreq i)) (hyp0 n) (hyp1 n)) →
-      toLam' tnr0 j hyp0 ≡ toLam' tnr1 j hyp1
-    toLam'cong j tnr0 trn1 tnreq hyp0 hyp1 hypeq =
-      λ i → toLam' (tnreq i) j (λ n → hypeq n i)
+      rescope tnr0 j hyp0 ≡ rescope tnr1 j hyp1
+    rescopecong j tnr0 trn1 tnreq hyp0 hyp1 hypeq =
+      λ i → rescope (tnreq i) j (λ n → hypeq n i)
 
 
     -- some testing
@@ -180,7 +184,7 @@ module ProofReprod where
 
 
     -- progtest3 : Unit
-    -- progtest3 = {!toLam'Alt 3 (progPhoasenc ℕ (δℕ 3)) ?!}
+    -- progtest3 = {!rescopeAlt 3 (progPhoasenc ℕ (δℕ 3)) ?!}
 
 
 
@@ -203,16 +207,16 @@ module ProofReprod where
       cong₂ app
         (flip _∙_ (Lam<= j u)
           -- ~refl
-          (toLam'cong j _ _ refl _ _ λ n →
+          (rescopecong j _ _ refl _ _ λ n →
           [PhoasD]₁PresProp ℕ (λ v → v <'' (n + j)) (λ v → <''isPropValued v (n + j)) (toPhoasenc j u ℕ (revδℕ j)) _ _))
         ((flip _∙_ (Lam<= j w)
-          (toLam'cong j _ _ refl _ _ λ n →
+          (rescopecong j _ _ refl _ _ λ n →
           [PhoasD]₁PresProp ℕ (λ v → v <'' (n + j)) (λ v → <''isPropValued v (n + j)) (toPhoasenc j w ℕ (revδℕ j)) _ _)))
     Lam<= j (lam b) =
       cong lam
       (flip _∙_ (Lam<= (suc j) b)
       -- ~refl
-      (toLam'cong (suc j) _ _ refl _ _ λ n →
+      (rescopecong (suc j) _ _ refl _ _ λ n →
       [PhoasD]₁PresProp ℕ (λ v → v <'' (n + suc j))
         (λ v → <''isPropValued v (n + suc j))
         (toPhoasenc (suc j) b ℕ (j ∷ revδℕ j)) _ _))
@@ -228,7 +232,7 @@ module ProofReprod where
     Phoasenc<=' : (j : ℕ) (tnr : PhoasD ℕ) (hyp : ∀ n → [PhoasD]₁ ℕ (flip _<''_ (n + j)) tnr)
                 (V : Type) (env : Vec V j) (tve : PhoasD V)
                 (hyp2 : ∀ n (env' : Vec V n) → PhoasD-dNRG' ⦅ tnr , tve ⦆# (RevEnvGraph (n + j) (env' ++ env))) →
-                toPhoasenc j (toLam' tnr j hyp) V env ≡ tve
+                toPhoasenc j (rescope tnr j hyp) V env ≡ tve
     Phoasenc<=' j (vvar v0) hyp V env (vapp u1 w1) hyp2 = rec (hyp2 0 [])
     Phoasenc<=' j (vvar v0) hyp V env (vlam f1) hyp2 = rec (hyp2 0 [])
     Phoasenc<=' j (vapp u0 w0) hyp V env (vvar v1) hyp2 = rec (hyp2 0 [])
@@ -279,7 +283,7 @@ module ProofReprod where
 
     Phoasenc<= : (j : ℕ) (t : ∀ V → Vec V j → PhoasD V) → toPhoasenc j (toLam j t) ≡ t
     Phoasenc<= j t = funExt λ V → funExt λ env →
-      Phoasenc<=' j (t ℕ (revδℕ j)) (trick j t) V env (t V env)
+      Phoasenc<=' j (t ℕ (revδℕ j)) (descope₂ j t) V env (t V env)
       -- ∀ n (env' : Vec V n) → PhoasD-dNRG' ⦅ tnr , tve ⦆# (RevEnvGraph (n + j) (env' ++ env))
       λ n env' → param (TypeNRG ℓ-zero) (PhoasEnc-dNRG j) t ℕ V (RevEnvGraph (n + j) (env' ++ env)) (revδℕ j) env
         (invEq (VecHetRel1AsLookup j (revδℕ j) env) λ k km →
