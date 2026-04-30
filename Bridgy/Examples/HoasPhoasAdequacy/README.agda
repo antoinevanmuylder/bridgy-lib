@@ -131,7 +131,7 @@ module Junk (j : ℕ) where
 
 
   phoasEnc→UnfPhoasEnc2 : (∀ V → Vec V j → PhoasD V) → ((VN : PhoasModLam j) → ncrOf VN)
-  phoasEnc→UnfPhoasEnc2 = Hoenc→Nenc ∘ toHoenc
+  phoasEnc→UnfPhoasEnc2 = Hoenc→PhoasUnfEnc ∘ toHoenc
 
   phoasEnc→UnfPhoasEnc≡' : ∀ V (env : Vec V j) (tve : PhoasD V) (tnm : PhoasD (PhoasD V))
     (trel : PhoasD-dNRG' ⦅ tve , tnm ⦆# (λ lhs rhs → vvar lhs ≡ rhs) ) →
