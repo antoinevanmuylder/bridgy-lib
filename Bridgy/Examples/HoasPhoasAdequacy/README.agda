@@ -1,3 +1,20 @@
+{-
+This file and dependencies prove that the usual HOAS and PHOAS encodings are ismomorphic to De Bruijn syntax
+of untyped lambda calculus.
+The core of the PHOAS proof is due to Andrea Vezzosi.
+
+- See main results below
+- see LambdaDefs for definitions
+
+
+
+minor remarks:
+- "unsafe" in this folder is refferring to a technical ROTT notion related
+  to CwF democracy.
+- an earlier version of this library was wrongly referring to the PHOAS encoding
+  as a "nominal" encoding, and there may be remnants of that
+-}
+
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
 
 
@@ -25,18 +42,7 @@ open import Bridgy.Examples.HoasPhoasAdequacy.PhoasDataEncVsHoenc
 open import Bridgy.Examples.HoasPhoasAdequacy.PhoasUnfoldedEncVsHoenc
 open import Bridgy.Examples.HoasPhoasAdequacy.PhoasDataChurch
 
-{-
-- See main results below
-- see LambdaDefs for definitions
 
-
-
-Unintersting remarks:
-- "unsafe" in this dev is refferring to a technical ROTT notion related
-  to CwF democracy.
-- an earlier version of this library was wrongly referring to the PHOAS encoding
-  as a "nominal" encoding, and there may be remnants of that
--}
 
 
 
@@ -49,7 +55,7 @@ result1 : ∀ {j : ℕ} → Lam j ≃ (∀ V → Vec V j → PhoasD V)
 result1 = Lam≃Phoasenc _
 
 -- phoas encoding vs hoas encoding.
--- Note that the latter is uncurried here (see docstring above for curried form)
+-- Note that the latter is Pi-encoding is uncurried
 result2 : ∀ {j : ℕ} → (∀ V → Vec V j → PhoasD V) ≃ (∀ (H : HoasMod j) → hcr H)
 result2 = PhoasDenc≃Hoenc
 

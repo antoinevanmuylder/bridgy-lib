@@ -29,3 +29,5 @@ open import Bridgy.Examples.SystemF
 open import Bridgy.Examples.VecChurch
 open import Bridgy.Examples.Magma
 open import Bridgy.Examples.VoigtlanderTheorems
+
+open import Bridgy.Examples.HoasPhoasAdequacy.README
