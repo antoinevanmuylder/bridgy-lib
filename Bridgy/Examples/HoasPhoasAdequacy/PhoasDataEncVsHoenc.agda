@@ -64,17 +64,6 @@ PhoasDenc<=Hoenc {j} nch = funExt λ N → funExt λ env →
   (invEq (VecHetRel1AsLookup _ _ _) λ k → lookupVec-map {k = k} vvar env ))
 
 
--- ~have
--- [PhoasD]₂ N (PhoasD N) (λ v t → vvar v ≡ t) (nch N env)
--- (nch (PhoasD N) (map vvar env))
-
-
--- toHoenc'
--- ((tt , PhoasD N) ,
---  map vvar env , (λ f → vlam (λ v → f (vvar v))) , vapp)
--- (nch (PhoasD N) (map vvar env))
--- ≡ nch N env
-
 
 Hoenc<=PhoasDenc : ∀ {j : ℕ} → ∀ hoch → toHoenc (toPhoasDenc {j = j} hoch) ≡ hoch
 Hoenc<=PhoasDenc {j} hoch = funExt λ H →

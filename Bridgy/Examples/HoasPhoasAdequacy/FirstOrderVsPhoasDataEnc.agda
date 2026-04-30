@@ -45,9 +45,6 @@ open import Bridgy.Examples.HoasPhoasAdequacy.VecLemmas
 
 module ProofReprod where
   {-
-  TODO remove mention if neces.
-
-  extending the idea of Andrea
   1) (∀ V. V^j → PhoasD V) → { tn : PhoasD ℕ | each fv is <j }
   2) { tn : PhoasD ℕ | each fv is <j } → Lam j
   3) easy : Lam j → (∀ V. V^j → PhoasD V)
@@ -67,8 +64,8 @@ module ProofReprod where
   module BinParamCalls where
 
     -- V : Type ⊨ Vec V j → PhoasD V
-    Noenc-dNRG : (j : ℕ) → DispNRG ℓ-zero (TypeNRG ℓ-zero)
-    Noenc-dNRG j =
+    PhoasEnc-dNRG : (j : ℕ) → DispNRG ℓ-zero (TypeNRG ℓ-zero)
+    PhoasEnc-dNRG j =
       →Form _ _ (Vecn-dNRG' j) PhoasD-dNRG'
 
 
@@ -78,7 +75,7 @@ module ProofReprod where
     auxparam : (j : ℕ) (t : ∀ V → Vec V j → PhoasD V) →
       [PhoasD]₂ (Fin j) ℕ (λ fj n → toℕ fj ≡ n) (t (Fin j) (δFin j)) (t ℕ (δℕ j))
     auxparam j t =
-      param (TypeNRG ℓ-zero) (Noenc-dNRG j) t (Fin j) ℕ (λ fj n → toℕ fj ≡ n) (δFin j) (δℕ j)
+      param (TypeNRG ℓ-zero) (PhoasEnc-dNRG j) t (Fin j) ℕ (λ fj n → toℕ fj ≡ n) (δFin j) (δℕ j)
         -- : Vecn-dNRG' j ⦅ δFin j , δℕ j ⦆# (λ fj n → toℕ fj ≡ n)
         (invEq (VecHetRel1AsLookup j (δFin j) (δℕ j)) (sameLookupsδ j))
 
@@ -86,7 +83,7 @@ module ProofReprod where
     auxparam-rev : (n j : ℕ) (t : ∀ V → Vec V j → PhoasD V) →
       [PhoasD]₂ (Fin (n + j)) ℕ (λ fj n → toℕ fj ≡ n) (t (Fin (n + j)) (revδF n j)) (t ℕ (revδℕ j))
     auxparam-rev n j t =
-      param (TypeNRG ℓ-zero) (Noenc-dNRG j) t (Fin (n + j)) ℕ (λ fj n → toℕ fj ≡ n) (revδF n j) (revδℕ j)
+      param (TypeNRG ℓ-zero) (PhoasEnc-dNRG j) t (Fin (n + j)) ℕ (λ fj n → toℕ fj ≡ n) (revδF n j) (revδℕ j)
       (invEq (VecHetRel1AsLookup j (revδF n j) (revδℕ j)) (sameLookupsRev n j))
 
     -- some binary param call for a term t : ∀ V → PhoasD V
@@ -284,7 +281,7 @@ module ProofReprod where
     Phoasenc<= j t = funExt λ V → funExt λ env →
       Phoasenc<=' j (t ℕ (revδℕ j)) (trick j t) V env (t V env)
       -- ∀ n (env' : Vec V n) → PhoasD-dNRG' ⦅ tnr , tve ⦆# (RevEnvGraph (n + j) (env' ++ env))
-      λ n env' → param (TypeNRG ℓ-zero) (Noenc-dNRG j) t ℕ V (RevEnvGraph (n + j) (env' ++ env)) (revδℕ j) env
+      λ n env' → param (TypeNRG ℓ-zero) (PhoasEnc-dNRG j) t ℕ V (RevEnvGraph (n + j) (env' ++ env)) (revδℕ j) env
         (invEq (VecHetRel1AsLookup j (revδℕ j) env) λ k km →
           _∙_
           (λ i → mylookup (rew2 n j k i) (rew3 n j k km i) (env' ++ env))
