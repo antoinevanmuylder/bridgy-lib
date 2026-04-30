@@ -50,28 +50,25 @@ tmToSub {lΓ} {lA} {Γ} A a = record {
 
 
 
--- dependent app
--- Γ, x:A ⊨ B
--- Γ ⊨ f : Π A B    Γ ⊨ a : A
--- ----------------------------
--- Γ ⊨ dapp(f,a) : B[a/x]
-dapp : ∀ {lΓ lA lB} {Γ : NRGraph lΓ} (A : DispNRG lA Γ) (B : DispNRG lB (Γ # A)) →
-  (f : TermDNRG Γ (ΠForm A B)) (a : TermDNRG Γ A) →
-  TermDNRG Γ (tySubst Γ (Γ # A) (tmToSub _ a) B)
-dapp A B f a = record {
-  tm0 = λ g → f .tm0 g (a .tm0 g) ;
-  tm1 = λ g0 g1 gg → f .tm1  _ _ gg _ _ (a .tm1 _ _ gg) ;
-  tm-nativ = λ g0 g1 gg gbdg gprf →
-    let thingf = outEquGrInv (f .tm-nativ g0 g1 gg gbdg gprf) in
-    let thingf2 = funExt⁻ {f = f .tm1 g0 g1 gg} thingf (a .tm0 g0) in
-    let thingf3 = funExt⁻ {f = tm1 f g0 g1 gg (a .tm0 g0)} thingf2 (a .tm0 g1) in
-    let thingf4 = funExt⁻ {f = tm1 f g0 g1 gg (a .tm0 g0) (a .tm0 g1)} thingf3 (a .tm1 g0 g1 gg) in
-    let replace-a1 = invEq (A .dnativ g0 g1 gg gbdg gprf (tm0 a g0) (tm0 a g1)) (λ x → tm0 a (gbdg x)) in
-    let thingf4bis = funExt⁻ {f = tm1 f g0 g1 gg (a .tm0 g0) (a .tm0 g1)} thingf3 replace-a1 in
-    {!ΠForm A B .dnativ g0 g1 gg gbdg gprf (tm0 f g0) (tm0 f g1)!}
-    -- outEquGr (f .tm-nativ g0 g1 gg gbdg gprf)
-    --inEquGr λ i x → {!!}
-  }
-
-
-
+-- -- dependent app
+-- -- Γ, x:A ⊨ B
+-- -- Γ ⊨ f : Π A B    Γ ⊨ a : A
+-- -- ----------------------------
+-- -- Γ ⊨ dapp(f,a) : B[a/x]
+-- dapp : ∀ {lΓ lA lB} {Γ : NRGraph lΓ} (A : DispNRG lA Γ) (B : DispNRG lB (Γ # A)) →
+--   (f : TermDNRG Γ (ΠForm A B)) (a : TermDNRG Γ A) →
+--   TermDNRG Γ (tySubst Γ (Γ # A) (tmToSub _ a) B)
+-- dapp A B f a = record {
+--   tm0 = λ g → f .tm0 g (a .tm0 g) ;
+--   tm1 = λ g0 g1 gg → f .tm1  _ _ gg _ _ (a .tm1 _ _ gg) ;
+--   tm-nativ = λ g0 g1 gg gbdg gprf →
+--     let thingf = outEquGrInv (f .tm-nativ g0 g1 gg gbdg gprf) in
+--     let thingf2 = funExt⁻ {f = f .tm1 g0 g1 gg} thingf (a .tm0 g0) in
+--     let thingf3 = funExt⁻ {f = tm1 f g0 g1 gg (a .tm0 g0)} thingf2 (a .tm0 g1) in
+--     let thingf4 = funExt⁻ {f = tm1 f g0 g1 gg (a .tm0 g0) (a .tm0 g1)} thingf3 (a .tm1 g0 g1 gg) in
+--     let replace-a1 = invEq (A .dnativ g0 g1 gg gbdg gprf (tm0 a g0) (tm0 a g1)) (λ x → tm0 a (gbdg x)) in
+--     let thingf4bis = funExt⁻ {f = tm1 f g0 g1 gg (a .tm0 g0) (a .tm0 g1)} thingf3 replace-a1 in
+--     {!ΠForm A B .dnativ g0 g1 gg gbdg gprf (tm0 f g0) (tm0 f g1)!}
+--     -- outEquGr (f .tm-nativ g0 g1 gg gbdg gprf)
+--     --inEquGr λ i x → {!!}
+--   }

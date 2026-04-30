@@ -1,6 +1,13 @@
+AGDA_FILES = $(shell find Bridgy -name "*.agda" \
+    -not -path "Bridgy/Old/*" \
+    -not -path "Bridgy/Experimental/*")
 
+.PHONY: all
+all: $(AGDA_FILES:.agda=.agdai)
 
-.PHONY : clean
+%.agdai: %.agda
+	agda $<
+
+.PHONY: clean
 clean:
-	find . -type f -name '*.agdai' -delete
-
+	find . -name "*.agdai" -delete
