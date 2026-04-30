@@ -1,5 +1,7 @@
 {-# OPTIONS --cubical --bridges --guarded --no-fast-reduce #-}
 
+module Bridgy.Examples.HoasPhoasAdequacy.TrueTranslationOfPhoasData where
+
 open import Bridgy.Core.BridgePrims
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
@@ -22,7 +24,7 @@ open import Cubical.Data.Vec
 -- open import Bridgy.ROTT.Rules
 -- open import Bridgy.ROTT.WknPresTypeFormers
 
-open import LambdaDefs
+open import Bridgy.Examples.HoasPhoasAdequacy.LambdaDefs
 
 -- From LambdaDefs:
 -- [PhoasD]₁ : (V : Type) (Vdot : V → Type) → PhoasD V → Type

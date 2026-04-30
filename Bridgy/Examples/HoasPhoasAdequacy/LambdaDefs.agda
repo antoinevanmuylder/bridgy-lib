@@ -7,6 +7,8 @@
 
 {-# OPTIONS --cubical --bridges --guarded --no-fast-reduce #-}
 
+module Bridgy.Examples.HoasPhoasAdequacy.LambdaDefs where
+
 open import Bridgy.Core.BridgePrims
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
@@ -30,7 +32,7 @@ open import Bridgy.ROTT.Rules renaming (app to appROTT)
 open import Bridgy.ROTT.WknPresTypeFormers
 
 
-open import VecLemmas
+open import Bridgy.Examples.HoasPhoasAdequacy.VecLemmas
 
 
 

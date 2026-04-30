@@ -1,5 +1,7 @@
 {-# OPTIONS --cubical --bridges --guarded --no-fast-reduce #-}
 
+module Bridgy.Examples.HoasPhoasAdequacy.PhoasUnfoldedEncVsHoenc where
+
 
 open import Bridgy.Core.BridgePrims
 open import Cubical.Foundations.Prelude
@@ -23,8 +25,8 @@ open import Bridgy.ROTT.WknPresTypeFormers
 open import Bridgy.ROTT.Param
 open import Bridgy.Examples.LamChurch
 
-open import LambdaDefs
-open import VecLemmas
+open import Bridgy.Examples.HoasPhoasAdequacy.LambdaDefs
+open import Bridgy.Examples.HoasPhoasAdequacy.VecLemmas
 
 
 

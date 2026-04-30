@@ -1,6 +1,7 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
 
 
+module Bridgy.Examples.HoasPhoasAdequacy.README where
 
 open import Bridgy.Core.BridgePrims
 open import Cubical.Foundations.Prelude
@@ -15,14 +16,14 @@ open import Cubical.Data.FinData --todo remove
 open import Bridgy.Core.BDisc
 open import Bridgy.ROTT.Judgments
 
-open import LambdaDefs
-open import VecLemmas
+open import Bridgy.Examples.HoasPhoasAdequacy.LambdaDefs
+open import Bridgy.Examples.HoasPhoasAdequacy.VecLemmas
 
 
-open import FirstOrderVsPhoasDataEnc
-open import PhoasDataEncVsHoenc
-open import PhoasUnfoldedEncVsHoenc
-open import PhoasDataChurch
+open import Bridgy.Examples.HoasPhoasAdequacy.FirstOrderVsPhoasDataEnc
+open import Bridgy.Examples.HoasPhoasAdequacy.PhoasDataEncVsHoenc
+open import Bridgy.Examples.HoasPhoasAdequacy.PhoasUnfoldedEncVsHoenc
+open import Bridgy.Examples.HoasPhoasAdequacy.PhoasDataChurch
 
 {-
 - See main results below

@@ -1,5 +1,7 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
 
+module Bridgy.Examples.HoasPhoasAdequacy.PhoasDataEncVsHoenc where
+
 
 open import Bridgy.Core.BridgePrims
 open import Cubical.Foundations.Prelude
@@ -15,8 +17,8 @@ open import Bridgy.ROTT.Rules
 open import Bridgy.ROTT.Param
 
 
-open import LambdaDefs
-open import VecLemmas
+open import Bridgy.Examples.HoasPhoasAdequacy.LambdaDefs
+open import Bridgy.Examples.HoasPhoasAdequacy.VecLemmas
 
 toHoenc' : ∀ {j : ℕ} (H : HoasMod j) → PhoasD (hcr H) → hcr H
 toHoenc' H (vvar h) = h

@@ -1,5 +1,6 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
 
+module Bridgy.Examples.HoasPhoasAdequacy.PhoasDataChurch where
 
 open import Bridgy.Core.BridgePrims
 open import Cubical.Foundations.Prelude
@@ -11,7 +12,7 @@ open import Bridgy.ROTT.Judgments
 open import Bridgy.ROTT.Rules
 open import Bridgy.ROTT.Param
 
-open import LambdaDefs
+open import Bridgy.Examples.HoasPhoasAdequacy.LambdaDefs
 
 
 -- N : Type ⊨ (V → N) → (N → N → N) → (V → N) → N

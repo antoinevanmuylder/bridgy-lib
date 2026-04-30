@@ -7,7 +7,7 @@ See last theorem
 
 
 
-module FirstOrderVsPhoasDataEnc where
+module Bridgy.Examples.HoasPhoasAdequacy.FirstOrderVsPhoasDataEnc where
 
 open import Bridgy.Core.BridgePrims
 
@@ -33,9 +33,9 @@ open import Bridgy.ROTT.Judgments
 open import Bridgy.ROTT.Rules renaming (app to appROTT)
 open import Bridgy.ROTT.Param
 
-open import LambdaDefs
-open import RecursiveStrictOrder
-open import VecLemmas
+open import Bridgy.Examples.HoasPhoasAdequacy.LambdaDefs
+open import Bridgy.Examples.HoasPhoasAdequacy.RecursiveStrictOrder
+open import Bridgy.Examples.HoasPhoasAdequacy.VecLemmas
 
 
 

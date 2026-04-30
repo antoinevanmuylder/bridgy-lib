@@ -1,5 +1,6 @@
 {-# OPTIONS --cubical --bridges --guarded --no-fast-reduce #-}
 
+module Bridgy.Examples.HoasPhoasAdequacy.RecursiveStrictOrder where
 
 open import Bridgy.Core.BridgePrims
 open import Cubical.Foundations.Prelude

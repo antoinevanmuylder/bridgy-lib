@@ -1,5 +1,6 @@
 {-# OPTIONS --cubical --guarded --bridges --no-fast-reduce #-}
 
+module Bridgy.Examples.HoasPhoasAdequacy.VecLemmas where
 
 open import Bridgy.Core.BridgePrims
 open import Cubical.Foundations.Prelude
@@ -22,7 +23,7 @@ open import Bridgy.Core.EquGraph
 open import Bridgy.ROTT.Judgments
 open import Bridgy.ROTT.Rules
 
-open import RecursiveStrictOrder
+open import Bridgy.Examples.HoasPhoasAdequacy.RecursiveStrictOrder
 
 
 
