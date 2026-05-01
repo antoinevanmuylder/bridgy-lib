@@ -1,6 +1,7 @@
 AGDA_FILES = $(shell find Bridgy -name "*.agda" \
     -not -path "Bridgy/Old/*" \
-    -not -path "Bridgy/Experimental/*")
+    -not -path "Bridgy/Experimental/*" \
+    -not -path "Bridgy/Test/*")
 
 .PHONY: all
 all: $(AGDA_FILES:.agda=.agdai)
