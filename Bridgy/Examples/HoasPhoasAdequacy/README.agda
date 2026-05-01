@@ -9,7 +9,7 @@ The core of the PHOAS proof is due to Andrea Vezzosi.
 
 
 minor remarks:
-- "unsafe" in this folder is refferring to a technical ROTT notion related
+- "unsafe" in this folder is referring to a technical ROTT notion related
   to CwF democracy.
 - an earlier version of this library was wrongly referring to the PHOAS encoding
   as a "nominal" encoding, and there may be remnants of that
@@ -55,7 +55,7 @@ result1 : ∀ {j : ℕ} → Lam j ≃ (∀ V → Vec V j → PhoasD V)
 result1 = Lam≃Phoasenc _
 
 -- phoas encoding vs hoas encoding.
--- Note that the latter is Pi-encoding is uncurried
+-- Note that the latter Pi-encoding is uncurried
 result2 : ∀ {j : ℕ} → (∀ V → Vec V j → PhoasD V) ≃ (∀ (H : HoasMod j) → hcr H)
 result2 = PhoasDenc≃Hoenc
 
